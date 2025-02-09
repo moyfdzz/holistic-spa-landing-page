@@ -115,14 +115,16 @@ a {
   }
 }
 
-.header__menu-icon {
+.header__button--close-menu,
+.header__button--show-menu {
   color: var(--warm-white);
   font-size: 2.5rem;
   cursor: pointer;
 }
 
 @media screen and (min-width: 1024px) {
-  .header__menu-icon {
+  .header__button--close-menu,
+  .header__button--show-menu {
     display: none;
   }
 }
