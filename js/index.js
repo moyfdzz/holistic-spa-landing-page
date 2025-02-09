@@ -149,3 +149,21 @@ for (let i = 1; i <= totalQuestions; i++) {
 
   sr.reveal(selector, { delay });
 }
+
+// Logic to ensure that the user must enter a phone number when selecting either "phone" or "whatsapp" as the contact method
+document
+  .getElementById("contact-form")
+  .addEventListener("submit", function (event) {
+    const contactMethod = document.getElementById("contact-method").value;
+    const phoneInput = document.getElementById("phone").value;
+
+    if (
+      (contactMethod === "whatsapp" || contactMethod === "phone") &&
+      !phoneInput
+    ) {
+      event.preventDefault();
+      alert(
+        "Por favor, ingresa tu número de teléfono si deseas que te contactemos por WhatsApp o Llamada."
+      );
+    }
+  });
