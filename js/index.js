@@ -150,6 +150,10 @@ for (let i = 1; i <= totalQuestions; i++) {
   sr.reveal(selector, { delay });
 }
 
+// Contact Page
+sr.reveal(".contact__headline");
+sr.reveal(".contact__content", { delay: 400 });
+
 // Logic to ensure that the user must enter a phone number when selecting either "phone" or "whatsapp" as the contact method
 document
   .getElementById("contact-form")
