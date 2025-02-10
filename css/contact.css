@@ -134,15 +134,7 @@
   color: black;
 }
 
-#phone {
-  border: 2px solid #ccc;
-  transition: border-color 0.3s ease-in-out;
-}
-
-#phone.required {
-  border-color: red;
-}
-
-#phone.valid {
-  border-color: green;
+.error {
+  border: 2px solid red;
+  background-color: #ffe6e6;
 }
