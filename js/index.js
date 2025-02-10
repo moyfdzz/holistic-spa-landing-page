@@ -155,19 +155,55 @@ sr.reveal(".contact__headline");
 sr.reveal(".contact__content", { delay: 400 });
 
 // Logic to ensure that the user must enter a phone number when selecting either "phone" or "whatsapp" as the contact method
-document
-  .getElementById("contact-form")
-  .addEventListener("submit", function (event) {
-    const contactMethod = document.getElementById("contact-method").value;
-    const phoneInput = document.getElementById("phone").value;
+document.addEventListener("DOMContentLoaded", function () {
+  const contactMethod = document.getElementById("contact-method");
+  const phoneInput = document.getElementById("phone");
+  const form = document.getElementById("contact-form");
 
-    if (
-      (contactMethod === "whatsapp" || contactMethod === "phone") &&
-      !phoneInput
-    ) {
-      event.preventDefault();
-      alert(
-        "Por favor, ingresa tu número de teléfono si deseas que te contactemos por WhatsApp o Llamada."
-      );
+  // Disable default HTML5 validation
+  form.setAttribute("novalidate", "true");
+
+  // In case the contact method is WhatsApp or Phone, this validates the phone input is required.
+  function validatePhoneRequirement() {
+    if (contactMethod.value === "whatsapp" || contactMethod.value === "phone") {
+      phoneInput.classList.add("required");
+      phoneInput.dataset.required = "true";
+    } else {
+      phoneInput.classList.remove("required");
+      phoneInput.dataset.required = "false";
+      phoneInput.classList.remove("valid");
+    }
+  }
+
+  // Run validation immediately in case an option is preselected
+  validatePhoneRequirement();
+
+  contactMethod.addEventListener("change", validatePhoneRequirement);
+
+  phoneInput.addEventListener("input", function () {
+    // Remove non-numeric characters
+    phoneInput.value = phoneInput.value.replace(/\D/g, "");
+
+    if (phoneInput.value.trim() !== "") {
+      phoneInput.classList.add("valid");
+    } else {
+      phoneInput.classList.remove("valid");
     }
   });
+
+  form.addEventListener("submit", function (event) {
+    if (phoneInput.dataset.required === "true") {
+      if (phoneInput.value.trim() === "") {
+        event.preventDefault();
+        alert(
+          "Por favor, ingresa tu número de teléfono para WhatsApp o Llamada."
+        );
+        return;
+      } else if (!/^\d+$/.test(phoneInput.value.trim())) {
+        event.preventDefault();
+        alert("El número de teléfono solo puede contener dígitos (0-9).");
+        return;
+      }
+    }
+  });
+});
