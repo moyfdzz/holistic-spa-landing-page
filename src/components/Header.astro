@@ -1,4 +1,5 @@
 ---
+import { Icon } from "astro-icon/components";
 import Button from "./Button.astro";
 import { site } from "../config/site.js";
 
@@ -57,7 +58,8 @@ const links = [
       aria-label="Abrir menú"
       data-nav-toggle
     >
-      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+      <Icon name="lucide:menu" class="nav-toggle__open" aria-hidden="true" />
+      <Icon name="lucide:x" class="nav-toggle__close" aria-hidden="true" />
     </button>
   </div>
   <div class="nav-overlay" data-nav-overlay data-open="false"></div>
@@ -124,6 +126,20 @@ const links = [
     flex: none;
     width: 2rem;
     height: 2rem;
+  }
+
+  .nav-toggle :global(svg) {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  .nav-toggle :global(.nav-toggle__close),
+  .nav-toggle[aria-expanded="true"] :global(.nav-toggle__open) {
+    display: none;
+  }
+
+  .nav-toggle[aria-expanded="true"] :global(.nav-toggle__close) {
+    display: block;
   }
 
   .nav-toggle {

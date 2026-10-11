@@ -21,6 +21,34 @@ test.describe("brand", () => {
   });
 });
 
+test.describe("icons", () => {
+  test("are inline SVG with no icon font, CDN or Flaticon credit", async ({
+    page,
+  }) => {
+    const external = [];
+    page.on("request", (request) => {
+      if (!request.url().startsWith("http://localhost")) {
+        external.push(request.url());
+      }
+    });
+    await page.goto("/");
+    await expect(page.locator("footer")).not.toContainText("Flaticon");
+    await expect(page.locator("i[class*='fa-']")).toHaveCount(0);
+    expect(await page.locator("header svg").count()).toBeGreaterThan(0);
+    expect(external.filter((url) => url.includes("font-awesome"))).toEqual([]);
+  });
+
+  test("icon-only buttons have accessible names", async ({ page }) => {
+    await page.goto("/");
+    for (const button of await page.locator("button").all()) {
+      const name = await button.evaluate(
+        (el) => el.getAttribute("aria-label") || el.textContent?.trim() || "",
+      );
+      expect(name).not.toBe("");
+    }
+  });
+});
+
 test.describe("home page", () => {
   test("loads with the main sections and a single h1", async ({ page }) => {
     await page.goto("/");
