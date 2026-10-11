@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "contactTitle": "Contact"
+  },
+  "common": {
+    "skipLink": "Skip to content"
+  },
+  "nav": {
+    "label": "Main",
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "contactCta": "Contact us",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "lang": {
+    "label": "Language",
+    "es": "Español",
+    "en": "English",
+    "suggestText": "This site is also available in English.",
+    "suggestLink": "Switch to English",
+    "suggestClose": "Close notice"
+  },
+  "hero": {
+    "badge": "Renew your body, relax your mind and balance your spirit",
+    "title": "Experience Well-Being with Therapeutic and Relaxation Massages",
+    "lead": "Enjoy a space of peace and harmony, where every massage is designed to ease stress, release tension and revitalize your energy. Discover the perfect balance between body and mind.",
+    "ctaServices": "See services",
+    "ctaMore": "More information",
+    "imageAlt": "Massage table with towels, candles and plants in a serene space"
+  },
+  "about": {
+    "title": "Why choose us?",
+    "headline": "We bring well-being, relaxation and balance to your home.",
+    "lead": "We are proud of our clients' satisfaction. They experience a physical and emotional transformation through our massages.",
+    "since": "Since",
+    "yearsPrefix": "Over",
+    "yearsSuffix": "years caring for your well-being",
+    "yearsText": "With years of practice in therapeutic massage and wellness techniques, we specialize in personalized experiences that improve our clients' quality of life.",
+    "servicesLabel": "Our Services",
+    "servicesText": "Discover our therapies and find the treatment that is right for you. Every session is tailored to your needs, giving you a unique experience of relaxation and healing.",
+    "cta": "Get more information",
+    "imageAlt": "Candles, rolled towels, stones and plants in a spa setting"
+  },
+  "services": {
+    "title": "Our Services",
+    "lead": "Below are the different services we offer to meet your needs.",
+    "prev": "Previous service",
+    "next": "Next service",
+    "items": {
+      "relaxing": "Relaxing massage",
+      "decontracting": "Deep tissue massage",
+      "lymphatic": "Lymphatic drainage massage",
+      "shiatsu": "Shiatsu massage",
+      "sport": "Sports massage",
+      "deepFacial": "Deep cleansing facial",
+      "moisturizingFacial": "Moisturizing facial",
+      "prenatal": "Prenatal massage"
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "lead": "We answer the most common questions about our at-home services.",
+    "link": "Request more information",
+    "q1": "What types of massage do you offer in the comfort of my home?",
+    "a1": "We offer a variety of massages, including relaxing, therapeutic, sports and stress-relief massage, all done in the comfort of your home according to your needs.",
+    "q2": "How can I book an at-home massage?",
+    "a2": "You can easily book by calling us, sending us a message through our website or on WhatsApp, or through any of our social networks below. We are available to schedule your massage at the time that suits you best.",
+    "q3": "Do I need any special preparation before getting a massage at home?",
+    "a3": "You don't need to prepare in any special way, but we recommend being in a comfortable, relaxed setting. We bring everything needed for the massage; just make sure you have a quiet space.",
+    "q4": "How far do you travel to provide the at-home service?",
+    "a4": "We offer our services throughout the Monterrey metropolitan area. If you are not sure whether we cover your area, contact us and we will gladly confirm.",
+    "q5": "Is it safe to get a massage at home?",
+    "a5": "Yes. We are trained and follow strict standards of hygiene and professionalism. We make sure every service is safe, relaxing and good for your well-being."
+  },
+  "home": {
+    "ctaTitle": "Connect with {name} for your Well-Being Journey",
+    "ctaText1": "Rejuvenate your body and mind with our massage therapies.",
+    "ctaText2": "Contact us today for personalized treatments and a unique relaxation experience.",
+    "ctaButton": "Contact us"
+  },
+  "contact": {
+    "title": "Your Relaxation Starts Here: Contact Us Today",
+    "lead": "If you have questions, want to learn about our services or book a session, we are here to help you relax body and mind.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "message": "What do you have in mind?",
+    "method": "How would you like us to contact you?",
+    "methodEmail": "Email",
+    "methodWhatsapp": "WhatsApp",
+    "methodPhone": "Phone call",
+    "submit": "Send",
+    "imageAlt": "Relaxation and wellness space",
+    "errors": {
+      "phoneRequired": "Please enter your phone number for WhatsApp or a phone call.",
+      "phoneDigits": "The phone number can only contain digits (0-9).",
+      "emailRequired": "Please enter your email."
+    },
+    "ctaTitle": "Let's Talk and Book Your Appointment",
+    "ctaText1": "Ready for your relaxation session?",
+    "ctaText2": "Call us, send us a message or fill in the form. We are here to give you the best at-home massage experience."
+  },
+  "footer": {
+    "company": "Company",
+    "discover": "Discover Well-Being",
+    "support": "Support",
+    "social": "Social media",
+    "faq": "Frequently Asked Questions",
+    "massageTypes": "Types of massage",
+    "massageBenefits": "Benefits of massage",
+    "facialBenefits": "Facial cleansing and its benefits",
+    "socialLabel": "{name} on {network}",
+    "copyright": "© {year} {name}."
+  }
+}

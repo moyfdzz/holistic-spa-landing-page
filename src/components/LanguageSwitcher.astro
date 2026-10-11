@@ -1,0 +1,117 @@
+---
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  languages,
+  useTranslations,
+} from "../i18n/utils.js";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const path = Astro.url.pathname.replace(/(.)\/$/, "$1");
+---
+
+<div class="lang" role="group" aria-label={t("lang.label")}>
+  {languages.map((code, index) => (
+    <>
+      {index > 0 && (
+        <span class="lang__sep" aria-hidden="true">
+          |
+        </span>
+      )}
+      <a
+        href={getLocalizedPath(path, code)}
+        class="lang__link"
+        lang={code}
+        hreflang={code}
+        aria-label={t(`lang.${code}`)}
+        aria-current={code === lang ? "true" : undefined}
+        data-lang-link={code}
+      >
+        {code.toUpperCase()}
+      </a>
+    </>
+  ))}
+</div>
+
+{lang === "es" && (
+  <div class="lang-suggest" data-lang-suggest hidden>
+    <p lang="en">
+      {t("lang.suggestText")}{" "}
+      <a href={getLocalizedPath(path, "en")} hreflang="en" data-lang-link="en">
+        {t("lang.suggestLink")}
+      </a>
+    </p>
+    <button type="button" aria-label={t("lang.suggestClose")} data-lang-dismiss>
+      &times;
+    </button>
+  </div>
+)}
+
+<script>
+  import { initLanguage } from "../scripts/language.js";
+  initLanguage();
+</script>
+
+<style>
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .lang__sep {
+    color: var(--sage-300);
+  }
+
+  .lang__link {
+    padding: 0.35rem 0.4rem;
+    border-radius: var(--radius-sm);
+    color: var(--sage-700);
+    text-decoration: none;
+  }
+
+  .lang__link:hover {
+    background: var(--sage-50);
+  }
+
+  .lang__link[aria-current="true"] {
+    background: var(--sage-100);
+    color: var(--sage-800);
+  }
+
+  .lang-suggest {
+    position: absolute;
+    inset: 100% 0 auto;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: 0.5rem var(--space-4);
+    background: var(--sage-700);
+    color: #fff;
+    font-size: var(--text-sm);
+  }
+
+  .lang-suggest[hidden] {
+    display: none;
+  }
+
+  .lang-suggest a {
+    color: inherit;
+    font-weight: 700;
+  }
+
+  .lang-suggest button {
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+</style>

@@ -64,16 +64,14 @@ document.addEventListener("DOMContentLoaded", function () {
       phoneInput.dataset.required === "true" &&
       phoneInput.value.trim() === ""
     ) {
-      errors.push(
-        "Por favor, ingresa tu número de teléfono para WhatsApp o Llamada.",
-      );
+      errors.push(form.dataset.errorPhoneRequired);
       phoneInput.classList.add("error");
     } else if (
       // If contact method is WhatsApp or call, the phone input is not empty, but it's not only digits between 0 and 9
       phoneInput.dataset.required === "true" &&
       !/^\d+$/.test(phoneInput.value.trim())
     ) {
-      errors.push("El número de teléfono solo puede contener dígitos (0-9).");
+      errors.push(form.dataset.errorPhoneDigits);
       phoneInput.classList.add("error");
     } else {
       phoneInput.classList.remove("error");
@@ -84,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
       emailInput.dataset.required === "true" &&
       emailInput.value.trim() === ""
     ) {
-      errors.push("Por favor, ingresa tu correo electrónico.");
+      errors.push(form.dataset.errorEmailRequired);
       emailInput.classList.add("error");
     } else {
       emailInput.classList.remove("error");

@@ -4,6 +4,14 @@ import { Icon } from "astro-icon/components";
 import Badge from "./Badge.astro";
 import Button from "./Button.astro";
 import heroImage from "../assets/images/introductory-image.webp";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  useTranslations,
+} from "../i18n/utils.js";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
 <section class="hero" id="home" aria-labelledby="hero-title">
@@ -12,7 +20,7 @@ import heroImage from "../assets/images/introductory-image.webp";
       <div>
         <Badge>
           <Icon name="lucide:leaf" aria-hidden="true" />
-          Renueva tu cuerpo, relaja tu mente y equilibra tu espíritu
+          {t("hero.badge")}
         </Badge>
       </div>
       <h1
@@ -21,17 +29,15 @@ import heroImage from "../assets/images/introductory-image.webp";
 
         style="--reveal-delay: 100ms"
       >
-        Experimenta el Bienestar con Masajes Terapéuticos y de Relajación
+        {t("hero.title")}
       </h1>
-      <p class="hero__lead">
-        Disfruta de un espacio de paz y armonía, donde cada masaje está diseñado
-        para aliviar el estrés, reducir tensiones y revitalizar tu energía.
-        Descubre el equilibrio perfecto entre cuerpo y mente.
-      </p>
+      <p class="hero__lead">{t("hero.lead")}</p>
       <div class="hero__actions">
-        <Button href="/#services">Ver servicios</Button>
-        <Button href="/contact" variant="secondary">
-          Más información
+        <Button href={getLocalizedPath("/#services", lang)}>
+          {t("hero.ctaServices")}
+        </Button>
+        <Button href={getLocalizedPath("/contact", lang)} variant="secondary">
+          {t("hero.ctaMore")}
         </Button>
       </div>
     </div>
@@ -41,7 +47,7 @@ import heroImage from "../assets/images/introductory-image.webp";
       <div class="hero__float">
         <Image
           src={heroImage}
-          alt="Cabina de masaje con toallas, velas y plantas en un espacio sereno"
+          alt={t("hero.imageAlt")}
           widths={[480, 720, 960]}
           sizes="(min-width: 60rem) 45vw, 92vw"
           loading="eager"

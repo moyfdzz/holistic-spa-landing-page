@@ -1,55 +1,33 @@
 ---
 import { Icon } from "astro-icon/components";
 import Section from "./Section.astro";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  useTranslations,
+} from "../i18n/utils.js";
 
-// REL-20 moves these questions to a translated data file.
-const questions = [
-  {
-    question: "¿Qué tipos de masajes ofrecen en la comodidad de mi hogar?",
-    answer:
-      "Ofrecemos una variedad de masajes, incluyendo masaje relajante, terapéutico, deportivo y para aliviar el estrés, todos realizados en la comodidad de tu hogar según tus necesidades.",
-  },
-  {
-    question: "¿Cómo puedo reservar una cita para un masaje a domicilio?",
-    answer:
-      "Puedes reservar tu cita fácilmente llamándonos, enviándonos un mensaje a través de nuestra página web o por WhatsApp, o por cualquiera de nuestras redes sociales en la parte de abajo. Estamos disponibles para programar tu masaje según tu horario preferido.",
-  },
-  {
-    question:
-      "¿Necesito tener alguna preparación especial antes de recibir el masaje en casa?",
-    answer:
-      "No necesitas prepararte de manera especial, pero te recomendamos estar en un ambiente cómodo y relajado. Nosotros llevaremos todo lo necesario para el masaje, solo asegúrate de contar con un espacio tranquilo.",
-  },
-  {
-    question: "¿Qué tan lejos viajan para brindar el servicio a domicilio?",
-    answer:
-      "Ofrecemos nuestros servicios en toda el área metropolitana de Monterrey. Si no estás seguro de si cubrimos tu área, contáctanos y te confirmaremos con gusto.",
-  },
-  {
-    question: "¿Es seguro recibir un masaje en casa?",
-    answer:
-      "Sí, contamos con capacitación y se siguen estrictas normas de higiene y profesionalismo. Nos aseguramos de que cada servicio sea seguro, relajante y beneficioso para tu bienestar.",
-  },
-];
+// REL-20 moves the questions to a data file with more content.
+const questionKeys = [1, 2, 3, 4, 5];
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
 <Section id="FAQ" tone="alt" labelledby="faq-title">
   <div class="faq">
     <div class="faq__intro" data-reveal>
       <h2 id="faq-title" class="section-title">
-        Preguntas frecuentes
+        {t("faq.title")}
       </h2>
-      <p class="section-lead">
-        Resolvemos las dudas más comunes sobre nuestros servicios a domicilio.
-      </p>
-      <a href="/contact" class="faq__link">
-        Solicita más información
+      <p class="section-lead">{t("faq.lead")}</p>
+      <a href={getLocalizedPath("/contact", lang)} class="faq__link">
+        {t("faq.link")}
         <Icon name="lucide:arrow-right" aria-hidden="true" />
       </a>
     </div>
 
     <div class="accordion">
-      {questions.map((item, index) => (
+      {questionKeys.map((n, index) => (
         <div
           class="accordion__item"
           id={`question${index + 1}`}
@@ -67,7 +45,7 @@ const questions = [
               aria-controls={`answer${index + 1}`}
               data-accordion-toggle
             >
-              <span>{item.question}</span>
+              <span>{t(`faq.q${n}`)}</span>
               <Icon
                 name="lucide:chevron-down"
                 class="accordion__icon"
@@ -82,7 +60,7 @@ const questions = [
             aria-labelledby={`question${index + 1}-button`}
           >
             <div class="answer__inner">
-              <p class="answer__text">{item.answer}</p>
+              <p class="answer__text">{t(`faq.a${n}`)}</p>
             </div>
           </div>
         </div>

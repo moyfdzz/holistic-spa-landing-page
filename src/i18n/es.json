@@ -1,0 +1,119 @@
+{
+  "meta": {
+    "contactTitle": "Contacto"
+  },
+  "common": {
+    "skipLink": "Saltar al contenido"
+  },
+  "nav": {
+    "label": "Principal",
+    "home": "Inicio",
+    "about": "Nosotros",
+    "services": "Servicios",
+    "faq": "Preguntas",
+    "contact": "Contacto",
+    "contactCta": "Contáctanos",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "lang": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "English",
+    "suggestText": "This site is also available in English.",
+    "suggestLink": "Switch to English",
+    "suggestClose": "Cerrar aviso"
+  },
+  "hero": {
+    "badge": "Renueva tu cuerpo, relaja tu mente y equilibra tu espíritu",
+    "title": "Experimenta el Bienestar con Masajes Terapéuticos y de Relajación",
+    "lead": "Disfruta de un espacio de paz y armonía, donde cada masaje está diseñado para aliviar el estrés, reducir tensiones y revitalizar tu energía. Descubre el equilibrio perfecto entre cuerpo y mente.",
+    "ctaServices": "Ver servicios",
+    "ctaMore": "Más información",
+    "imageAlt": "Cabina de masaje con toallas, velas y plantas en un espacio sereno"
+  },
+  "about": {
+    "title": "¿Por qué elegirnos?",
+    "headline": "Llevamos bienestar, relajación y equilibrio a tu hogar.",
+    "lead": "Nos enorgullece la satisfacción de nuestros clientes, quienes experimentan una transformación física y emocional a través de nuestros masajes.",
+    "since": "Desde",
+    "yearsPrefix": "Más de",
+    "yearsSuffix": "años cuidando tu bienestar",
+    "yearsText": "Con años de práctica en técnicas de masajes terapéuticos y bienestar, nos hemos especializado en ofrecer experiencias personalizadas que mejoran la calidad de vida de nuestros clientes.",
+    "servicesLabel": "Nuestros Servicios",
+    "servicesText": "Descubre nuestras terapias y encuentra el tratamiento perfecto para ti. Cada sesión está diseñada para adaptarse a tus necesidades, brindándote una experiencia única de relajación y sanación.",
+    "cta": "Obtener más información",
+    "imageAlt": "Velas, toallas enrolladas, piedras y plantas en un espacio de spa"
+  },
+  "services": {
+    "title": "Nuestros Servicios",
+    "lead": "A continuación están los diferentes servicios con los que contamos para satisfacer tus necesidades.",
+    "prev": "Servicio anterior",
+    "next": "Servicio siguiente",
+    "items": {
+      "relaxing": "Masaje relajante",
+      "decontracting": "Masaje descontracturante",
+      "lymphatic": "Masaje linfático",
+      "shiatsu": "Masaje Shiatsu",
+      "sport": "Masaje deportivo",
+      "deepFacial": "Facial de limpieza profunda",
+      "moisturizingFacial": "Facial hidratante",
+      "prenatal": "Masaje prenatal"
+    }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "lead": "Resolvemos las dudas más comunes sobre nuestros servicios a domicilio.",
+    "link": "Solicita más información",
+    "q1": "¿Qué tipos de masajes ofrecen en la comodidad de mi hogar?",
+    "a1": "Ofrecemos una variedad de masajes, incluyendo masaje relajante, terapéutico, deportivo y para aliviar el estrés, todos realizados en la comodidad de tu hogar según tus necesidades.",
+    "q2": "¿Cómo puedo reservar una cita para un masaje a domicilio?",
+    "a2": "Puedes reservar tu cita fácilmente llamándonos, enviándonos un mensaje a través de nuestra página web o por WhatsApp, o por cualquiera de nuestras redes sociales en la parte de abajo. Estamos disponibles para programar tu masaje según tu horario preferido.",
+    "q3": "¿Necesito tener alguna preparación especial antes de recibir el masaje en casa?",
+    "a3": "No necesitas prepararte de manera especial, pero te recomendamos estar en un ambiente cómodo y relajado. Nosotros llevaremos todo lo necesario para el masaje, solo asegúrate de contar con un espacio tranquilo.",
+    "q4": "¿Qué tan lejos viajan para brindar el servicio a domicilio?",
+    "a4": "Ofrecemos nuestros servicios en toda el área metropolitana de Monterrey. Si no estás seguro de si cubrimos tu área, contáctanos y te confirmaremos con gusto.",
+    "q5": "¿Es seguro recibir un masaje en casa?",
+    "a5": "Sí, contamos con capacitación y se siguen estrictas normas de higiene y profesionalismo. Nos aseguramos de que cada servicio sea seguro, relajante y beneficioso para tu bienestar."
+  },
+  "home": {
+    "ctaTitle": "Conéctate con {name} para tu Viaje de Bienestar",
+    "ctaText1": "Rejuvenece tu cuerpo y mente con nuestras terapias de masaje.",
+    "ctaText2": "Contáctanos hoy para tratamientos personalizados y una experiencia de relajación única.",
+    "ctaButton": "Contáctanos"
+  },
+  "contact": {
+    "title": "Tu Relajación Comienza Aquí: Contáctanos Hoy",
+    "lead": "Si tienes preguntas, deseas conocer nuestros servicios o agendar una sesión, estamos aquí para ayudarte a relajar cuerpo y mente.",
+    "name": "Nombre",
+    "email": "Correo Electrónico",
+    "phone": "Teléfono (opcional)",
+    "message": "¿Qué tienes en mente?",
+    "method": "¿Cómo prefieres que te contactemos?",
+    "methodEmail": "Correo Electrónico",
+    "methodWhatsapp": "WhatsApp",
+    "methodPhone": "Llamada",
+    "submit": "Enviar",
+    "imageAlt": "Espacio de relajación y bienestar",
+    "errors": {
+      "phoneRequired": "Por favor, ingresa tu número de teléfono para WhatsApp o Llamada.",
+      "phoneDigits": "El número de teléfono solo puede contener dígitos (0-9).",
+      "emailRequired": "Por favor, ingresa tu correo electrónico."
+    },
+    "ctaTitle": "Hablemos y Agenda Tu Cita",
+    "ctaText1": "¿Listo para tu sesión de relajación?",
+    "ctaText2": "Llámanos, envíanos un mensaje o completa el formulario. Estamos aquí para brindarte la mejor experiencia en masajes a domicilio."
+  },
+  "footer": {
+    "company": "Compañía",
+    "discover": "Descubre el Bienestar",
+    "support": "Soporte",
+    "social": "Redes sociales",
+    "faq": "Preguntas Frecuentes",
+    "massageTypes": "Tipos de masajes",
+    "massageBenefits": "Beneficios de los masajes",
+    "facialBenefits": "Limpieza facial y sus beneficios",
+    "socialLabel": "{network} de {name}",
+    "copyright": "© {year} {name}."
+  }
+}

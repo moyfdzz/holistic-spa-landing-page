@@ -1,24 +1,33 @@
 ---
 import { Icon } from "astro-icon/components";
 import Button from "./Button.astro";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  stripLangPrefix,
+  useTranslations,
+} from "../i18n/utils.js";
 import { site } from "../config/site.js";
 
-const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const path = stripLangPrefix(Astro.url.pathname).replace(/\/$/, "") || "/";
 const links = [
-  { href: "/", label: "Inicio", current: path === "/" },
-  { href: "/#about", label: "Nosotros", current: false },
-  { href: "/#services", label: "Servicios", current: false },
-  { href: "/#FAQ", label: "Preguntas", current: false },
-  { href: "/contact", label: "Contacto", current: path === "/contact" },
-];
+  { href: "/", label: t("nav.home"), current: path === "/" },
+  { href: "/#about", label: t("nav.about"), current: false },
+  { href: "/#services", label: t("nav.services"), current: false },
+  { href: "/#FAQ", label: t("nav.faq"), current: false },
+  { href: "/contact", label: t("nav.contact"), current: path === "/contact" },
+].map((link) => ({ ...link, href: getLocalizedPath(link.href, lang) }));
 ---
 
 <header class="site-header" data-header data-scrolled="false">
   <a class="skip-link" href="#main">
-    Saltar al contenido
+    {t("common.skipLink")}
   </a>
   <div class="site-header__inner container">
-    <a href="/" class="logo">
+    <a href={getLocalizedPath("/", lang)} class="logo">
       <img src="/logo-mark.svg" alt="" width="32" height="32" />
       <span>{site.name}</span>
     </a>
@@ -26,7 +35,7 @@ const links = [
     <nav
       id="site-nav"
       class="nav"
-      aria-label="Principal"
+      aria-label={t("nav.label")}
       data-nav
       data-open="false"
     >
@@ -44,18 +53,22 @@ const links = [
         ))}
       </ul>
       <div class="nav__cta">
-        <Button href="/contact" size="sm">
-          Contáctanos
+        <Button href={getLocalizedPath("/contact", lang)} size="sm">
+          {t("nav.contactCta")}
         </Button>
       </div>
     </nav>
+
+    <LanguageSwitcher />
 
     <button
       type="button"
       class="nav-toggle"
       aria-expanded="false"
       aria-controls="site-nav"
-      aria-label="Abrir menú"
+      aria-label={t("nav.openMenu")}
+      data-label-open={t("nav.openMenu")}
+      data-label-close={t("nav.closeMenu")}
       data-nav-toggle
     >
       <Icon name="lucide:menu" class="nav-toggle__open" aria-hidden="true" />

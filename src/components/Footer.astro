@@ -1,10 +1,16 @@
 ---
 import { Icon } from "astro-icon/components";
 import { site } from "../config/site.js";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  useTranslations,
+} from "../i18n/utils.js";
 
 const year = new Date().getFullYear();
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 
-// REL-14 translates the accessible names.
 const socials = [
   {
     name: "Facebook",
@@ -23,7 +29,7 @@ const socials = [
   <div class="container">
     <div class="footer__grid">
       <div class="footer__brand">
-        <a href="/" class="footer__logo">
+        <a href={getLocalizedPath("/", lang)} class="footer__logo">
           <img src="/logo-mark.svg" alt="" width="32" height="32" />
           <span>{site.name}</span>
         </a>
@@ -32,55 +38,58 @@ const socials = [
         <p>{site.phone}</p>
       </div>
 
-      <nav class="footer__col" aria-label="Compañía">
-        <h2 class="footer__title">Compañía</h2>
-        <a href="/">Inicio</a>
-        <a href="/#about">Nosotros</a>
-        <a href="/#services">Servicios</a>
-        <a href="/contact">Contacto</a>
+      <nav class="footer__col" aria-label={t("footer.company")}>
+        <h2 class="footer__title">{t("footer.company")}</h2>
+        <a href={getLocalizedPath("/", lang)}>{t("nav.home")}</a>
+        <a href={getLocalizedPath("/#about", lang)}>{t("nav.about")}</a>
+        <a href={getLocalizedPath("/#services", lang)}>{t("nav.services")}</a>
+        <a href={getLocalizedPath("/contact", lang)}>{t("nav.contact")}</a>
       </nav>
 
-      <nav class="footer__col" aria-label="Descubre el Bienestar">
-        <h2 class="footer__title">Descubre el Bienestar</h2>
+      <nav class="footer__col" aria-label={t("footer.discover")}>
+        <h2 class="footer__title">{t("footer.discover")}</h2>
         <a
           href="https://drbline.com/tipos-de-masaje-y-beneficios-para-la-salud/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Tipos de masajes
+          {t("footer.massageTypes")}
         </a>
         <a
           href="https://www.mayoclinic.org/es/tests-procedures/massage-therapy/about/pac-20384595"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Beneficios de los masajes
+          {t("footer.massageBenefits")}
         </a>
         <a
           href="https://www.doctorbarret.com/que-es-una-limpieza-facial-profunda-y-cuales-son-sus-beneficios/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Limpieza facial y sus beneficios
+          {t("footer.facialBenefits")}
         </a>
       </nav>
 
-      <nav class="footer__col" aria-label="Soporte">
-        <h2 class="footer__title">Soporte</h2>
-        <a href="/#FAQ">Preguntas Frecuentes</a>
-        <a href="/#services">Servicios</a>
-        <a href="/contact">Contacto</a>
+      <nav class="footer__col" aria-label={t("footer.support")}>
+        <h2 class="footer__title">{t("footer.support")}</h2>
+        <a href={getLocalizedPath("/#FAQ", lang)}>{t("footer.faq")}</a>
+        <a href={getLocalizedPath("/#services", lang)}>{t("nav.services")}</a>
+        <a href={getLocalizedPath("/contact", lang)}>{t("nav.contact")}</a>
       </nav>
 
       <div class="footer__col">
-        <h2 class="footer__title">Redes sociales</h2>
+        <h2 class="footer__title">{t("footer.social")}</h2>
         <div class="footer__socials">
           {socials.map((social) => (
             <a
               href={social.href}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`${social.name} de ${site.name}`}
+              aria-label={t("footer.socialLabel", {
+                network: social.name,
+                name: site.name,
+              })}
             >
               <Icon name={social.icon} aria-hidden="true" />
             </a>
@@ -90,9 +99,7 @@ const socials = [
     </div>
 
     <div class="footer__bottom">
-      <p>
-        &copy; {year} {site.name}.
-      </p>
+      <p>{t("footer.copyright", { year, name: site.name })}</p>
     </div>
   </div>
 </footer>
