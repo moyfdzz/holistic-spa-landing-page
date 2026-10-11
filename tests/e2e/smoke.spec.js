@@ -107,6 +107,79 @@ test.describe("languages", () => {
   });
 });
 
+test.describe("services catalog", () => {
+  test("every service shows a description, duration and a quote button", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const cards = page.locator("#services .service-card");
+    await expect(cards).toHaveCount(8);
+    for (const card of await cards.all()) {
+      await expect(card.locator(".service-card__text")).not.toBeEmpty();
+      await expect(card.locator(".service-card__duration")).toContainText(
+        "min",
+      );
+      await expect(card.locator("img")).toHaveAttribute("alt", /.{10,}/);
+    }
+    const quote = cards.first().locator("[data-quote]");
+    await expect(quote).toHaveText(/Solicitar cotización/);
+    const href = (await quote.getAttribute("href")) ?? "";
+    expect(href).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
+    expect(decodeURIComponent(href)).toContain("Masaje relajante");
+  });
+
+  test("every photo has its own description", async ({ page }) => {
+    await page.goto("/");
+    const alts = await page
+      .locator("#services .service-card img")
+      .evaluateAll((imgs) => imgs.map((img) => img.getAttribute("alt")));
+    expect(new Set(alts).size).toBe(alts.length);
+  });
+
+  test("the English page has English texts and a translated message", async ({
+    page,
+  }) => {
+    await page.goto("/en/");
+    const first = page.locator("#services .service-card").first();
+    await expect(first.locator("[data-quote]")).toHaveText(/Ask for a quote/);
+    const href =
+      (await first.locator("[data-quote]").getAttribute("href")) ?? "";
+    expect(decodeURIComponent(href)).toContain("Relaxing massage");
+    await expect(first.locator("[data-contact-link]")).toHaveAttribute(
+      "href",
+      "/en/contact?service=relajante",
+    );
+  });
+
+  test("the contact link preselects the service in the form", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page
+      .locator("#services .service-card")
+      .nth(3)
+      .locator("[data-contact-link]")
+      .click();
+    await expect(page).toHaveURL(/\/contact\?service=shiatsu$/);
+    await expect(page.locator("#service")).toHaveValue("shiatsu");
+  });
+
+  test("cards can be scrolled sideways on a phone, without moving the page", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "the carousel only exists on phones");
+    await page.goto("/");
+    const scroller = page.locator(".services__scroller");
+    await scroller.scrollIntoViewIfNeeded();
+    const overflows = await scroller.evaluate(
+      (el) => el.scrollWidth > el.clientWidth,
+    );
+    expect(overflows).toBe(true);
+    await expect(page.locator(".services__hint")).toBeVisible();
+  });
+});
+
 test.describe("social links", () => {
   test("point to the new profiles and open safely in a new tab", async ({
     page,
@@ -229,16 +302,6 @@ test.describe("home page", () => {
     await question.click();
     await expect(question).toHaveAttribute("aria-expanded", "false");
     await expect(answer).toBeHidden();
-  });
-
-  test("services carousel moves with its arrows", async ({ page }) => {
-    await page.goto("/");
-    const active = page.locator(".swiper-slide-active .service-card__name");
-    await page.locator("#services").scrollIntoViewIfNeeded();
-    const before = await active.first().textContent();
-
-    await page.getByRole("button", { name: "Servicio siguiente" }).click();
-    await expect(active.first()).not.toHaveText(before ?? "");
   });
 });
 

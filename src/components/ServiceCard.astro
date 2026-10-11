@@ -1,0 +1,178 @@
+---
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import Button from "./Button.astro";
+import { site } from "../config/site.js";
+import { formatDuration } from "../data/services.js";
+import type { Service } from "../data/services.js";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  useTranslations,
+} from "../i18n/utils.js";
+import { buildWhatsAppUrl } from "../utils/whatsapp.js";
+
+interface Props {
+  /** The service to show. */
+  service: Service;
+}
+
+const { service } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const text = service.text[lang];
+const quoteUrl = buildWhatsAppUrl(
+  site.whatsapp,
+  t("services.quoteMessage", { service: text.name }),
+);
+const contactUrl = `${getLocalizedPath("/contact", lang)}?service=${service.slug}`;
+---
+
+<article class="service-card">
+  <Image
+    src={service.image}
+    alt={text.imageAlt}
+    widths={[360, 540, 720]}
+    sizes="(min-width: 64rem) 22vw, (min-width: 48rem) 44vw, 80vw"
+    class="service-card__img"
+  />
+  <div class="service-card__body">
+    <div class="service-card__title">
+      <Icon name={service.icon} aria-hidden="true" />
+      <h3 class="service-card__name">{text.name}</h3>
+    </div>
+    <p class="service-card__text">{text.description}</p>
+    <ul class="service-card__benefits">
+      {text.benefits.map((benefit) => (
+        <li>{benefit}</li>
+      ))}
+    </ul>
+    <p class="service-card__duration">
+      <Icon name="lucide:clock" aria-hidden="true" />
+      <span class="visually-hidden">{t("services.durationLabel")}:</span>
+      {t("services.duration", { time: formatDuration(service.durationMin) })}
+    </p>
+    <div class="service-card__actions">
+      <Button
+        href={quoteUrl}
+        size="sm"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-quote
+      >
+        <Icon name="simple-icons:whatsapp" aria-hidden="true" />
+        {t("services.quote")}
+      </Button>
+      <a class="service-card__link" href={contactUrl} data-contact-link>
+        {t("services.contactLink")}
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+  .service-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .service-card__img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .service-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-4) var(--space-5);
+  }
+
+  .service-card__title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--sage-600);
+  }
+
+  .service-card__title :global(svg) {
+    flex: none;
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  .service-card__name {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    line-height: 1.25;
+    color: var(--sage-900);
+  }
+
+  .service-card__text {
+    color: var(--color-text-muted, var(--sage-800));
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+
+  .service-card__benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .service-card__benefits li {
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--radius-pill);
+    background: var(--sage-50);
+    color: var(--sage-800);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  .service-card__duration {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: auto;
+    color: var(--sage-700);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .service-card__duration :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .service-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+  }
+
+  .service-card__actions :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .service-card__link {
+    padding-block: 0.6rem;
+    color: var(--sage-700);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+</style>
