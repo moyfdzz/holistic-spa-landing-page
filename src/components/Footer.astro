@@ -1,4 +1,6 @@
 ---
+import { site } from "../config/site.js";
+
 const year = new Date().getFullYear();
 ---
 
@@ -7,12 +9,12 @@ const year = new Date().getFullYear();
     <div class="footer__grid">
       <div class="footer__brand">
         <a href="/" class="footer__logo">
-          <i class="fa-solid fa-spa" aria-hidden="true"></i>
-          <span>Masajes Holísticos Rossy</span>
+          <img src="/logo-mark.svg" alt="" width="32" height="32" />
+          <span>{site.name}</span>
         </a>
-        <p>Monterrey</p>
-        <p>Nuevo León, México</p>
-        <p>+52 81 8017 1904</p>
+        <p>{site.city}</p>
+        <p>{site.region}</p>
+        <p>{site.phone}</p>
       </div>
 
       <nav class="footer__col" aria-label="Compañía">
@@ -89,7 +91,9 @@ const year = new Date().getFullYear();
           www.flaticon.com
         </a>
       </p>
-      <p>&copy; {year} Masajes Holísticos Rossy.</p>
+      <p>
+        &copy; {year} {site.name}.
+      </p>
     </div>
   </div>
 </footer>
@@ -137,6 +141,15 @@ const year = new Date().getFullYear();
     font-size: var(--text-lg);
     font-weight: 600;
     color: #fff;
+  }
+
+  .footer__logo img {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.2rem;
+    border-radius: var(--radius-md);
+    background: var(--sage-100);
   }
 
   .footer__col {

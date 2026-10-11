@@ -2,7 +2,7 @@
 
 Website for a home massage and facial service in the Monterrey metropolitan area.
 
-> The brand is still being renamed from "Masajes Holísticos Rossy". The refactor is tracked in the Linear project "Website Refactor 2026".
+> The brand was renamed from the old "Rossy" name to "Masajes Relax Monterrey" (REL-12). Business data (name, phone, area, social links) lives in `src/config/site.js`. The GitHub repository and the Vercel project keep their old names until the domain move (REL-26). The refactor is tracked in the Linear project "Website Refactor 2026".
 
 ## Requirements
 

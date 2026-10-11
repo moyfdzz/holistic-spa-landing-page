@@ -1,5 +1,6 @@
 ---
 import Button from "./Button.astro";
+import { site } from "../config/site.js";
 
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 const links = [
@@ -17,8 +18,8 @@ const links = [
   </a>
   <div class="site-header__inner container">
     <a href="/" class="logo">
-      <i class="fa-solid fa-spa" aria-hidden="true"></i>
-      <span>Masajes Holísticos Rossy</span>
+      <img src="/logo-mark.svg" alt="" width="32" height="32" />
+      <span>{site.name}</span>
     </a>
 
     <nav
@@ -119,8 +120,10 @@ const links = [
     text-decoration: none;
   }
 
-  .logo i {
-    color: var(--sage-600);
+  .logo img {
+    flex: none;
+    width: 2rem;
+    height: 2rem;
   }
 
   .nav-toggle {
