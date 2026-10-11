@@ -16,7 +16,7 @@ Usa una herramienta cuya licencia permita **uso comercial** (por ejemplo Adobe F
 
 | Herramienta | Plan | Fecha | Notas |
 | ----------- | ---- | ----- | ----- |
-|             |      |       |       |
+| Google Gemini | (completar: plan gratuito o de pago) | 2026-10 | Imágenes generadas por el dueño; revisar que el plan permita uso comercial |
 
 ## 3. Plantilla del prompt
 

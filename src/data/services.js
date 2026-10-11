@@ -3,14 +3,14 @@
  * The owner reviews the wording.
  * @module data/services
  */
-import relaxing from "../assets/images/relaxing-massage.jpg";
-import decontracting from "../assets/images/decontracting-massage.jpg";
-import linfatic from "../assets/images/linfatic-massage.jpg";
-import shiatsu from "../assets/images/shiatsu-massage.jpg";
-import sport from "../assets/images/sport-massage.jpg";
-import deepFacial from "../assets/images/deep-facial.jpg";
-import moisturizingFacial from "../assets/images/moisturizing-facial.jpg";
-import prenatal from "../assets/images/prenatal-massage.jpg";
+import relaxing from "../assets/images/ai/relaxing.webp";
+import decontracting from "../assets/images/ai/decontracting.webp";
+import lymphatic from "../assets/images/ai/lymphatic.webp";
+import shiatsu from "../assets/images/ai/shiatsu.webp";
+import sport from "../assets/images/ai/sport.webp";
+import deepFacial from "../assets/images/ai/deep-facial.webp";
+import moisturizingFacial from "../assets/images/ai/moisturizing-facial.webp";
+import prenatal from "../assets/images/ai/prenatal.webp";
 
 /**
  * @typedef {object} ServiceText
@@ -51,7 +51,7 @@ export const services = [
           "Movimientos suaves y pausados para liberar el estrés y favorecer un descanso profundo.",
         benefits: ["Reduce el estrés", "Mejora el descanso"],
         imageAlt:
-          "Mujer boca abajo con los ojos cerrados mientras recibe un masaje relajante en la espalda",
+          "Terapeuta dando un masaje relajante en la espalda a una persona acostada boca abajo, en una habitación luminosa con plantas",
       },
       en: {
         name: "Relaxing massage",
@@ -59,7 +59,7 @@ export const services = [
           "Smooth, slow strokes to release stress and promote deep rest.",
         benefits: ["Reduces stress", "Improves rest"],
         imageAlt:
-          "Woman lying face down with her eyes closed while receiving a relaxing back massage",
+          "Therapist giving a relaxing back massage to a person lying face down in a bright room with plants",
       },
     },
   },
@@ -76,7 +76,7 @@ export const services = [
           "Presión firme sobre nudos y zonas tensas de espalda, cuello y hombros.",
         benefits: ["Alivia contracturas", "Libera tensión muscular"],
         imageAlt:
-          "Manos de una terapeuta amasando el hombro de un hombre en un masaje descontracturante",
+          "Terapeuta presionando con firmeza la espalda alta de una persona boca abajo para aliviar una contractura",
       },
       en: {
         name: "Deep-tissue massage",
@@ -84,7 +84,7 @@ export const services = [
           "Firm pressure on knots and tense areas of the back, neck and shoulders.",
         benefits: ["Relieves muscle knots", "Releases muscle tension"],
         imageAlt:
-          "Therapist's hands kneading a man's shoulder in a deep-tissue massage",
+          "Therapist pressing firmly on the upper back of a person lying face down to release a muscle knot",
       },
     },
   },
@@ -92,7 +92,7 @@ export const services = [
     id: "lymphatic",
     slug: "linfatico",
     icon: "lucide:droplets",
-    image: linfatic,
+    image: lymphatic,
     durations: MASSAGE_DURATIONS,
     text: {
       es: {
@@ -101,7 +101,7 @@ export const services = [
           "Movimientos suaves y rítmicos que estimulan la circulación linfática y reducen la retención de líquidos.",
         benefits: ["Reduce la hinchazón", "Estimula la circulación"],
         imageAlt:
-          "Mujer envuelta en una toalla con las manos de la terapeuta suavemente sobre su frente y mandíbula",
+          "Terapeuta realizando un drenaje linfático con movimientos suaves en la pierna de una persona acostada boca arriba",
       },
       en: {
         name: "Lymphatic drainage",
@@ -109,7 +109,7 @@ export const services = [
           "Gentle rhythmic movements that stimulate lymph flow and reduce fluid retention and swelling.",
         benefits: ["Reduces swelling", "Stimulates circulation"],
         imageAlt:
-          "Woman wrapped in a towel with the therapist's hands resting gently on her forehead and jaw",
+          "Therapist doing gentle lymphatic drainage strokes on the leg of a person lying on their back",
       },
     },
   },
@@ -126,7 +126,7 @@ export const services = [
           "Técnica japonesa de presión con los dedos sobre puntos de energía para reequilibrar cuerpo y mente.",
         benefits: ["Equilibra cuerpo y mente", "Calma la tensión"],
         imageAlt:
-          "Manos presionando con firmeza la espalda de una mujer durante un masaje Shiatsu",
+          "Terapeuta aplicando presión con los dedos en la espalda de una persona acostada sobre un colchón en el suelo, en un masaje shiatsu",
       },
       en: {
         name: "Shiatsu",
@@ -134,7 +134,7 @@ export const services = [
           "Japanese finger-pressure technique on energy points to rebalance body and mind.",
         benefits: ["Balances body and mind", "Eases tension"],
         imageAlt:
-          "Hands pressing firmly on a woman's back during a Shiatsu massage",
+          "Therapist using finger pressure on the back of a person lying on a floor mat during a shiatsu massage",
       },
     },
   },
@@ -151,7 +151,7 @@ export const services = [
           "Prepara o recupera los músculos antes o después de entrenar, mejora la flexibilidad y reduce las molestias.",
         benefits: ["Mejora la flexibilidad", "Acelera la recuperación"],
         imageAlt:
-          "Terapeuta estirando y presionando la pierna de una persona durante un masaje deportivo",
+          "Terapeuta masajeando la pierna musculosa de un deportista acostado boca abajo y cubierto con una toalla",
       },
       en: {
         name: "Sports massage",
@@ -159,7 +159,7 @@ export const services = [
           "Prepares or recovers muscles before or after training, improving flexibility and reducing soreness.",
         benefits: ["Improves flexibility", "Speeds up recovery"],
         imageAlt:
-          "Therapist stretching and pressing a person's leg during a sports massage",
+          "Therapist massaging the muscular leg of an athlete lying face down and covered with a towel",
       },
     },
   },
@@ -176,7 +176,7 @@ export const services = [
           "Limpieza, exfoliación, extracción y mascarilla para purificar los poros y renovar la piel.",
         benefits: ["Purifica los poros", "Renueva la piel"],
         imageAlt:
-          "Mujer recibiendo un facial de limpieza profunda con producto en la mandíbula",
+          "Mujer con una mascarilla de arcilla verde recibiendo un facial de limpieza profunda mientras la terapeuta masajea su rostro",
       },
       en: {
         name: "Deep-cleansing facial",
@@ -184,7 +184,7 @@ export const services = [
           "Cleansing, exfoliation, extraction and a mask to purify pores and renew the skin.",
         benefits: ["Purifies pores", "Renews the skin"],
         imageAlt:
-          "Woman receiving a deep-cleansing facial with product on her jaw",
+          "Woman with a green clay mask receiving a deep-cleansing facial while the therapist massages her face",
       },
     },
   },
@@ -201,7 +201,7 @@ export const services = [
           "Productos nutritivos y un suave masaje facial que devuelven la hidratación y el brillo a la piel.",
         benefits: ["Hidrata en profundidad", "Da luminosidad"],
         imageAlt:
-          "Esteticista con guantes rosas dando un masaje facial hidratante a una mujer con gorro",
+          "Terapeuta dando un masaje facial hidratante a una persona con diadema, de piel luminosa y ojos cerrados",
       },
       en: {
         name: "Moisturizing facial",
@@ -209,7 +209,7 @@ export const services = [
           "Nourishing products and a gentle facial massage that restore hydration and glow.",
         benefits: ["Deeply hydrates", "Adds glow"],
         imageAlt:
-          "Beautician in pink gloves giving a moisturizing facial massage to a woman wearing a hair cap",
+          "Therapist giving a moisturizing facial massage to a person wearing a headband, with glowing skin and closed eyes",
       },
     },
   },
@@ -226,7 +226,7 @@ export const services = [
           "Posiciones seguras y cómodas para aliviar las molestias de espalda, piernas y cadera durante el embarazo.",
         benefits: ["Alivia la espalda y la cadera", "Cómodo y seguro"],
         imageAlt:
-          "Mujer embarazada recostada con los ojos cerrados mientras recibe un masaje prenatal en el hombro",
+          "Mujer embarazada recostada con almohadas mientras una terapeuta le da un masaje suave y seguro",
       },
       en: {
         name: "Prenatal massage",
@@ -234,7 +234,7 @@ export const services = [
           "Safe, comfortable positioning to relieve back, leg and hip discomfort during pregnancy.",
         benefits: ["Eases back and hip pain", "Comfortable and safe"],
         imageAlt:
-          "Pregnant woman lying back with her eyes closed while receiving a prenatal shoulder massage",
+          "Pregnant woman reclining with pillows while a therapist gives her a gentle, safe massage",
       },
     },
   },
