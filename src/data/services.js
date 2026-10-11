@@ -254,20 +254,17 @@ export const services = [
         name: "Masaje craneofacial",
         description:
           "Maniobras suaves en cuero cabelludo, frente, sienes, mandíbula y cuello para soltar la tensión y el cansancio del rostro.",
-        benefits: [
-          "Alivia la tensión de cabeza y rostro",
-          "Relaja la mandíbula",
-        ],
+        benefits: ["Alivia la tensión", "Relaja la mandíbula"],
         imageAlt:
-          "Terapeuta dando un masaje craneofacial a una persona recostada, con las manos sobre sus sienes y su frente",
+          "Terapeuta sentada junto a la cabecera de una persona recostada, dándole un masaje craneofacial con las manos sobre su frente y sus sienes",
       },
       en: {
         name: "Craniofacial massage",
         description:
           "Gentle techniques on the scalp, forehead, temples, jaw and neck to release tension and facial fatigue.",
-        benefits: ["Eases head and face tension", "Relaxes the jaw"],
+        benefits: ["Eases tension", "Relaxes the jaw"],
         imageAlt:
-          "Therapist giving a craniofacial massage to a reclining person, with her hands on their temples and forehead",
+          "Therapist seated at the head of a reclining person, giving a craniofacial massage with her hands on their forehead and temples",
       },
     },
   },
@@ -284,7 +281,7 @@ export const services = [
           "Presión suave sobre puntos específicos de pies y manos para promover la relajación y el bienestar general.",
         benefits: ["Promueve la relajación", "Alivia el cansancio"],
         imageAlt:
-          "Terapeuta aplicando presión con los pulgares en la planta del pie de una persona recostada, en una sesión de reflexología",
+          "Terapeuta sentada al pie de la camilla masajeando con ambas manos la planta del pie de una persona recostada, en una sesión de reflexología",
       },
       en: {
         name: "Foot and hand reflexology",
@@ -292,7 +289,7 @@ export const services = [
           "Gentle pressure on specific points of the feet and hands to promote relaxation and overall well-being.",
         benefits: ["Promotes relaxation", "Eases tiredness"],
         imageAlt:
-          "Therapist pressing with her thumbs on the sole of a reclining person's foot during a reflexology session",
+          "Therapist seated at the foot of the massage table massaging the sole of a reclining person's foot with both hands during a reflexology session",
       },
     },
   },
