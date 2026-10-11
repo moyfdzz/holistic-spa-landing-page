@@ -4,6 +4,10 @@ import "@fontsource/lora/latin-600.css";
 import "@fontsource/quicksand/latin-400.css";
 import "@fontsource/quicksand/latin-500.css";
 import "@fontsource/quicksand/latin-600.css";
+// The fonts used above the fold are loaded early, so the text does not jump when they arrive.
+import lora600 from "@fontsource/lora/files/lora-latin-600-normal.woff2?url";
+import quicksand400 from "@fontsource/quicksand/files/quicksand-latin-400-normal.woff2?url";
+import quicksand600 from "@fontsource/quicksand/files/quicksand-latin-600-normal.woff2?url";
 import "../styles/tokens.css";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
@@ -37,6 +41,9 @@ const lang = getLangFromUrl(Astro.url);
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    {[lora600, quicksand400, quicksand600].map((href) => (
+      <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />
+    ))}
     <meta name="theme-color" content="#475d42" />
     <meta name="application-name" content={site.shortName} />
     <Seo title={title} description={description} jsonLd={jsonLd} />
