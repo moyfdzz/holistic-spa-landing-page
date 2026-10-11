@@ -115,5 +115,11 @@
   },
   "privacy": {
     "updated": "Last updated: {date}"
+  },
+  "testimonials": {
+    "title": "What our clients say",
+    "lead": "Real opinions from people who already received our at-home services.",
+    "rating": "{rating} out of 5 stars",
+    "more": "See more reviews on Google"
   }
 }
