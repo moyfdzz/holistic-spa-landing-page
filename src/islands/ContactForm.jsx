@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./ContactForm.css";
 import { useTranslations } from "../i18n/utils.js";
 import { validateContactForm } from "../utils/contactValidation.js";
+import SuccessDialog from "./SuccessDialog.jsx";
 
 const ENDPOINT = "https://api.web3forms.com/submit";
 
@@ -27,12 +28,12 @@ export function getServiceFromSearch(search, slugs) {
  * @property {{ slug: string, name: string, durations: number[] }[]} services - Services to pick from, with the session lengths each one offers.
  * @property {string} whatsappUrl - WhatsApp link shown when the form cannot be used.
  * @property {string} privacyHref - Address of the privacy notice.
- * @property {string} redirectUrl - Where Web3Forms sends people after a plain (no JavaScript) submit.
  */
 
 /**
- * The contact form: inline translated errors, loading, success and error states,
- * and a plain form POST when JavaScript is not available.
+ * The contact form: inline translated errors, loading, error states and a
+ * confirmation dialog in the visitor's language. Sending only happens through
+ * JavaScript, so the visitor never leaves the site for a Web3Forms page.
  * @param {ContactFormProps} props - What the form needs.
  * @returns {import("react").JSX.Element} The form.
  */
@@ -43,7 +44,6 @@ export default function ContactForm({
   services,
   whatsappUrl,
   privacyHref,
-  redirectUrl,
 }) {
   const t = useTranslations(lang);
   const [values, setValues] = useState({
@@ -83,7 +83,6 @@ export default function ContactForm({
         duration: options.length === 1 ? String(options[0]) : "",
       }));
     }
-    if (new URLSearchParams(search).get("sent") === "1") setStatus("success");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [services]);
 
@@ -211,19 +210,9 @@ export default function ContactForm({
     <form
       id="contact-form"
       className="cf"
-      action={web3formsKey ? ENDPOINT : undefined}
-      method="POST"
       noValidate={enhanced}
       onSubmit={handleSubmit}
     >
-      {web3formsKey && (
-        <>
-          <input type="hidden" name="access_key" value={web3formsKey} />
-          <input type="hidden" name="subject" value={siteName} />
-          <input type="hidden" name="from_name" value={siteName} />
-          <input type="hidden" name="redirect" value={redirectUrl} />
-        </>
-      )}
       <div className="cf__trap" aria-hidden="true">
         <input
           type="checkbox"
@@ -363,16 +352,32 @@ export default function ContactForm({
         {error("consent")}
       </div>
 
-      <button type="submit" className="cf__submit" disabled={sending}>
+      <button
+        type="submit"
+        className="cf__submit"
+        disabled={sending || !enhanced}
+      >
         {sending ? t("contact.sending") : t("contact.submit")}
       </button>
 
+      <noscript>
+        <p className="cf__message cf__message--error">
+          {t("contact.noscript")}
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+            {t("contact.whatsappCta")}
+          </a>
+        </p>
+      </noscript>
+
+      <SuccessDialog
+        open={status === "success"}
+        title={t("contact.successTitle")}
+        message={t("contact.success")}
+        closeLabel={t("contact.close")}
+        onClose={() => setStatus("idle")}
+      />
+
       <div className="cf__status" role="status" aria-live="polite">
-        {status === "success" && (
-          <p className="cf__message cf__message--success">
-            {t("contact.success")}
-          </p>
-        )}
         {status === "error" && (
           <p className="cf__message cf__message--error">
             {t("contact.failure")}

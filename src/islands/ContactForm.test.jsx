@@ -22,7 +22,6 @@ function setup(props = {}) {
       services={services}
       whatsappUrl="https://wa.me/528180171904"
       privacyHref="/aviso-de-privacidad"
-      redirectUrl="https://example.com/contact?sent=1"
       {...props}
     />,
   );
@@ -121,8 +120,12 @@ describe("ContactForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
 
     await waitFor(() =>
-      expect(screen.getByRole("status")).toHaveTextContent(/Gracias/),
+      expect(document.querySelector("dialog")).toHaveAttribute("open"),
     );
+    expect(
+      screen.getByRole("heading", { name: "¡Mensaje enviado!" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Gracias/)).toBeInTheDocument();
     const [url, options] = vi.mocked(fetch).mock.calls[0];
     expect(url).toBe("https://api.web3forms.com/submit");
     const body = JSON.parse(String(options?.body));
@@ -135,6 +138,23 @@ describe("ContactForm", () => {
       botcheck: false,
     });
     expect(screen.getByLabelText("Nombre")).toHaveValue("");
+  });
+
+  it("closes the confirmation with its button", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      /** @type {Response} */ ({
+        ok: true,
+        json: async () => ({ success: true }),
+      }),
+    );
+    setup();
+    fillValid();
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    await waitFor(() =>
+      expect(document.querySelector("dialog")).toHaveAttribute("open"),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
+    expect(document.querySelector("dialog")).not.toHaveAttribute("open");
   });
 
   it("shows a retry message with a WhatsApp link when sending fails", async () => {
@@ -175,14 +195,12 @@ describe("ContactForm", () => {
     expect(document.querySelector('input[name="access_key"]')).toBeNull();
   });
 
-  it("has a plain POST fallback with a redirect when JavaScript is not available", () => {
+  it("never posts the form by itself: sending goes through JavaScript only", () => {
     setup();
     const form = document.getElementById("contact-form");
-    expect(form).toHaveAttribute("action", "https://api.web3forms.com/submit");
-    expect(form).toHaveAttribute("method", "POST");
-    expect(document.querySelector('input[name="redirect"]')).toHaveValue(
-      "https://example.com/contact?sent=1",
-    );
+    expect(form).not.toHaveAttribute("action");
+    expect(document.querySelector('input[name="access_key"]')).toBeNull();
+    expect(document.querySelector('input[name="redirect"]')).toBeNull();
     expect(
       document.querySelector('input[name="botcheck"]'),
     ).toBeInTheDocument();
@@ -247,12 +265,6 @@ describe("ContactForm", () => {
       service: "shiatsu",
       duration: "90 min",
     });
-  });
-
-  it("shows a confirmation after a plain submit redirect", () => {
-    window.history.replaceState({}, "", "/contact?sent=1");
-    setup();
-    expect(screen.getByRole("status")).toHaveTextContent(/Gracias/);
   });
 
   it("speaks English on the English page", () => {
