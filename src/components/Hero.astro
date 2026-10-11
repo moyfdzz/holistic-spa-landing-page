@@ -15,15 +15,18 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 // Wide scene on tablets and desktops, vertical version on phones.
+// A lower quality keeps the first image light so it does not slow down the fonts and text.
 const desktop = await getImage({
   src: heroImage,
-  widths: [720, 960, 1280],
+  widths: [640, 960, 1280],
   format: "webp",
+  quality: 60,
 });
 const mobile = await getImage({
   src: heroMobileImage,
-  widths: [480, 720, 960],
+  widths: [320, 440, 560],
   format: "webp",
+  quality: 50,
 });
 ---
 
