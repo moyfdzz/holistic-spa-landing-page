@@ -1,5 +1,26 @@
 import { expect, test } from "@playwright/test";
 
+test.describe("brand", () => {
+  test("uses the new name, favicon and web manifest", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/");
+    await expect(page).toHaveTitle("Masajes Relax Monterrey");
+    await expect(page.locator("header .logo")).toContainText(
+      "Masajes Relax Monterrey",
+    );
+    await expect(
+      page.locator('link[rel="icon"][href="/favicon.svg"]'),
+    ).toHaveCount(1);
+    const response = await request.get("/site.webmanifest");
+    expect(response.ok()).toBe(true);
+    const manifest = await response.json();
+    expect(manifest.name).toBe("Masajes Relax Monterrey");
+    expect(manifest.theme_color).toBe("#475d42");
+  });
+});
+
 test.describe("home page", () => {
   test("loads with the main sections and a single h1", async ({ page }) => {
     await page.goto("/");

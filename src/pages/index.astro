@@ -5,6 +5,7 @@ import About from "../components/About.astro";
 import Services from "../components/Services.astro";
 import Faq from "../components/Faq.astro";
 import CtaBand from "../components/CtaBand.astro";
+import { site } from "../config/site.js";
 ---
 
 <BaseLayout>
@@ -13,7 +14,7 @@ import CtaBand from "../components/CtaBand.astro";
   <Services />
   <Faq />
   <CtaBand
-    title="Conéctate con Masajes Holísticos Rossy para tu Viaje de Bienestar"
+    title={`Conéctate con ${site.name} para tu Viaje de Bienestar`}
     ctaLabel="Contáctanos"
   >
     Rejuvenece tu cuerpo y mente con nuestras terapias de masaje.
