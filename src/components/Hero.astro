@@ -1,0 +1,134 @@
+---
+import { Image } from "astro:assets";
+import Badge from "./Badge.astro";
+import Button from "./Button.astro";
+import heroImage from "../assets/images/introductory-image.webp";
+---
+
+<section class="hero" id="home" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__content">
+      <div>
+        <Badge>
+          <i class="fa-solid fa-leaf" aria-hidden="true"></i>
+          Renueva tu cuerpo, relaja tu mente y equilibra tu espíritu
+        </Badge>
+      </div>
+      <h1
+        id="hero-title"
+        class="hero__title"
+
+        style="--reveal-delay: 100ms"
+      >
+        Experimenta el Bienestar con Masajes Terapéuticos y Holísticos
+      </h1>
+      <p class="hero__lead">
+        Disfruta de un espacio de paz y armonía, donde cada masaje está diseñado
+        para aliviar el estrés, reducir tensiones y revitalizar tu energía.
+        Descubre el equilibrio perfecto entre cuerpo y mente.
+      </p>
+      <div class="hero__actions">
+        <Button href="/#services">Ver servicios</Button>
+        <Button href="/contact" variant="secondary">
+          Más información
+        </Button>
+      </div>
+    </div>
+
+    <div class="hero__media">
+      <div class="hero__shape" aria-hidden="true"></div>
+      <div class="hero__float">
+        <Image
+          src={heroImage}
+          alt="Cabina de masaje con toallas, velas y plantas en un espacio sereno"
+          widths={[480, 720, 960]}
+          sizes="(min-width: 60rem) 45vw, 92vw"
+          loading="eager"
+          fetchpriority="high"
+          class="hero__img"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: clip;
+    padding-block: clamp(2rem, 1rem + 4vw, 5rem) var(--section-y);
+    background:
+      radial-gradient(60% 70% at 88% 8%, var(--sage-100), transparent 70%),
+      var(--color-bg);
+  }
+
+  .hero__grid {
+    display: grid;
+    gap: var(--space-7);
+    align-items: center;
+  }
+
+  .hero__content {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-5);
+  }
+
+  .hero__title {
+    font-size: clamp(2.125rem, 1.4rem + 2.6vw, 3.25rem);
+  }
+
+  .hero__lead {
+    max-width: 52ch;
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+  }
+
+  .hero__media {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .hero__shape {
+    position: absolute;
+    z-index: -1;
+    top: -6%;
+    right: -5%;
+    width: 78%;
+    aspect-ratio: 1;
+    border-radius: 58% 42% 55% 45% / 48% 55% 45% 52%;
+    background: linear-gradient(145deg, var(--sage-200), var(--sand-200));
+  }
+
+  .hero__float {
+    animation: hero-float 9s ease-in-out infinite;
+  }
+
+  .hero__img {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+  }
+
+  @keyframes hero-float {
+    50% {
+      transform: translateY(-0.6rem);
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .hero__grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: var(--space-8);
+    }
+  }
+</style>

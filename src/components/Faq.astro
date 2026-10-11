@@ -1,0 +1,213 @@
+---
+import Section from "./Section.astro";
+
+// REL-20 moves these questions to a translated data file.
+const questions = [
+  {
+    question: "¿Qué tipos de masajes ofrecen en la comodidad de mi hogar?",
+    answer:
+      "Ofrecemos una variedad de masajes, incluyendo masaje relajante, terapéutico, deportivo y para aliviar el estrés, todos realizados en la comodidad de tu hogar según tus necesidades.",
+  },
+  {
+    question: "¿Cómo puedo reservar una cita para un masaje a domicilio?",
+    answer:
+      "Puedes reservar tu cita fácilmente llamándonos, enviándonos un mensaje a través de nuestra página web o por WhatsApp, o por cualquiera de nuestras redes sociales en la parte de abajo. Estamos disponibles para programar tu masaje según tu horario preferido.",
+  },
+  {
+    question:
+      "¿Necesito tener alguna preparación especial antes de recibir el masaje en casa?",
+    answer:
+      "No necesitas prepararte de manera especial, pero te recomendamos estar en un ambiente cómodo y relajado. Nosotros llevaremos todo lo necesario para el masaje, solo asegúrate de contar con un espacio tranquilo.",
+  },
+  {
+    question: "¿Qué tan lejos viajan para brindar el servicio a domicilio?",
+    answer:
+      "Ofrecemos nuestros servicios en toda el área metropolitana de Monterrey. Si no estás seguro de si cubrimos tu área, contáctanos y te confirmaremos con gusto.",
+  },
+  {
+    question: "¿Es seguro recibir un masaje en casa?",
+    answer:
+      "Sí, contamos con capacitación y se siguen estrictas normas de higiene y profesionalismo. Nos aseguramos de que cada servicio sea seguro, relajante y beneficioso para tu bienestar.",
+  },
+];
+---
+
+<Section id="FAQ" tone="alt" labelledby="faq-title">
+  <div class="faq">
+    <div class="faq__intro" data-reveal>
+      <h2 id="faq-title" class="section-title">
+        Preguntas frecuentes
+      </h2>
+      <p class="section-lead">
+        Resolvemos las dudas más comunes sobre nuestros servicios a domicilio.
+      </p>
+      <a href="/contact" class="faq__link">
+        Solicita más información
+        <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <div class="accordion">
+      {questions.map((item, index) => (
+        <div
+          class="accordion__item"
+          id={`question${index + 1}`}
+          data-accordion-item
+          data-open="false"
+          data-reveal
+          style={`--reveal-delay: ${index * 80}ms`}
+        >
+          <h3 class="accordion__heading">
+            <button
+              type="button"
+              class="accordion__button"
+              id={`question${index + 1}-button`}
+              aria-expanded="false"
+              aria-controls={`answer${index + 1}`}
+              data-accordion-toggle
+            >
+              <span>{item.question}</span>
+              <i
+                class="fa-solid fa-chevron-down accordion__icon"
+                aria-hidden="true"
+              />
+            </button>
+          </h3>
+          <div
+            class="answer"
+            id={`answer${index + 1}`}
+            role="region"
+            aria-labelledby={`question${index + 1}-button`}
+          >
+            <div class="answer__inner">
+              <p class="answer__text">{item.answer}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</Section>
+
+<script>
+  import { initAccordion } from "../scripts/accordion.js";
+  initAccordion();
+</script>
+
+<style>
+  .faq {
+    display: grid;
+    gap: var(--space-7);
+    align-items: start;
+  }
+
+  .faq__intro {
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+  }
+
+  .faq__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    color: var(--sage-700);
+    text-decoration: none;
+    border-bottom: 2px solid var(--sage-300);
+    transition: border-color var(--duration-fast) var(--ease);
+  }
+
+  .faq__link:hover {
+    border-color: var(--sage-700);
+  }
+
+  .accordion {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .accordion__item {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--duration) var(--ease);
+  }
+
+  .accordion__item[data-open="true"] {
+    box-shadow: var(--shadow-md);
+  }
+
+  .accordion__heading {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+  }
+
+  .accordion__button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    width: 100%;
+    min-height: 3.5rem;
+    padding: var(--space-4) var(--space-5);
+    border: 0;
+    border-radius: var(--radius-lg);
+    background: transparent;
+    color: var(--color-heading);
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .accordion__icon {
+    flex-shrink: 0;
+    color: var(--sage-600);
+    transition: transform var(--duration) var(--ease);
+  }
+
+  .accordion__item[data-open="true"] .accordion__icon {
+    transform: rotate(180deg);
+  }
+
+  /* The answer grows from zero height; it is hidden from keyboards and screen readers when closed. */
+  .answer {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows var(--duration) var(--ease),
+      visibility 0s linear var(--duration);
+  }
+
+  .accordion__item[data-open="true"] .answer {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+      grid-template-rows var(--duration) var(--ease),
+      visibility 0s;
+  }
+
+  .answer__inner {
+    overflow: hidden;
+  }
+
+  .answer__text {
+    padding: 0 var(--space-5) var(--space-5);
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 60rem) {
+    .faq {
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: var(--space-8);
+    }
+
+    .faq__intro {
+      position: sticky;
+      top: calc(var(--header-h) + var(--space-6));
+    }
+  }
+</style>

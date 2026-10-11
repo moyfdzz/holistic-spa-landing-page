@@ -1,0 +1,34 @@
+---
+interface Props {
+  /** Anchor id used by the navigation links. */
+  id?: string;
+  /** Background tone. */
+  tone?: "default" | "alt";
+  /** Id of the heading that names the section. */
+  labelledby?: string;
+  /** Extra classes. */
+  class?: string;
+}
+
+const { id, tone = "default", labelledby, class: className = "" } = Astro.props;
+---
+
+<section
+  id={id}
+  aria-labelledby={labelledby}
+  class:list={["section", `section--${tone}`, className]}
+>
+  <div class="container">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section {
+    padding-block: var(--section-y);
+  }
+
+  .section--alt {
+    background: var(--color-surface-alt);
+  }
+</style>

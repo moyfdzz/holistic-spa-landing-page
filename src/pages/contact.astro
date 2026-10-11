@@ -1,233 +1,237 @@
 ---
+import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import "../styles/contact.css";
-// Must come after the page CSS so Swiper's rules win the cascade, as in the original.
-import "swiper/css/bundle";
+import Button from "../components/Button.astro";
+import Card from "../components/Card.astro";
+import CtaBand from "../components/CtaBand.astro";
+import Section from "../components/Section.astro";
+import contactImage from "../assets/images/why-choose-us-image.webp";
 ---
 
 <BaseLayout>
-  <!-- Navbar -->
-  <header class="header">
-    <div class="header__container">
-      <a href="/" class="logo">
-        Masajes Holísticos Rossy
-      </a>
-      <nav class="nav">
-        <ul class="nav__links">
-          <li>
-            <a href="/" class="nav__link nav__link--active" id="home-link">
-              Inicio
-            </a>
-          </li>
-          <li>
-            <a href="/#about" class="nav__link" id="about-link">
-              Nosotros
-            </a>
-          </li>
-          <li>
-            <a href="/#services" class="nav__link" id="services-link">
-              Servicios
-            </a>
-          </li>
-          <li>
-            <a href="/#FAQ" class="nav__link" id="faq-link">
-              Preguntas
-            </a>
-          </li>
-          <li>
-            <a href="/contact" class="nav__link" id="contact-link">
-              Contacto
-            </a>
-          </li>
-          <div class="button header__button--close-menu">
-            <i class="fas fa-times close-menu"></i>
-          </div>
-        </ul>
-      </nav>
-      <button
-        type="button"
-        class="button header__button"
-        onclick="window.location.href='/contact'"
-      >
-        Contáctanos
-      </button>
-      <div class="button header__button--show-menu">
-        <i class="fas fa-bars show-menu"></i>
-      </div>
+  <Section class="contact" labelledby="contact-title">
+    <div class="contact__headline" data-reveal>
+      <h1 id="contact-title" class="section-title">
+        Tu Relajación Comienza Aquí: Contáctanos Hoy
+      </h1>
+      <p class="section-lead">
+        Si tienes preguntas, deseas conocer nuestros servicios o agendar una
+        sesión, estamos aquí para ayudarte a relajar cuerpo y mente.
+      </p>
     </div>
-  </header>
-  <!-- Navbar End -->
 
-  <main>
-    <section class="contact">
-      <div class="contact__container">
-        <div class="contact__headline">
-          <h1>Tu Relajación Comienza Aquí: Contáctanos Hoy</h1>
-          <p>
-            Si tienes preguntas, deseas conocer nuestros servicios o agendar una
-            sesión, estamos aquí para ayudarte a relajar cuerpo y mente.
-          </p>
-        </div>
-
-        <div class="contact__content">
+    <div class="contact__grid">
+      <div data-reveal style="--reveal-delay: 150ms">
+        <Card class="contact__card">
           <form
             action="https://api.web3forms.com/submit"
             method="POST"
             id="contact-form"
+            class="form"
           >
             <input
               type="hidden"
               name="access_key"
               value="c4a404ec-e768-404a-b4a0-f60271790ca6"
             />
-            <div class="form-group">
+            <div class="field">
               <input
                 type="text"
                 name="name"
                 id="name"
                 placeholder=" "
+                autocomplete="name"
                 required
               />
               <label for="name">Nombre</label>
             </div>
-            <div class="form-group">
+            <div class="field">
               <input
                 type="email"
                 name="email"
                 id="email"
                 placeholder=" "
+                autocomplete="email"
                 required
               />
               <label for="email">Correo Electrónico</label>
             </div>
-            <div class="form-group">
-              <input type="tel" name="phone" id="phone" placeholder=" " />
+            <div class="field">
+              <input
+                type="tel"
+                name="phone"
+                id="phone"
+                placeholder=" "
+                autocomplete="tel"
+              />
               <label for="phone">Teléfono (opcional)</label>
             </div>
-            <div class="form-group">
-              <textarea name="description" placeholder=" "></textarea>
+            <div class="field">
+              <textarea
+                name="description"
+                id="description"
+                placeholder=" "
+                rows="4"
+              ></textarea>
               <label for="description">¿Qué tienes en mente?</label>
             </div>
-            <label for="contact-method">
-              ¿Cómo prefieres que te contactemos?
-            </label>
-            <select id="contact-method" name="contact-method">
-              <option value="email">Correo Electrónico</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="phone">Llamada</option>
-            </select>
-            <button type="submit" class="button contact__button">
-              Enviar
-            </button>
+            <div class="field field--select">
+              <label for="contact-method">
+                ¿Cómo prefieres que te contactemos?
+              </label>
+              <select id="contact-method" name="contact-method">
+                <option value="email">Correo Electrónico</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="phone">Llamada</option>
+              </select>
+            </div>
+            <Button type="submit">Enviar</Button>
           </form>
-          <img
-            src="/assets/images/why-choose-us-image.webp"
-            class="contact__img"
-            alt="Espacio de relajación y bienestar"
-          />
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Contact Callout -->
-  <section class="callout">
-    <div class="callout__container">
-      <h4 class="callout__title">Hablemos y Agenda Tu Cita</h4>
-      <p class="callout__description">
-        ¿Listo para tu sesión de relajación?
-        <br />
-        Llámanos, envíanos un mensaje o completa el formulario. Estamos aquí
-        para brindarte la mejor experiencia en masajes a domicilio.
-      </p>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer__container">
-      <div class="footer__contacts">
-        <a href="/">
-          <h4>Masajes Holísticos Rossy</h4>
-        </a>
-        <div>
-          <p>Monterrey</p>
-          <p>Nuevo León, México</p>
-          <p>+52 81 8017 1904</p>
-        </div>
+        </Card>
       </div>
 
-      <div class="footer__links">
-        <h4>Compañía</h4>
-        <div class="footer__link">
-          <a href="/">Inicio</a>
-          <a href="/#about">Nosotros</a>
-          <a href="/#services">Servicios</a>
-          <a href="/contact">Contacto</a>
-        </div>
-      </div>
-
-      <div class="footer__links">
-        <h4>Descubre el Bienestar</h4>
-        <div class="footer__link">
-          <a
-            href="https://drbline.com/tipos-de-masaje-y-beneficios-para-la-salud/"
-            target="_blank"
-          >
-            Tipos de masajes
-          </a>
-          <a
-            href="https://www.mayoclinic.org/es/tests-procedures/massage-therapy/about/pac-20384595"
-            target="_blank"
-          >
-            Beneficios de los masajes
-          </a>
-          <a
-            href="https://www.doctorbarret.com/que-es-una-limpieza-facial-profunda-y-cuales-son-sus-beneficios/"
-            target="_blank"
-          >
-            Limpieza facial y sus beneficios
-          </a>
-        </div>
-      </div>
-
-      <div class="footer__links">
-        <h4>Soporte</h4>
-        <div class="footer__link">
-          <a href="/#FAQ">Preguntas Frecuentes</a>
-          <a href="/#services">Servicios</a>
-          <a href="/contact">Contacto</a>
-        </div>
-      </div>
-      <div class="socials__section">
-        <h4>Redes sociales</h4>
-        <div class="socials">
-          <a
-            href="https://www.facebook.com/profile.php?id=61572853523014"
-            target="_blank"
-          >
-            <i class="fa-brands fa-square-facebook"></i>
-          </a>
-          <a href="https://www.instagram.com/masajes_rossy/" target="_blank">
-            <i class="fa-brands fa-square-instagram"></i>
-          </a>
-        </div>
+      <div class="contact__media" data-reveal style="--reveal-delay: 250ms">
+        <Image
+          src={contactImage}
+          alt="Espacio de relajación y bienestar"
+          widths={[420, 640, 860]}
+          sizes="(min-width: 60rem) 40vw, 92vw"
+          class="contact__img"
+        />
       </div>
     </div>
-    <div class="copyright">
-      <div>
-        Icons made by
-        <a href="https://www.flaticon.com/authors/mikan933" title="mikan933">
-          mikan933
-        </a>
-        from
-        <a href="https://www.flaticon.com/" title="Flaticon">
-          www.flaticon.com'
-        </a>
-      </div>
-      <p>
-        <span>&copy; 2025 Masajes Holísticos Rossy.</span>
-      </p>
-    </div>
-  </footer>
+  </Section>
+
+  <CtaBand title="Hablemos y Agenda Tu Cita">
+    ¿Listo para tu sesión de relajación?
+    <br />
+    Llámanos, envíanos un mensaje o completa el formulario. Estamos aquí para
+    brindarte la mejor experiencia en masajes a domicilio.
+  </CtaBand>
 </BaseLayout>
+
+<script>
+  import "../scripts/contact-form.js";
+</script>
+
+<style>
+  .contact__headline {
+    display: grid;
+    gap: var(--space-3);
+    max-width: 48rem;
+    margin-bottom: var(--space-7);
+  }
+
+  .contact__grid {
+    display: grid;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .contact__grid > div {
+    display: grid;
+  }
+
+  .contact__card {
+    padding: clamp(1.25rem, 0.5rem + 3vw, 2.5rem);
+  }
+
+  .form {
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+  }
+
+  .field {
+    position: relative;
+    width: 100%;
+  }
+
+  /* Floating labels: the label sits inside the field and moves up when it has text. */
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    border: 1.5px solid var(--color-border-input);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--ink);
+    transition:
+      border-color var(--duration-fast) var(--ease),
+      box-shadow var(--duration-fast) var(--ease);
+  }
+
+  .field input,
+  .field textarea {
+    padding: 1.45rem 1rem 0.55rem;
+  }
+
+  .field textarea {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    border-color: var(--sage-600);
+    box-shadow: 0 0 0 4px var(--sage-100);
+    outline: 2px solid transparent;
+  }
+
+  .field input.error {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 4px rgba(179, 64, 42, 0.14);
+  }
+
+  .field:not(.field--select) label {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    color: var(--color-text-muted);
+    pointer-events: none;
+    transform-origin: left top;
+    transition: transform var(--duration-fast) var(--ease);
+  }
+
+  .field input:focus + label,
+  .field input:not(:placeholder-shown) + label,
+  .field textarea:focus + label,
+  .field textarea:not(:placeholder-shown) + label {
+    transform: translateY(-0.7rem) scale(0.78);
+  }
+
+  .field--select label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+  }
+
+  .field select {
+    min-height: 3.25rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .contact__media {
+    display: none;
+  }
+
+  .contact__img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+  }
+
+  @media (min-width: 60rem) {
+    .contact__grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: var(--space-7);
+    }
+
+    .contact__media {
+      display: grid;
+    }
+  }
+</style>

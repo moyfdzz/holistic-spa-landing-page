@@ -31,18 +31,27 @@ npm run format:check # check formatting without changing files
 ## Project structure
 
 ```
-public/            static files (favicon, images)
+public/            static files (favicon)
+src/assets/        images (Astro creates resized WebP versions at build time)
 src/pages/         routes (index, contact)
-src/layouts/       shared page layouts
-src/components/    Astro components
+src/layouts/       shared page layout (fonts, global styles, header, footer)
+src/components/    Astro components (Header, Footer, Hero, Button, Card, ...)
 src/islands/       interactive React components
 src/data/          content (services, FAQ, testimonials)
 src/i18n/          translations
 src/config/        site-wide settings
-src/utils/         helpers
-src/styles/        stylesheets
-src/scripts/       legacy browser script, replaced piece by piece
+src/utils/         helpers (focus handling, reveal on scroll, dates)
+src/scripts/       browser scripts for the header menu and the FAQ; the carousel
+                   and contact form scripts are legacy code replaced by later tickets
+src/styles/        design tokens (tokens.css) and global styles (global.css)
 ```
+
+## Design system
+
+- **Tokens** (`src/styles/tokens.css`): colors, fluid type scale, spacing, radius, shadows and motion. Components use the semantic names (`--color-primary`, `--color-text-muted`, ...) rather than raw colors.
+- **Fonts** are self-hosted with Fontsource (Lora for headings, Quicksand for text).
+- **Components** keep their own styles next to their markup. Page sections that appear on scroll use the `data-reveal` attribute.
+- **Accessibility and motion:** every interactive element has a visible focus style, text colors meet WCAG AA contrast, and animations stop when the visitor prefers reduced motion.
 
 ## Testing
 

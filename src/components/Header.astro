@@ -1,0 +1,246 @@
+---
+import Button from "./Button.astro";
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const links = [
+  { href: "/", label: "Inicio", current: path === "/" },
+  { href: "/#about", label: "Nosotros", current: false },
+  { href: "/#services", label: "Servicios", current: false },
+  { href: "/#FAQ", label: "Preguntas", current: false },
+  { href: "/contact", label: "Contacto", current: path === "/contact" },
+];
+---
+
+<header class="site-header" data-header data-scrolled="false">
+  <a class="skip-link" href="#main">
+    Saltar al contenido
+  </a>
+  <div class="site-header__inner container">
+    <a href="/" class="logo">
+      <i class="fa-solid fa-spa" aria-hidden="true"></i>
+      <span>Masajes Holísticos Rossy</span>
+    </a>
+
+    <nav
+      id="site-nav"
+      class="nav"
+      aria-label="Principal"
+      data-nav
+      data-open="false"
+    >
+      <ul class="nav__list">
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class="nav__link"
+              aria-current={link.current ? "page" : undefined}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="nav__cta">
+        <Button href="/contact" size="sm">
+          Contáctanos
+        </Button>
+      </div>
+    </nav>
+
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      aria-label="Abrir menú"
+      data-nav-toggle
+    >
+      <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="nav-overlay" data-nav-overlay data-open="false"></div>
+</header>
+
+<script>
+  import { initHeader } from "../scripts/header.js";
+  initHeader();
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  /*
+   * The blurred background lives on a pseudo-element: backdrop-filter on the
+   * header itself would trap the fixed-position mobile menu inside it.
+   */
+  .site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-bottom: 1px solid transparent;
+    background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition:
+      border-color var(--duration) var(--ease),
+      box-shadow var(--duration) var(--ease),
+      background-color var(--duration) var(--ease);
+  }
+
+  .site-header[data-scrolled="true"]::before {
+    border-color: var(--color-border);
+    background: color-mix(in srgb, var(--color-bg) 97%, transparent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .site-header__inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: var(--header-h);
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--sage-800);
+    text-decoration: none;
+  }
+
+  .logo i {
+    color: var(--sage-600);
+  }
+
+  .nav-toggle {
+    position: relative;
+    z-index: 70;
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--sage-800);
+    cursor: pointer;
+  }
+
+  /* Small screens: the menu is a drawer that slides in from the right. */
+  .nav {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    width: min(22rem, 86vw);
+    padding: calc(var(--header-h) + var(--space-4)) var(--space-5)
+      var(--space-5);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-lg);
+    visibility: hidden;
+    transform: translateX(100%);
+    transition:
+      transform var(--duration) var(--ease),
+      visibility 0s linear var(--duration);
+  }
+
+  .nav[data-open="true"] {
+    visibility: visible;
+    transform: none;
+    transition:
+      transform var(--duration) var(--ease),
+      visibility 0s;
+  }
+
+  .nav__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav__link {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease);
+  }
+
+  .nav__link:hover {
+    background: var(--sage-50);
+  }
+
+  .nav__link[aria-current] {
+    background: var(--sage-100);
+    color: var(--sage-800);
+  }
+
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(38, 52, 42, 0.45);
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity var(--duration) var(--ease),
+      visibility 0s linear var(--duration);
+  }
+
+  .nav-overlay[data-open="true"] {
+    visibility: visible;
+    opacity: 1;
+    transition:
+      opacity var(--duration) var(--ease),
+      visibility 0s;
+  }
+
+  /* Large screens: the menu sits in the header bar. */
+  @media (min-width: 60rem) {
+    .nav-toggle,
+    .nav-overlay {
+      display: none;
+    }
+
+    .nav {
+      position: static;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-5);
+      width: auto;
+      padding: 0;
+      background: none;
+      box-shadow: none;
+      visibility: visible;
+      transform: none;
+    }
+
+    .nav__list {
+      flex-direction: row;
+      gap: 0.25rem;
+    }
+
+    .nav__link {
+      padding: 0.5rem 0.9rem;
+      border-radius: var(--radius-pill);
+    }
+  }
+</style>

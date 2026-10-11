@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import globals from "globals";
 import astro from "eslint-plugin-astro";
+import tsParser from "@typescript-eslint/parser";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
@@ -17,10 +18,10 @@ export default [
       "coverage/",
       "playwright-report/",
       "test-results/",
-      // Legacy browser script ported as-is from the static site. It is replaced
-      // piece by piece by the design (REL-10), services (REL-18) and FAQ
-      // (REL-20) tickets, so it is not linted.
-      "src/scripts/index.js",
+      // Legacy code from the original site, replaced by later tickets: the
+      // carousel by REL-18 and the contact form validation by REL-19.
+      "src/scripts/services-swiper.js",
+      "src/scripts/contact-form.js",
     ],
   },
 
@@ -34,11 +35,12 @@ export default [
     },
   },
 
-  // Known issue in the ported FAQ markup (links with href="javascript:void(0)").
-  // The FAQ is rebuilt with <details>/<summary> in REL-20; remove this then.
+  // Astro files use TypeScript syntax in the frontmatter (for example `interface Props`).
   {
-    files: ["src/pages/index.astro"],
-    rules: { "astro/jsx-a11y/anchor-is-valid": "off" },
+    files: ["**/*.astro"],
+    languageOptions: {
+      parserOptions: { parser: tsParser },
+    },
   },
 
   // Config files run in Node.
@@ -88,6 +90,8 @@ export default [
           },
         },
       ],
+      // TypeScript already checks the types, including DOM types such as ParentNode.
+      "jsdoc/no-undefined-types": "off",
       "jsdoc/require-param-description": "error",
       "jsdoc/require-returns-description": "error",
     },

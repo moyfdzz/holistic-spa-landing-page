@@ -1,23 +1,32 @@
 ---
-/**
- * Base HTML layout shared by every page.
- * Ported 1:1 from the original static pages; the redesign comes in a later ticket.
- */
-const title = "Masajes Holísticos Rossy";
+import "@fontsource/lora/latin-400.css";
+import "@fontsource/lora/latin-600.css";
+import "@fontsource/quicksand/latin-400.css";
+import "@fontsource/quicksand/latin-500.css";
+import "@fontsource/quicksand/latin-600.css";
+import "../styles/tokens.css";
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  /** Page title shown in the browser tab. */
+  title?: string;
+}
+
+const { title = "Masajes Holísticos Rossy" } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="es">
   <head>
-    <!-- Responsiveness default settings -->
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Favicon link -->
     <link rel="icon" type="image/png" href="/favicon.png" />
 
-    <!-- Icons link created with a SRI Hash Generator -->
+    <!-- Icons: Font Awesome from a CDN until REL-13 replaces it -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -25,21 +34,22 @@ const title = "Masajes Holísticos Rossy";
       crossorigin="anonymous"
     />
 
-    <!-- Font link -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Quicksand:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
-
+    <!-- Lets the CSS hide "reveal on scroll" content only when scripts run -->
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
 
     <script>
-      import "../scripts/index.js";
+      import { initReveal } from "../utils/reveal.js";
+      initReveal();
     </script>
   </body>
 </html>
