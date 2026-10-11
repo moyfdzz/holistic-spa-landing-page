@@ -42,5 +42,5 @@ export const site = {
   },
   googleReviewsUrl: "",
   // Stays on the old address until the domain is moved (REL-26).
-  url: "https://masajes-rossy.vercel.app",
+  url: "https://masajesrelaxmty.vercel.app",
 };
