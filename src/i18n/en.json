@@ -48,18 +48,12 @@
   "services": {
     "title": "Our Services",
     "lead": "Below are the different services we offer to meet your needs.",
-    "prev": "Previous service",
-    "next": "Next service",
-    "items": {
-      "relaxing": "Relaxing massage",
-      "decontracting": "Deep tissue massage",
-      "lymphatic": "Lymphatic drainage massage",
-      "shiatsu": "Shiatsu massage",
-      "sport": "Sports massage",
-      "deepFacial": "Deep cleansing facial",
-      "moisturizingFacial": "Moisturizing facial",
-      "prenatal": "Prenatal massage"
-    }
+    "quote": "Ask for a quote",
+    "contactLink": "Ask through the form",
+    "duration": "{time} min",
+    "hint": "Swipe to see more services",
+    "quoteMessage": "Hi, I'd like to ask for a quote for: {service}.",
+    "durationLabel": "Duration"
   },
   "faq": {
     "title": "Frequently asked questions",
@@ -102,7 +96,9 @@
     },
     "ctaTitle": "Let's Talk and Book Your Appointment",
     "ctaText1": "Ready for your relaxation session?",
-    "ctaText2": "Call us, send us a message or fill in the form. We are here to give you the best at-home massage experience."
+    "ctaText2": "Call us, send us a message or fill in the form. We are here to give you the best at-home massage experience.",
+    "service": "Service of interest (optional)",
+    "servicePlaceholder": "Choose a service"
   },
   "footer": {
     "company": "Company",

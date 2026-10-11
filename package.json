@@ -34,7 +34,6 @@
     "astro-icon": "^1.2.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "swiper": "14.3.0",
     "typescript": "6.0.3"
   },
   "devDependencies": {

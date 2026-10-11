@@ -18,9 +18,7 @@ export default [
       "coverage/",
       "playwright-report/",
       "test-results/",
-      // Legacy code from the original site, replaced by later tickets: the
-      // carousel by REL-18 and the contact form validation by REL-19.
-      "src/scripts/services-swiper.js",
+      // Legacy code from the original site, replaced by REL-19 (contact form).
       "src/scripts/contact-form.js",
     ],
   },

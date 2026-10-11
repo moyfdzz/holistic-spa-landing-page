@@ -7,6 +7,7 @@ import CtaBand from "../components/CtaBand.astro";
 import Section from "../components/Section.astro";
 import contactImage from "../assets/images/why-choose-us-image.webp";
 import { site } from "../config/site.js";
+import { services } from "../data/services.js";
 import { getLangFromUrl, useTranslations } from "../i18n/utils.js";
 
 const lang = getLangFromUrl(Astro.url);
@@ -71,6 +72,17 @@ const t = useTranslations(lang);
               />
               <label for="phone">{t("contact.phone")}</label>
             </div>
+            <div class="field field--select">
+              <label for="service">{t("contact.service")}</label>
+              <select id="service" name="service" data-service-select>
+                <option value="">{t("contact.servicePlaceholder")}</option>
+                {services.map((service) => (
+                  <option value={service.slug}>
+                    {service.text[lang].name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div class="field">
               <textarea
                 name="description"
@@ -114,6 +126,8 @@ const t = useTranslations(lang);
 
 <script>
   import "../scripts/contact-form.js";
+  import { preselectService } from "../scripts/contact-service.js";
+  preselectService();
 </script>
 
 <style>
