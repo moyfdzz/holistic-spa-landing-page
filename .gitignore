@@ -1,0 +1,29 @@
+# Dependencies and build output
+node_modules/
+dist/
+.astro/
+.vercel/
+
+# Environment files (keep the template)
+.env
+.env.*
+!.env.example
+
+# Keys and credentials
+*.pem
+*.key
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
