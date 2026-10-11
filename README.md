@@ -6,7 +6,7 @@ Website for a home massage and facial service in the Monterrey metropolitan area
 
 ## Requirements
 
-- Node.js 22 or newer (see `.nvmrc`)
+- Node.js 22.12 or newer (see `.nvmrc`)
 
 ## Getting started
 
@@ -16,6 +16,10 @@ npm run dev      # development server
 npm run build    # production build
 npm run preview  # preview the production build
 npm run check    # type-check Astro and JSDoc-typed JavaScript
+npm run lint     # ESLint (Astro, React, accessibility, JSDoc rules)
+npm run lint:fix # ESLint with automatic fixes
+npm run format   # format everything with Prettier
+npm run format:check # check formatting without changing files
 ```
 
 ## Stack
@@ -39,6 +43,12 @@ src/utils/         helpers
 src/styles/        stylesheets
 src/scripts/       legacy browser script, replaced piece by piece
 ```
+
+## Code quality
+
+- ESLint and Prettier run on staged files before every commit (Husky + lint-staged).
+- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org) and are checked by commitlint, for example `feat(REL-18): add service cards`. The scope is the Linear ticket ID.
+- Copy `.env.example` to `.env` for local settings. Never commit real values; set them in Vercel.
 
 ## Workflow
 

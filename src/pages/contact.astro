@@ -6,224 +6,228 @@ import "swiper/css/bundle";
 ---
 
 <BaseLayout>
-    <!-- Navbar -->
-    <header class="header">
-      <div class="header__container">
-        <a href="/" class="logo">Masajes Holísticos Rossy</a>
-        <nav class="nav">
-          <ul class="nav__links">
-            <li>
-              <a
-                href="/"
-                class="nav__link nav__link--active"
-                id="home-link"
-                >Inicio</a
-              >
-            </li>
-            <li>
-              <a href="/#about" class="nav__link" id="about-link"
-                >Nosotros</a
-              >
-            </li>
-            <li>
-              <a href="/#services" class="nav__link" id="services-link"
-                >Servicios</a
-              >
-            </li>
-            <li>
-              <a href="/#FAQ" class="nav__link" id="faq-link"
-                >Preguntas</a
-              >
-            </li>
-            <li>
-              <a href="/contact" class="nav__link" id="contact-link"
-                >Contacto</a
-              >
-            </li>
-            <div class="button header__button--close-menu">
-              <i class="fas fa-times close-menu"></i>
-            </div>
-          </ul>
-        </nav>
-        <button
-          type="button"
-          class="button header__button"
-          onclick="window.location.href='/contact'"
-        >
-          Contáctanos
-        </button>
-        <div class="button header__button--show-menu">
-          <i class="fas fa-bars show-menu"></i>
-        </div>
+  <!-- Navbar -->
+  <header class="header">
+    <div class="header__container">
+      <a href="/" class="logo">
+        Masajes Holísticos Rossy
+      </a>
+      <nav class="nav">
+        <ul class="nav__links">
+          <li>
+            <a href="/" class="nav__link nav__link--active" id="home-link">
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a href="/#about" class="nav__link" id="about-link">
+              Nosotros
+            </a>
+          </li>
+          <li>
+            <a href="/#services" class="nav__link" id="services-link">
+              Servicios
+            </a>
+          </li>
+          <li>
+            <a href="/#FAQ" class="nav__link" id="faq-link">
+              Preguntas
+            </a>
+          </li>
+          <li>
+            <a href="/contact" class="nav__link" id="contact-link">
+              Contacto
+            </a>
+          </li>
+          <div class="button header__button--close-menu">
+            <i class="fas fa-times close-menu"></i>
+          </div>
+        </ul>
+      </nav>
+      <button
+        type="button"
+        class="button header__button"
+        onclick="window.location.href='/contact'"
+      >
+        Contáctanos
+      </button>
+      <div class="button header__button--show-menu">
+        <i class="fas fa-bars show-menu"></i>
       </div>
-    </header>
-    <!-- Navbar End -->
+    </div>
+  </header>
+  <!-- Navbar End -->
 
-    <main>
-      <section class="contact">
-        <div class="contact__container">
-          <div class="contact__headline">
-            <h1>Tu Relajación Comienza Aquí: Contáctanos Hoy</h1>
-            <p>
-              Si tienes preguntas, deseas conocer nuestros servicios o agendar
-              una sesión, estamos aquí para ayudarte a relajar cuerpo y mente.
-            </p>
-          </div>
-
-          <div class="contact__content">
-            <form
-              action="https://api.web3forms.com/submit"
-              method="POST"
-              id="contact-form"
-            >
-              <input
-                type="hidden"
-                name="access_key"
-                value="c4a404ec-e768-404a-b4a0-f60271790ca6"
-              />
-              <div class="form-group">
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  placeholder=" "
-                  required
-                />
-                <label for="name">Nombre</label>
-              </div>
-              <div class="form-group">
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  placeholder=" "
-                  required
-                />
-                <label for="email">Correo Electrónico</label>
-              </div>
-              <div class="form-group">
-                <input type="tel" name="phone" id="phone" placeholder=" " />
-                <label for="phone">Teléfono (opcional)</label>
-              </div>
-              <div class="form-group">
-                <textarea name="description" placeholder=" "></textarea>
-                <label for="description">¿Qué tienes en mente?</label>
-              </div>
-              <label for="contact-method"
-                >¿Cómo prefieres que te contactemos?</label
-              >
-              <select id="contact-method" name="contact-method">
-                <option value="email">Correo Electrónico</option>
-                <option value="whatsapp">WhatsApp</option>
-                <option value="phone">Llamada</option>
-              </select>
-              <button type="submit" class="button contact__button">
-                Enviar
-              </button>
-            </form>
-            <img
-              src="/assets/images/why-choose-us-image.webp"
-              class="contact__img"
-              alt="Contact page image"
-            />
-          </div>
+  <main>
+    <section class="contact">
+      <div class="contact__container">
+        <div class="contact__headline">
+          <h1>Tu Relajación Comienza Aquí: Contáctanos Hoy</h1>
+          <p>
+            Si tienes preguntas, deseas conocer nuestros servicios o agendar una
+            sesión, estamos aquí para ayudarte a relajar cuerpo y mente.
+          </p>
         </div>
-      </section>
-    </main>
 
-    <!-- Contact Callout -->
-    <section class="callout">
-      <div class="callout__container">
-        <h4 class="callout__title">Hablemos y Agenda Tu Cita</h4>
-        <p class="callout__description">
-          ¿Listo para tu sesión de relajación?
-          <br />
-          Llámanos, envíanos un mensaje o completa el formulario. Estamos aquí
-          para brindarte la mejor experiencia en masajes a domicilio.
-        </p>
+        <div class="contact__content">
+          <form
+            action="https://api.web3forms.com/submit"
+            method="POST"
+            id="contact-form"
+          >
+            <input
+              type="hidden"
+              name="access_key"
+              value="c4a404ec-e768-404a-b4a0-f60271790ca6"
+            />
+            <div class="form-group">
+              <input
+                type="text"
+                name="name"
+                id="name"
+                placeholder=" "
+                required
+              />
+              <label for="name">Nombre</label>
+            </div>
+            <div class="form-group">
+              <input
+                type="email"
+                name="email"
+                id="email"
+                placeholder=" "
+                required
+              />
+              <label for="email">Correo Electrónico</label>
+            </div>
+            <div class="form-group">
+              <input type="tel" name="phone" id="phone" placeholder=" " />
+              <label for="phone">Teléfono (opcional)</label>
+            </div>
+            <div class="form-group">
+              <textarea name="description" placeholder=" "></textarea>
+              <label for="description">¿Qué tienes en mente?</label>
+            </div>
+            <label for="contact-method">
+              ¿Cómo prefieres que te contactemos?
+            </label>
+            <select id="contact-method" name="contact-method">
+              <option value="email">Correo Electrónico</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="phone">Llamada</option>
+            </select>
+            <button type="submit" class="button contact__button">
+              Enviar
+            </button>
+          </form>
+          <img
+            src="/assets/images/why-choose-us-image.webp"
+            class="contact__img"
+            alt="Espacio de relajación y bienestar"
+          />
+        </div>
       </div>
     </section>
+  </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer__container">
-        <div class="footer__contacts">
-          <a href="/"><h4>Masajes Holísticos Rossy</h4></a>
-          <div>
-            <p>Monterrey</p>
-            <p>Nuevo León, México</p>
-            <p>+52 81 8017 1904</p>
-          </div>
-        </div>
+  <!-- Contact Callout -->
+  <section class="callout">
+    <div class="callout__container">
+      <h4 class="callout__title">Hablemos y Agenda Tu Cita</h4>
+      <p class="callout__description">
+        ¿Listo para tu sesión de relajación?
+        <br />
+        Llámanos, envíanos un mensaje o completa el formulario. Estamos aquí
+        para brindarte la mejor experiencia en masajes a domicilio.
+      </p>
+    </div>
+  </section>
 
-        <div class="footer__links">
-          <h4>Compañía</h4>
-          <div class="footer__link">
-            <a href="/">Inicio</a>
-            <a href="/#about">Nosotros</a>
-            <a href="/#services">Servicios</a>
-            <a href="/contact">Contacto</a>
-          </div>
-        </div>
-
-        <div class="footer__links">
-          <h4>Descubre el Bienestar</h4>
-          <div class="footer__link">
-            <a
-              href="https://drbline.com/tipos-de-masaje-y-beneficios-para-la-salud/"
-              target="_blank"
-              >Tipos de masajes</a
-            >
-            <a
-              href="https://www.mayoclinic.org/es/tests-procedures/massage-therapy/about/pac-20384595"
-              target="_blank"
-              >Beneficios de los masajes</a
-            >
-            <a
-              href="https://www.doctorbarret.com/que-es-una-limpieza-facial-profunda-y-cuales-son-sus-beneficios/"
-              target="_blank"
-              >Limpieza facial y sus beneficios</a
-            >
-          </div>
-        </div>
-
-        <div class="footer__links">
-          <h4>Soporte</h4>
-          <div class="footer__link">
-            <a href="/#FAQ">Preguntas Frecuentes</a>
-            <a href="/#services">Servicios</a>
-            <a href="/contact">Contacto</a>
-          </div>
-        </div>
-        <div class="socials__section">
-          <h4>Redes sociales</h4>
-          <div class="socials">
-            <a
-              href="https://www.facebook.com/profile.php?id=61572853523014"
-              target="_blank"
-            >
-              <i class="fa-brands fa-square-facebook"></i>
-            </a>
-            <a href="https://www.instagram.com/masajes_rossy/" target="_blank">
-              <i class="fa-brands fa-square-instagram"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="copyright">
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer__container">
+      <div class="footer__contacts">
+        <a href="/">
+          <h4>Masajes Holísticos Rossy</h4>
+        </a>
         <div>
-          Icons made by
-          <a href="https://www.flaticon.com/authors/mikan933" title="mikan933">
-            mikan933
-          </a>
-          from
-          <a href="https://www.flaticon.com/" title="Flaticon"
-            >www.flaticon.com'</a
-          >
+          <p>Monterrey</p>
+          <p>Nuevo León, México</p>
+          <p>+52 81 8017 1904</p>
         </div>
-        <p>
-          <span>&copy; 2025 Masajes Holísticos Rossy.</span>
-        </p>
       </div>
-    </footer>
+
+      <div class="footer__links">
+        <h4>Compañía</h4>
+        <div class="footer__link">
+          <a href="/">Inicio</a>
+          <a href="/#about">Nosotros</a>
+          <a href="/#services">Servicios</a>
+          <a href="/contact">Contacto</a>
+        </div>
+      </div>
+
+      <div class="footer__links">
+        <h4>Descubre el Bienestar</h4>
+        <div class="footer__link">
+          <a
+            href="https://drbline.com/tipos-de-masaje-y-beneficios-para-la-salud/"
+            target="_blank"
+          >
+            Tipos de masajes
+          </a>
+          <a
+            href="https://www.mayoclinic.org/es/tests-procedures/massage-therapy/about/pac-20384595"
+            target="_blank"
+          >
+            Beneficios de los masajes
+          </a>
+          <a
+            href="https://www.doctorbarret.com/que-es-una-limpieza-facial-profunda-y-cuales-son-sus-beneficios/"
+            target="_blank"
+          >
+            Limpieza facial y sus beneficios
+          </a>
+        </div>
+      </div>
+
+      <div class="footer__links">
+        <h4>Soporte</h4>
+        <div class="footer__link">
+          <a href="/#FAQ">Preguntas Frecuentes</a>
+          <a href="/#services">Servicios</a>
+          <a href="/contact">Contacto</a>
+        </div>
+      </div>
+      <div class="socials__section">
+        <h4>Redes sociales</h4>
+        <div class="socials">
+          <a
+            href="https://www.facebook.com/profile.php?id=61572853523014"
+            target="_blank"
+          >
+            <i class="fa-brands fa-square-facebook"></i>
+          </a>
+          <a href="https://www.instagram.com/masajes_rossy/" target="_blank">
+            <i class="fa-brands fa-square-instagram"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <div>
+        Icons made by
+        <a href="https://www.flaticon.com/authors/mikan933" title="mikan933">
+          mikan933
+        </a>
+        from
+        <a href="https://www.flaticon.com/" title="Flaticon">
+          www.flaticon.com'
+        </a>
+      </div>
+      <p>
+        <span>&copy; 2025 Masajes Holísticos Rossy.</span>
+      </p>
+    </div>
+  </footer>
 </BaseLayout>

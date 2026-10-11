@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
       phoneInput.value.trim() === ""
     ) {
       errors.push(
-        "Por favor, ingresa tu número de teléfono para WhatsApp o Llamada."
+        "Por favor, ingresa tu número de teléfono para WhatsApp o Llamada.",
       );
       phoneInput.classList.add("error");
     } else if (
@@ -258,6 +258,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // FAQ accordion: one delegated listener replaces the old inline onclick handlers.
 document.querySelectorAll("[data-accordion-toggle]").forEach((link) => {
   link.addEventListener("click", () =>
-    toggleAccordion(link.getAttribute("data-accordion-toggle"))
+    toggleAccordion(link.getAttribute("data-accordion-toggle")),
   );
 });
