@@ -16,6 +16,11 @@
       "@config/*": ["src/config/*"]
     }
   },
-  "include": ["src/**/*", ".astro/types.d.ts", "astro.config.mjs"],
+  "include": [
+    "src/**/*",
+    ".astro/types.d.ts",
+    "astro.config.mjs",
+    "vitest.setup.js"
+  ],
   "exclude": ["dist", "node_modules"]
 }

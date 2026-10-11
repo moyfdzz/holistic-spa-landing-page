@@ -14,6 +14,9 @@ export default [
       ".vercel/",
       "node_modules/",
       "public/",
+      "coverage/",
+      "playwright-report/",
+      "test-results/",
       // Legacy browser script ported as-is from the static site. It is replaced
       // piece by piece by the design (REL-10), services (REL-18) and FAQ
       // (REL-20) tickets, so it is not linted.
@@ -61,8 +64,11 @@ export default [
     ...reactHooks.configs.flat.recommended,
   },
   {
+    // The jsx-a11y plugin itself is already registered by the Astro config
+    // above, so only its rules are added here (registering it twice fails).
     files: ["**/*.{jsx,tsx}"],
-    ...jsxA11y.flatConfigs.recommended,
+    languageOptions: jsxA11y.flatConfigs.recommended.languageOptions,
+    rules: jsxA11y.flatConfigs.recommended.rules,
   },
 
   // JSDoc is required on exported functions and components.
