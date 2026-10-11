@@ -107,6 +107,50 @@ test.describe("languages", () => {
   });
 });
 
+test.describe("floating WhatsApp button", () => {
+  test("opens WhatsApp with a message in the current language", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const button = page.getByRole("link", { name: "Escríbenos por WhatsApp" });
+    const href = (await button.getAttribute("href")) ?? "";
+    expect(href).toMatch(/^https:\/\/wa\.me\/\d+\?text=/);
+    expect(decodeURIComponent(href)).toContain("información sobre sus masajes");
+
+    await page.goto("/en/contact");
+    const english = page.getByRole("link", {
+      name: "Chat with us on WhatsApp",
+    });
+    expect(
+      decodeURIComponent((await english.getAttribute("href")) ?? ""),
+    ).toContain("information about your massages");
+  });
+
+  test("is big enough to tap and hides near the footer", async ({ page }) => {
+    await page.goto("/");
+    const button = page.locator("[data-whatsapp-button]");
+    await expect(button).toBeVisible();
+    const box = await button.boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+    await page.locator("footer").scrollIntoViewIfNeeded();
+    await expect(button).toBeHidden();
+  });
+
+  test("hides while a form field is focused on a phone", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "only phones hide it for the keyboard");
+    await page.goto("/contact");
+    const button = page.locator("[data-whatsapp-button]");
+    await page.locator("#name").focus();
+    await expect(button).toBeHidden();
+    await page.locator("#name").blur();
+    await expect(button).toBeVisible();
+  });
+});
+
 test.describe("services catalog", () => {
   test("every service shows a description, duration and a quote button", async ({
     page,

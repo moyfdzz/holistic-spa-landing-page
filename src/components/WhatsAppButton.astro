@@ -1,0 +1,97 @@
+---
+import { Icon } from "astro-icon/components";
+import { site } from "../config/site.js";
+import { getLangFromUrl, useTranslations } from "../i18n/utils.js";
+import { buildWhatsAppUrl } from "../utils/whatsapp.js";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const href = buildWhatsAppUrl(site.whatsapp, t("whatsapp.message"));
+---
+
+<a
+  class="whatsapp"
+  href={href}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label={t("whatsapp.label")}
+  data-whatsapp-button
+>
+  <Icon name="simple-icons:whatsapp" aria-hidden="true" />
+</a>
+
+<script>
+  import { initWhatsAppButton } from "../scripts/whatsapp-button.js";
+  initWhatsAppButton();
+</script>
+
+<style>
+  .whatsapp {
+    position: fixed;
+    z-index: 40;
+    right: max(var(--space-4), env(safe-area-inset-right));
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    /* Darker than the usual WhatsApp green so the white icon is easy to see. */
+    background: #128c7e;
+    color: #fff;
+    box-shadow: var(--shadow-lg);
+    animation: whatsapp-in 600ms var(--ease) 1s both;
+    transition:
+      transform var(--duration-fast) var(--ease),
+      opacity var(--duration-fast) var(--ease),
+      visibility 0s;
+  }
+
+  .whatsapp :global(svg) {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .whatsapp:hover {
+    transform: scale(1.06);
+  }
+
+  .whatsapp:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  /* Hidden near the footer so it never covers the footer links. */
+  .whatsapp[data-hidden="footer"] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Hidden on phones while a form field is focused (the keyboard is open). */
+  @media (max-width: 47.99rem) {
+    .whatsapp[data-hidden="typing"] {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  }
+
+  @keyframes whatsapp-in {
+    from {
+      opacity: 0;
+      transform: translateY(1rem) scale(0.85);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .whatsapp {
+      animation: none;
+      transition: none;
+    }
+
+    .whatsapp:hover {
+      transform: none;
+    }
+  }
+</style>
