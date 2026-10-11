@@ -14,19 +14,19 @@ import prenatal from "../assets/images/prenatal-massage.jpg";
 
 /**
  * @typedef {object} Service
- * @property {string} name - Service name shown on its card.
+ * @property {string} id - Key of the service name in `src/i18n/*.json` (`services.items.<id>`).
  * @property {ImageMetadata} image - Photo for the card (decorative).
  */
 
-// REL-18 rebuilds this list with descriptions, durations and translations.
+// REL-18 rebuilds this list with descriptions and durations.
 /** @type {Service[]} */
 export const services = [
-  { name: "Masaje relajante", image: relaxing },
-  { name: "Masaje descontracturante", image: decontracting },
-  { name: "Masaje linfático", image: linfatic },
-  { name: "Masaje Shiatsu", image: shiatsu },
-  { name: "Masaje deportivo", image: sport },
-  { name: "Facial de limpieza profunda", image: deepFacial },
-  { name: "Facial hidratante", image: moisturizingFacial },
-  { name: "Masaje prenatal", image: prenatal },
+  { id: "relaxing", image: relaxing },
+  { id: "decontracting", image: decontracting },
+  { id: "lymphatic", image: linfatic },
+  { id: "shiatsu", image: shiatsu },
+  { id: "sport", image: sport },
+  { id: "deepFacial", image: deepFacial },
+  { id: "moisturizingFacial", image: moisturizingFacial },
+  { id: "prenatal", image: prenatal },
 ];

@@ -37,7 +37,11 @@ export function initHeader(root = document) {
     nav.setAttribute("data-open", String(isOpen));
     overlay?.setAttribute("data-open", String(isOpen));
     toggle.setAttribute("aria-expanded", String(isOpen));
-    toggle.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
+    toggle.setAttribute(
+      "aria-label",
+      (isOpen ? toggle.dataset.labelClose : toggle.dataset.labelOpen) ??
+        (isOpen ? "Cerrar menú" : "Abrir menú"),
+    );
     root.body.classList.toggle("nav-open", isOpen);
     inertTargets.forEach((el) => {
       el.toggleAttribute("inert", isOpen);

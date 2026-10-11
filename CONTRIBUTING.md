@@ -39,6 +39,14 @@ npm run test:e2e   # first time: npx playwright install chromium
 
 `npm run lint:fix` and `npm run format` fix most problems automatically.
 
+## Languages
+
+The site is in Spanish (at `/`) and English (at `/en/`). Every visible text lives in `src/i18n/es.json` and `src/i18n/en.json`, and a test fails if one file has a key the other lacks.
+
+- In a component: `const t = useTranslations(getLangFromUrl(Astro.url));` then `{t("hero.title")}`.
+- Links inside the site go through `getLocalizedPath("/contact", lang)` so English pages stay in English.
+- Pages are thin: `src/pages/*.astro` and `src/pages/en/*.astro` both render the same view from `src/views/`.
+
 ## Icons
 
 Icons are inline SVGs added at build time with `astro-icon` (no icon font, no extra requests). We use two Iconify sets, both free to use without attribution: `lucide` for interface icons and `simple-icons` for brands.

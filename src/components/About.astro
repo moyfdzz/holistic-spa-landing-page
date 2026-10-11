@@ -6,9 +6,16 @@ import Section from "./Section.astro";
 import { site } from "../config/site.js";
 import { services } from "../data/services.js";
 import { getYearsSince } from "../utils/date.js";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  useTranslations,
+} from "../i18n/utils.js";
 import aboutImage from "../assets/images/why-choose-us-image-2.png";
 
 const yearsSince = getYearsSince(site.foundedYear);
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
 <Section id="about" tone="alt" labelledby="about-title">
@@ -16,7 +23,7 @@ const yearsSince = getYearsSince(site.foundedYear);
     <div class="about__media" data-reveal>
       <Image
         src={aboutImage}
-        alt="Velas, toallas enrolladas, piedras y plantas en un espacio de spa"
+        alt={t("about.imageAlt")}
         widths={[420, 640, 860]}
         sizes="(min-width: 60rem) 36vw, 90vw"
         class="about__img"
@@ -25,51 +32,41 @@ const yearsSince = getYearsSince(site.foundedYear);
 
     <div class="about__content">
       <h2 id="about-title" class="section-title" data-reveal>
-        ¿Por qué elegirnos?
+        {t("about.title")}
       </h2>
       <p class="about__headline" data-reveal style="--reveal-delay: 100ms">
-        Llevamos bienestar, relajación y equilibrio a tu hogar.
+        {t("about.headline")}
       </p>
       <p class="section-lead" data-reveal style="--reveal-delay: 150ms">
-        Nos enorgullece la satisfacción de nuestros clientes, quienes
-        experimentan una transformación física y emocional a través de nuestros
-        masajes.
+        {t("about.lead")}
       </p>
 
       <div class="about__stats">
         <div data-reveal style="--reveal-delay: 200ms">
           <Card class="stat">
-            <p class="stat__value">Desde {site.foundedYear}</p>
-            <h3 class="stat__label">
-              Más de{" "}
-              <span data-years-since={site.foundedYear}>{yearsSince}</span> años
-              cuidando tu bienestar
-            </h3>
-            <p class="stat__text">
-              Con años de práctica en técnicas de masajes terapéuticos y
-              bienestar, nos hemos especializado en ofrecer experiencias
-              personalizadas que mejoran la calidad de vida de nuestros
-              clientes.
+            <p class="stat__value">
+              {t("about.since")} {site.foundedYear}
             </p>
+            <h3 class="stat__label">
+              {t("about.yearsPrefix")}
+              <span data-years-since={site.foundedYear}>{yearsSince}</span>
+              {t("about.yearsSuffix")}
+            </h3>
+            <p class="stat__text">{t("about.yearsText")}</p>
           </Card>
         </div>
         <div data-reveal style="--reveal-delay: 300ms">
           <Card class="stat">
             <p class="stat__value">{services.length}</p>
-            <h3 class="stat__label">Nuestros Servicios</h3>
-            <p class="stat__text">
-              Descubre nuestras terapias y encuentra el tratamiento perfecto
-              para ti. Cada sesión está diseñada para adaptarse a tus
-              necesidades, brindándote una experiencia única de relajación y
-              sanación.
-            </p>
+            <h3 class="stat__label">{t("about.servicesLabel")}</h3>
+            <p class="stat__text">{t("about.servicesText")}</p>
           </Card>
         </div>
       </div>
 
       <div data-reveal style="--reveal-delay: 350ms">
-        <Button href="/contact" variant="secondary">
-          Obtener más información
+        <Button href={getLocalizedPath("/contact", lang)} variant="secondary">
+          {t("about.cta")}
         </Button>
       </div>
     </div>

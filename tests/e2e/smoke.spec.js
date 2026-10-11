@@ -37,6 +37,76 @@ test.describe("about section", () => {
   });
 });
 
+test.describe("languages", () => {
+  test("Spanish is the default and English lives at /en/", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "es");
+    await page.goto("/en/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.locator("h1")).toContainText("Well-Being");
+    await expect(page).toHaveTitle("Masajes Relax Monterrey");
+  });
+
+  test("language switch changes the page language (REL-14)", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page
+      .getByRole("link", { name: "English", exact: true })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/en\/$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    const current = page.locator(".lang [aria-current='true']");
+    await expect(current).toHaveText("EN");
+    await page
+      .getByRole("link", { name: "Español", exact: true })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "es");
+  });
+
+  test("switching keeps the visitor on the equivalent page and section", async ({
+    page,
+  }) => {
+    await page.goto("/contact");
+    await page
+      .getByRole("link", { name: "English", exact: true })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/en\/contact$/);
+    await expect(page.locator("h1")).toContainText("Contact Us Today");
+
+    await page.goto("/#services");
+    await page
+      .getByRole("link", { name: "English", exact: true })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/en\/#services$/);
+  });
+
+  test("pages link to each other with hreflang", async ({ page }) => {
+    await page.goto("/contact");
+    for (const code of ["es", "en", "x-default"]) {
+      await expect(
+        page.locator(`link[rel="alternate"][hreflang="${code}"]`),
+      ).toHaveCount(1);
+    }
+    await expect(
+      page.locator('link[rel="alternate"][hreflang="en"]'),
+    ).toHaveAttribute("href", /\/en\/contact$/);
+  });
+
+  test("English pages keep their links inside English", async ({ page }) => {
+    await page.goto("/en/");
+    const hrefs = await page
+      .locator("header nav a, footer nav a:not([target])")
+      .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+    for (const href of hrefs) expect(href).toMatch(/^\/en\//);
+  });
+});
+
 test.describe("social links", () => {
   test("point to the new profiles and open safely in a new tab", async ({
     page,
@@ -230,5 +300,4 @@ test.describe("motion and scripts", () => {
 });
 
 // To be completed in their feature tickets.
-test.fixme("language switch changes the page language (REL-14)", async () => {});
 test.fixme("contact form shows inline validation errors (REL-19)", async () => {});

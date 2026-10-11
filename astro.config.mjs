@@ -13,6 +13,12 @@ export default defineConfig({
     "/index.html": { status: 301, destination: "/" },
     "/contact.html": { status: 301, destination: "/contact" },
   },
+  // Spanish at /, English at /en/.
+  i18n: {
+    locales: ["es", "en"],
+    defaultLocale: "es",
+    routing: { prefixDefaultLocale: false },
+  },
   integrations: [react(), icon()],
   adapter: vercel(),
 });

@@ -4,17 +4,18 @@ import { Icon } from "astro-icon/components";
 import "swiper/css/bundle";
 import Section from "./Section.astro";
 import { services } from "../data/services.js";
+import { getLangFromUrl, useTranslations } from "../i18n/utils.js";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 ---
 
 <Section id="services" labelledby="services-title">
   <div class="services__head" data-reveal>
     <h2 id="services-title" class="section-title">
-      Nuestros Servicios
+      {t("services.title")}
     </h2>
-    <p class="section-lead">
-      A continuación están los diferentes servicios con los que contamos para
-      satisfacer tus necesidades.
-    </p>
+    <p class="section-lead">{t("services.lead")}</p>
   </div>
 
   <div class="services__carousel" data-reveal style="--reveal-delay: 150ms">
@@ -22,14 +23,14 @@ import { services } from "../data/services.js";
       <button
         type="button"
         class="services__arrow swiper__custom-nav--prev"
-        aria-label="Servicio anterior"
+        aria-label={t("services.prev")}
       >
         <Icon name="lucide:arrow-left" aria-hidden="true" />
       </button>
       <button
         type="button"
         class="services__arrow swiper__custom-nav--next"
-        aria-label="Servicio siguiente"
+        aria-label={t("services.next")}
       >
         <Icon name="lucide:arrow-right" aria-hidden="true" />
       </button>
@@ -47,7 +48,9 @@ import { services } from "../data/services.js";
                 sizes="(min-width: 60rem) 30vw, (min-width: 48rem) 60vw, 90vw"
                 class="service-card__img"
               />
-              <h3 class="service-card__name">{service.name}</h3>
+              <h3 class="service-card__name">
+                {t(`services.items.${service.id}`)}
+              </h3>
             </article>
           </div>
         ))}
