@@ -1,0 +1,73 @@
+---
+import Button from "./Button.astro";
+
+interface Props {
+  /** Heading of the band. */
+  title: string;
+  /** Text of the button. The button is hidden when empty. */
+  ctaLabel?: string;
+  /** Where the button goes. */
+  ctaHref?: string;
+}
+
+const { title, ctaLabel, ctaHref = "/contact" } = Astro.props;
+---
+
+<section class="cta" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta__card" data-reveal>
+      <h2 id="cta-title" class="cta__title">
+        {title}
+      </h2>
+      <p class="cta__text">
+        <slot />
+      </p>
+      {ctaLabel && (
+        <Button href={ctaHref} variant="light">
+          {ctaLabel}
+        </Button>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: var(--space-7) var(--section-y);
+  }
+
+  .cta__card {
+    display: grid;
+    gap: var(--space-4);
+    justify-items: center;
+    padding: clamp(2rem, 1rem + 5vw, 4.5rem) var(--space-5);
+    border-radius: var(--radius-xl);
+    background:
+      radial-gradient(
+        60% 90% at 90% 0%,
+        rgba(255, 255, 255, 0.14),
+        transparent 60%
+      ),
+      linear-gradient(135deg, var(--sage-700), var(--sage-900));
+    color: #fff;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .cta__title {
+    max-width: 24ch;
+    font-size: var(--text-2xl);
+    color: #fff;
+  }
+
+  .cta__text {
+    max-width: 56ch;
+    margin-bottom: var(--space-2);
+    color: var(--sage-100);
+    font-size: var(--text-lg);
+  }
+
+  .cta :focus-visible {
+    outline-color: var(--color-focus-on-dark);
+  }
+</style>

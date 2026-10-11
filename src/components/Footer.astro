@@ -1,0 +1,172 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <a href="/" class="footer__logo">
+          <i class="fa-solid fa-spa" aria-hidden="true"></i>
+          <span>Masajes Holísticos Rossy</span>
+        </a>
+        <p>Monterrey</p>
+        <p>Nuevo León, México</p>
+        <p>+52 81 8017 1904</p>
+      </div>
+
+      <nav class="footer__col" aria-label="Compañía">
+        <h2 class="footer__title">Compañía</h2>
+        <a href="/">Inicio</a>
+        <a href="/#about">Nosotros</a>
+        <a href="/#services">Servicios</a>
+        <a href="/contact">Contacto</a>
+      </nav>
+
+      <nav class="footer__col" aria-label="Descubre el Bienestar">
+        <h2 class="footer__title">Descubre el Bienestar</h2>
+        <a
+          href="https://drbline.com/tipos-de-masaje-y-beneficios-para-la-salud/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Tipos de masajes
+        </a>
+        <a
+          href="https://www.mayoclinic.org/es/tests-procedures/massage-therapy/about/pac-20384595"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Beneficios de los masajes
+        </a>
+        <a
+          href="https://www.doctorbarret.com/que-es-una-limpieza-facial-profunda-y-cuales-son-sus-beneficios/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Limpieza facial y sus beneficios
+        </a>
+      </nav>
+
+      <nav class="footer__col" aria-label="Soporte">
+        <h2 class="footer__title">Soporte</h2>
+        <a href="/#FAQ">Preguntas Frecuentes</a>
+        <a href="/#services">Servicios</a>
+        <a href="/contact">Contacto</a>
+      </nav>
+
+      <div class="footer__col">
+        <h2 class="footer__title">Redes sociales</h2>
+        <div class="footer__socials">
+          <a
+            href="https://www.facebook.com/profile.php?id=61572853523014"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook"
+          >
+            <i class="fa-brands fa-square-facebook" aria-hidden="true"></i>
+          </a>
+          <a
+            href="https://www.instagram.com/masajes_rossy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+          >
+            <i class="fa-brands fa-square-instagram" aria-hidden="true"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <p>
+        Icons made by
+        <a href="https://www.flaticon.com/authors/mikan933" title="mikan933">
+          mikan933
+        </a>
+        from
+        <a href="https://www.flaticon.com/" title="Flaticon">
+          www.flaticon.com
+        </a>
+      </p>
+      <p>&copy; {year} Masajes Holísticos Rossy.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: var(--space-8) var(--space-5);
+    background: var(--sage-900);
+    color: var(--sage-100);
+    font-size: var(--text-sm);
+  }
+
+  .footer a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+  .footer :focus-visible {
+    outline-color: var(--color-focus-on-dark);
+  }
+
+  .footer__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  }
+
+  .footer__brand {
+    display: grid;
+    gap: var(--space-1);
+    align-content: start;
+  }
+
+  .footer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: var(--space-2);
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .footer__col {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+
+  .footer__title {
+    margin-bottom: var(--space-2);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: #fff;
+  }
+
+  .footer__socials {
+    display: flex;
+    gap: var(--space-3);
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    color: var(--sage-200);
+  }
+</style>
