@@ -54,7 +54,7 @@ test.describe("search engines and sharing", () => {
     );
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       "content",
-      /og-image\.png$/,
+      /og-image\.jpg$/,
     );
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",

@@ -14,9 +14,9 @@ Esta guía sirve para crear un set de imágenes ilustradas con el mismo estilo, 
 
 Usa una herramienta cuya licencia permita **uso comercial** (por ejemplo Adobe Firefly, Ideogram o Midjourney con plan de pago). Anota aquí cuál usaste, porque hay que guardar ese dato:
 
-| Herramienta | Plan | Fecha | Notas |
-| ----------- | ---- | ----- | ----- |
-|             |      |       |       |
+| Herramienta   | Plan                                 | Fecha   | Notas                                                                      |
+| ------------- | ------------------------------------ | ------- | -------------------------------------------------------------------------- |
+| Google Gemini | (completar: plan gratuito o de pago) | 2026-10 | Imágenes generadas por el dueño; revisar que el plan permita uso comercial |
 
 ## 3. Plantilla del prompt
 

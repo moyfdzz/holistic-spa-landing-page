@@ -1,9 +1,10 @@
 ---
-import { Image } from "astro:assets";
+import { getImage } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Badge from "./Badge.astro";
 import Button from "./Button.astro";
-import heroImage from "../assets/images/introductory-image.webp";
+import heroImage from "../assets/images/ai/hero.webp";
+import heroMobileImage from "../assets/images/ai/hero-mobile.webp";
 import {
   getLangFromUrl,
   getLocalizedPath,
@@ -12,6 +13,21 @@ import {
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+// Wide scene on tablets and desktops, vertical version on phones.
+// A lower quality keeps the first image light so it does not slow down the fonts and text.
+const desktop = await getImage({
+  src: heroImage,
+  widths: [640, 960, 1280],
+  format: "webp",
+  quality: 60,
+});
+const mobile = await getImage({
+  src: heroMobileImage,
+  widths: [320, 440, 560],
+  format: "webp",
+  quality: 50,
+});
 ---
 
 <section class="hero" id="home" aria-labelledby="hero-title">
@@ -45,15 +61,26 @@ const t = useTranslations(lang);
     <div class="hero__media">
       <div class="hero__shape" aria-hidden="true"></div>
       <div class="hero__float">
-        <Image
-          src={heroImage}
-          alt={t("hero.imageAlt")}
-          widths={[480, 720, 960]}
-          sizes="(min-width: 60rem) 45vw, 92vw"
-          loading="eager"
-          fetchpriority="high"
-          class="hero__img"
-        />
+        <picture>
+          <source
+            media="(max-width: 59.99rem)"
+            srcset={mobile.srcSet.attribute}
+            sizes="92vw"
+            type="image/webp"
+          />
+          <img
+            src={desktop.src}
+            srcset={desktop.srcSet.attribute}
+            sizes="45vw"
+            alt={t("hero.imageAlt")}
+            width={desktop.attributes.width}
+            height={desktop.attributes.height}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+            class="hero__img"
+          />
+        </picture>
       </div>
     </div>
   </div>
@@ -119,8 +146,9 @@ const t = useTranslations(lang);
   }
 
   .hero__img {
+    display: block;
     width: 100%;
-    aspect-ratio: 5 / 4;
+    aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
@@ -133,6 +161,10 @@ const t = useTranslations(lang);
   }
 
   @media (min-width: 60rem) {
+    .hero__img {
+      aspect-ratio: 5 / 4;
+    }
+
     .hero__grid {
       grid-template-columns: 1.1fr 0.9fr;
       gap: var(--space-8);

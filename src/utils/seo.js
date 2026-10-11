@@ -52,7 +52,7 @@ export function buildLocalBusiness({ lang, site, services, description }) {
     description,
     inLanguage: lang,
     logo: absoluteUrl("/icon-512.png", site.url),
-    image: absoluteUrl("/og-image.png", site.url),
+    image: absoluteUrl("/og-image.jpg", site.url),
     telephone: site.phone,
     foundingDate: String(site.foundedYear),
     address: {

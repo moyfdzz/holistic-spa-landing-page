@@ -34,7 +34,7 @@
     "lead": "Masajes y faciales a domicilio en Monterrey. Disfruta de un espacio de paz y armonía, donde cada masaje está diseñado para aliviar el estrés, reducir tensiones y revitalizar tu energía. Descubre el equilibrio perfecto entre cuerpo y mente.",
     "ctaServices": "Ver servicios",
     "ctaMore": "Solicitar información",
-    "imageAlt": "Cabina de masaje con toallas, velas y plantas en un espacio sereno"
+    "imageAlt": "Ilustración de una cabina de masaje luminosa con camilla, toallas, velas y plantas"
   },
   "about": {
     "title": "¿Por qué elegirnos?",
@@ -47,7 +47,7 @@
     "servicesLabel": "Nuestros Servicios",
     "servicesText": "Descubre nuestras terapias y encuentra el tratamiento perfecto para ti. Cada sesión está diseñada para adaptarse a tus necesidades, brindándote una experiencia única de relajación y sanación.",
     "cta": "Obtener más información",
-    "imageAlt": "Velas, toallas enrolladas, piedras y plantas en un espacio de spa"
+    "imageAlt": "Ilustración de una terapeuta preparando la camilla con toallas, piedras y velas en un espacio sereno"
   },
   "services": {
     "title": "Nuestros Servicios",
@@ -82,7 +82,7 @@
     "methodWhatsapp": "WhatsApp",
     "methodPhone": "Llamada",
     "submit": "Enviar",
-    "imageAlt": "Espacio de relajación y bienestar",
+    "imageAlt": "Ilustración de una cabina de masaje serena con luz natural y plantas",
     "errors": {
       "nameRequired": "Por favor, ingresa tu nombre.",
       "nameTooLong": "El nombre no puede tener más de {max} caracteres.",

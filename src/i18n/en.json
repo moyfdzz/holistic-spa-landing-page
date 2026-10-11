@@ -34,7 +34,7 @@
     "lead": "Massages and facials at home in Monterrey. Enjoy a space of peace and harmony, where every massage is designed to ease stress, release tension and revitalize your energy. Discover the perfect balance between body and mind.",
     "ctaServices": "See services",
     "ctaMore": "Request information",
-    "imageAlt": "Massage table with towels, candles and plants in a serene space"
+    "imageAlt": "Illustration of a bright massage room with a table, towels, candles and plants"
   },
   "about": {
     "title": "Why choose us?",
@@ -47,7 +47,7 @@
     "servicesLabel": "Our Services",
     "servicesText": "Discover our therapies and find the treatment that is right for you. Every session is tailored to your needs, giving you a unique experience of relaxation and healing.",
     "cta": "Get more information",
-    "imageAlt": "Candles, rolled towels, stones and plants in a spa setting"
+    "imageAlt": "Illustration of a therapist preparing the massage table with towels, stones and candles in a serene space"
   },
   "services": {
     "title": "Our Services",
@@ -82,7 +82,7 @@
     "methodWhatsapp": "WhatsApp",
     "methodPhone": "Phone call",
     "submit": "Send",
-    "imageAlt": "Relaxation and wellness space",
+    "imageAlt": "Illustration of a serene massage room with natural light and plants",
     "errors": {
       "nameRequired": "Please enter your name.",
       "nameTooLong": "The name cannot be longer than {max} characters.",
