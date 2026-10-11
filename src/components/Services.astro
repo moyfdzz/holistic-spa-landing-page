@@ -3,27 +3,7 @@ import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import "swiper/css/bundle";
 import Section from "./Section.astro";
-import relaxing from "../assets/images/relaxing-massage.jpg";
-import decontracting from "../assets/images/decontracting-massage.jpg";
-import linfatic from "../assets/images/linfatic-massage.jpg";
-import shiatsu from "../assets/images/shiatsu-massage.jpg";
-import sport from "../assets/images/sport-massage.jpg";
-import deepFacial from "../assets/images/deep-facial.jpg";
-import moisturizingFacial from "../assets/images/moisturizing-facial.jpg";
-import prenatal from "../assets/images/prenatal-massage.jpg";
-
-// The service name is shown on each card, so the photo is decorative (empty alt).
-// REL-18 rebuilds this section with descriptions, durations and translations.
-const services = [
-  { name: "Masaje relajante", image: relaxing },
-  { name: "Masaje descontracturante", image: decontracting },
-  { name: "Masaje linfático", image: linfatic },
-  { name: "Masaje Shiatsu", image: shiatsu },
-  { name: "Masaje deportivo", image: sport },
-  { name: "Facial de limpieza profunda", image: deepFacial },
-  { name: "Facial hidratante", image: moisturizingFacial },
-  { name: "Masaje prenatal", image: prenatal },
-];
+import { services } from "../data/services.js";
 ---
 
 <Section id="services" labelledby="services-title">

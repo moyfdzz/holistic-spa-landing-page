@@ -21,6 +21,22 @@ test.describe("brand", () => {
   });
 });
 
+test.describe("about section", () => {
+  test("shows Desde 2017 and a years count that is not hard-coded", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const about = page.locator("#about");
+    await expect(about).toContainText("Desde 2017");
+    const years = new Date().getFullYear() - 2017;
+    await expect(about.locator("[data-years-since]")).toHaveText(String(years));
+    const services = await page.locator("#services .service-card").count();
+    await expect(about.locator(".stat__value").nth(1)).toHaveText(
+      String(services),
+    );
+  });
+});
+
 test.describe("social links", () => {
   test("point to the new profiles and open safely in a new tab", async ({
     page,
