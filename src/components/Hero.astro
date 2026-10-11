@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
 import Badge from "./Badge.astro";
 import Button from "./Button.astro";
 import heroImage from "../assets/images/introductory-image.webp";
@@ -10,7 +11,7 @@ import heroImage from "../assets/images/introductory-image.webp";
     <div class="hero__content">
       <div>
         <Badge>
-          <i class="fa-solid fa-leaf" aria-hidden="true"></i>
+          <Icon name="lucide:leaf" aria-hidden="true" />
           Renueva tu cuerpo, relaja tu mente y equilibra tu espíritu
         </Badge>
       </div>

@@ -38,8 +38,6 @@ export function initHeader(root = document) {
     overlay?.setAttribute("data-open", String(isOpen));
     toggle.setAttribute("aria-expanded", String(isOpen));
     toggle.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
-    toggle.querySelector("i")?.classList.toggle("fa-bars", !isOpen);
-    toggle.querySelector("i")?.classList.toggle("fa-xmark", isOpen);
     root.body.classList.toggle("nav-open", isOpen);
     inertTargets.forEach((el) => {
       el.toggleAttribute("inert", isOpen);

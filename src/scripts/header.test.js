@@ -6,7 +6,7 @@ describe("initHeader", () => {
     document.body.className = "";
     document.body.innerHTML = `
       <header data-header>
-        <button data-nav-toggle aria-expanded="false" aria-label="Abrir menú"><i class="fas fa-bars"></i></button>
+        <button data-nav-toggle aria-expanded="false" aria-label="Abrir menú"></button>
         <nav data-nav data-open="false"><a href="/one" id="one">One</a><a href="/two">Two</a></nav>
         <div data-nav-overlay data-open="false"></div>
       </header>

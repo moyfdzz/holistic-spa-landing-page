@@ -39,6 +39,24 @@ npm run test:e2e   # first time: npx playwright install chromium
 
 `npm run lint:fix` and `npm run format` fix most problems automatically.
 
+## Icons
+
+Icons are inline SVGs added at build time with `astro-icon` (no icon font, no extra requests). We use two Iconify sets, both free to use without attribution: `lucide` for interface icons and `simple-icons` for brands.
+
+```astro
+---
+import { Icon } from "astro-icon/components";
+---
+
+<Icon name="lucide:arrow-right" aria-hidden="true" />
+```
+
+- Find icon names at https://icones.js.org (search "lucide" or "simple-icons").
+- Size and color come from CSS: icons use `currentColor`, so set `color`, `width` and `height` on the icon or its parent. Use `:global(svg)` inside a component's style block to reach the SVG.
+- Decorative icons (next to visible text) get `aria-hidden="true"`.
+- A button that has only an icon needs an `aria-label` on the button, written in the page language.
+- React islands should inline the SVG or use `@iconify/react` with the same sets.
+
 ## Code standards
 
 - JavaScript with JSDoc. Every exported function and component has a description, `@param` and `@returns`; data shapes use `@typedef`. ESLint enforces this.

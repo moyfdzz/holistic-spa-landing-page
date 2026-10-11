@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import vercel from "@astrojs/vercel";
+import icon from "astro-icon";
 
 // Static output by default; the Vercel adapter leaves room for API routes later.
 export default defineConfig({
@@ -12,6 +13,6 @@ export default defineConfig({
     "/index.html": { status: 301, destination: "/" },
     "/contact.html": { status: 301, destination: "/contact" },
   },
-  integrations: [react()],
+  integrations: [react(), icon()],
   adapter: vercel(),
 });
