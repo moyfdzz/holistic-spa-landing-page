@@ -20,7 +20,7 @@ How changes get from an idea to production on this project. Every change follows
 
 ## Working locally
 
-Requirements: Node.js 22.12 or newer (see `.nvmrc`).
+Requirements: Node.js 22.22.3 or newer, or 24.16 or newer (see `.nvmrc`).
 
 ```bash
 npm ci

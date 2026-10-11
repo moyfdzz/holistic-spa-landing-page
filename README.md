@@ -6,7 +6,7 @@ Website for a home massage and facial service in the Monterrey metropolitan area
 
 ## Requirements
 
-- Node.js 22.12 or newer (see `.nvmrc`)
+- Node.js 22.22.3 or newer, or 24.16 or newer (see `.nvmrc`)
 
 ## Getting started
 
