@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/Hero.astro";
 import About from "../components/About.astro";
 import Services from "../components/Services.astro";
+import Testimonials from "../components/Testimonials.astro";
 import Faq from "../components/Faq.astro";
 import CtaBand from "../components/CtaBand.astro";
 import { site } from "../config/site.js";
@@ -36,6 +37,7 @@ const business = buildLocalBusiness({
   <Hero />
   <About />
   <Services />
+  <Testimonials />
   <Faq />
   <CtaBand
     title={t("home.ctaTitle", { name: site.name })}

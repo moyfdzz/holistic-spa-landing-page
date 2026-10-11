@@ -18,6 +18,7 @@
  * @property {number} foundedYear - Year the business started.
  * @property {{ instagram: string, facebook: string }} socials - Social media profile URLs.
  * @property {string} url - Production address of the site, without a trailing slash.
+ * @property {string} [googleReviewsUrl] - Link to the Google reviews of the business. When empty, the "see more reviews" link is hidden.
  */
 
 /** @type {SiteConfig} */
@@ -39,6 +40,7 @@ export const site = {
     instagram: "https://www.instagram.com/masajesrelax.mty/",
     facebook: "https://www.facebook.com/masajesrelax.mty",
   },
+  googleReviewsUrl: "",
   // Stays on the old address until the domain is moved (REL-26).
   url: "https://masajes-rossy.vercel.app",
 };

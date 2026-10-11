@@ -33,7 +33,7 @@
     "title": "Experience Well-Being with Therapeutic and Relaxation Massages",
     "lead": "Massages and facials at home in Monterrey. Enjoy a space of peace and harmony, where every massage is designed to ease stress, release tension and revitalize your energy. Discover the perfect balance between body and mind.",
     "ctaServices": "See services",
-    "ctaMore": "More information",
+    "ctaMore": "Request information",
     "imageAlt": "Massage table with towels, candles and plants in a serene space"
   },
   "about": {
@@ -133,5 +133,11 @@
   },
   "privacy": {
     "updated": "Last updated: {date}"
+  },
+  "testimonials": {
+    "title": "What our clients say",
+    "lead": "Real opinions from people who already received our at-home services.",
+    "rating": "{rating} out of 5 stars",
+    "more": "See more reviews on Google"
   }
 }

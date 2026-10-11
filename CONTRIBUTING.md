@@ -39,6 +39,8 @@ npm run test:e2e   # first time: npx playwright install chromium
 
 `npm run lint:fix` and `npm run format` fix most problems automatically.
 
+Pull requests also run Lighthouse (the `Lighthouse` check) with these budgets: performance 90, accessibility 95, best practices 95 and SEO 95 or more; largest paint under 2.5 s; layout shift under 0.1; and under 100 KB of JavaScript on the home page. To run it yourself: `npm run build`, then `npm run lighthouse` (it needs Google Chrome installed).
+
 ## Languages
 
 The site is in Spanish (at `/`) and English (at `/en/`). Every visible text lives in `src/i18n/es.json` and `src/i18n/en.json`, and a test fails if one file has a key the other lacks.

@@ -1,0 +1,219 @@
+---
+import { Icon } from "astro-icon/components";
+import Section from "./Section.astro";
+import { site } from "../config/site.js";
+import { services } from "../data/services.js";
+import {
+  getPublishedTestimonials,
+  testimonials,
+} from "../data/testimonials.js";
+import { getLangFromUrl, useTranslations } from "../i18n/utils.js";
+
+interface Props {
+  /** Testimonials to show. Defaults to the ones in `src/data/testimonials.js`. */
+  items?: typeof testimonials;
+}
+
+const { items = testimonials } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const published = getPublishedTestimonials(items);
+
+const dateFormat = new Intl.DateTimeFormat(lang === "es" ? "es-MX" : "en-US", {
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const serviceName = (slug?: string) =>
+  services.find((service) => service.slug === slug)?.text[lang].name;
+---
+
+{published.length > 0 && (
+  <Section id="testimonials" labelledby="testimonials-title">
+    <div class="testimonials__head" data-reveal>
+      <h2 id="testimonials-title" class="section-title">
+        {t("testimonials.title")}
+      </h2>
+      <p class="section-lead">{t("testimonials.lead")}</p>
+    </div>
+
+    <div
+      class="testimonials__scroller"
+      role="region"
+      aria-labelledby="testimonials-title"
+      data-reveal
+    >
+      <ul class="testimonials__grid">
+        {published.map((item) => (
+          <li class="testimonials__item">
+            <figure class="review">
+              <Icon
+                name="lucide:quote"
+                class="review__mark"
+                aria-hidden="true"
+              />
+              <div
+                class="review__stars"
+                role="img"
+                aria-label={t("testimonials.rating", { rating: item.rating })}
+              >
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Icon
+                    name="lucide:star"
+                    class:list={[
+                      "review__star",
+                      { "is-on": star <= item.rating },
+                    ]}
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+              <blockquote class="review__quote" lang={lang}>
+                <p>{item.quote[lang]}</p>
+              </blockquote>
+              <figcaption class="review__author">
+                <strong>{item.author}</strong>
+                <span>
+                  {[
+                    serviceName(item.serviceSlug),
+                    dateFormat.format(new Date(`${item.date}T12:00:00Z`)),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {site.googleReviewsUrl && (
+      <p class="testimonials__more">
+        <a
+          href={site.googleReviewsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t("testimonials.more")}
+        </a>
+      </p>
+    )}
+  </Section>
+)}
+
+<style>
+  .testimonials__head {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+    text-align: center;
+    margin-bottom: var(--space-6);
+  }
+
+  .testimonials__scroller {
+    margin-inline: calc(var(--space-4) * -1);
+    padding-inline: var(--space-4);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--space-4);
+    overscroll-behavior-x: contain;
+  }
+
+  .testimonials__grid {
+    display: flex;
+    gap: var(--space-4);
+    margin: 0;
+    padding: var(--space-2) 0 var(--space-4);
+    list-style: none;
+  }
+
+  .testimonials__item {
+    flex: 0 0 min(85%, 22rem);
+    scroll-snap-align: start;
+  }
+
+  .review {
+    position: relative;
+    display: grid;
+    gap: var(--space-3);
+    height: 100%;
+    margin: 0;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .review :global(.review__mark) {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 2rem;
+    height: 2rem;
+    color: var(--sage-200);
+  }
+
+  .review__stars {
+    display: flex;
+    gap: 0.15rem;
+  }
+
+  .review :global(.review__star) {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--sand-300);
+  }
+
+  .review :global(.review__star.is-on),
+  .review :global(.review__star.is-on *) {
+    color: #c9922e;
+    fill: currentColor;
+  }
+
+  .review__quote {
+    margin: 0;
+    color: var(--color-text);
+    line-height: 1.6;
+  }
+
+  .review__author {
+    display: grid;
+    gap: 0.15rem;
+    margin-top: auto;
+    font-size: var(--text-sm);
+  }
+
+  .review__author span {
+    color: var(--color-text-muted);
+  }
+
+  .testimonials__more {
+    margin-top: var(--space-4);
+    text-align: center;
+  }
+
+  .testimonials__more a {
+    color: var(--sage-700);
+    font-weight: 700;
+  }
+
+  @media (min-width: 48rem) {
+    .testimonials__scroller {
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+    }
+
+    .testimonials__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+      gap: var(--space-5);
+    }
+
+    .testimonials__item {
+      flex: none;
+    }
+  }
+</style>
