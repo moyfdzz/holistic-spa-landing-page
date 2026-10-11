@@ -22,7 +22,6 @@ const t = useTranslations(lang);
 // The access key is public by design (Web3Forms), but it lives in an
 // environment variable so it is not written in the code.
 const web3formsKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? "";
-const contactPath = getLocalizedPath("/contact", lang);
 ---
 
 <BaseLayout
@@ -52,7 +51,6 @@ const contactPath = getLocalizedPath("/contact", lang);
             }))}
             whatsappUrl={buildWhatsAppUrl(site.whatsapp, t("whatsapp.message"))}
             privacyHref={getLocalizedPath("/aviso-de-privacidad", lang)}
-            redirectUrl={new URL(`${contactPath}?sent=1`, site.url).href}
           />
         </Card>
       </div>
