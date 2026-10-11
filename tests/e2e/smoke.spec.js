@@ -86,6 +86,9 @@ test.describe("search engines and sharing", () => {
     expect(business.name).toBe("Masajes Relax Monterrey");
     expect(business.areaServed.length).toBeGreaterThanOrEqual(7);
     expect(business.hasOfferCatalog.itemListElement).toHaveLength(10);
+    await expect(
+      page.locator('meta[name="google-site-verification"]'),
+    ).toHaveAttribute("content", /.{20,}/);
     expect(business.sameAs).toHaveLength(2);
   });
 

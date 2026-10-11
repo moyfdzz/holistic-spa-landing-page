@@ -44,6 +44,12 @@ const lang = getLangFromUrl(Astro.url);
     {[lora600, quicksand400, quicksand600].map((href) => (
       <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />
     ))}
+    {site.googleSiteVerification && (
+      <meta
+        name="google-site-verification"
+        content={site.googleSiteVerification}
+      />
+    )}
     <meta name="theme-color" content="#475d42" />
     <meta name="application-name" content={site.shortName} />
     <Seo title={title} description={description} jsonLd={jsonLd} />
