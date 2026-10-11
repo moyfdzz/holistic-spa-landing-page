@@ -104,5 +104,9 @@
     "facialBenefits": "Limpieza facial y sus beneficios",
     "socialLabel": "{network} de {name}",
     "copyright": "© {year} {name}."
+  },
+  "whatsapp": {
+    "label": "Escríbenos por WhatsApp",
+    "message": "Hola, me gustaría información sobre sus masajes."
   }
 }
