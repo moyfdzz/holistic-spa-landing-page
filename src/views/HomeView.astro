@@ -6,6 +6,8 @@ import Services from "../components/Services.astro";
 import Faq from "../components/Faq.astro";
 import CtaBand from "../components/CtaBand.astro";
 import { site } from "../config/site.js";
+import { services } from "../data/services.js";
+import { buildLocalBusiness } from "../utils/seo.js";
 import {
   getLangFromUrl,
   getLocalizedPath,
@@ -14,9 +16,23 @@ import {
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+const description = t("meta.homeDescription");
+const business = buildLocalBusiness({
+  lang,
+  site,
+  description,
+  services: services.map((service) => ({
+    name: service.text[lang].name,
+    description: service.text[lang].description,
+  })),
+});
 ---
 
-<BaseLayout>
+<BaseLayout
+  title={t("meta.homeTitle")}
+  description={description}
+  jsonLd={[business]}
+>
   <Hero />
   <About />
   <Services />

@@ -1,6 +1,9 @@
 {
   "meta": {
-    "contactTitle": "Contacto"
+    "contactTitle": "Contacto",
+    "homeTitle": "Masajes a domicilio en Monterrey | Masajes Relax Monterrey",
+    "homeDescription": "Masajes relajantes, terapéuticos y faciales a domicilio en Monterrey y su área metropolitana. Reserva por WhatsApp y recibe bienestar en la comodidad de tu hogar.",
+    "contactDescription": "Agenda tu masaje o facial a domicilio en Monterrey. Escríbenos por WhatsApp, llámanos o completa el formulario y te responderemos lo antes posible."
   },
   "common": {
     "skipLink": "Saltar al contenido"
@@ -27,7 +30,7 @@
   "hero": {
     "badge": "Renueva tu cuerpo, relaja tu mente y equilibra tu espíritu",
     "title": "Experimenta el Bienestar con Masajes Terapéuticos y de Relajación",
-    "lead": "Disfruta de un espacio de paz y armonía, donde cada masaje está diseñado para aliviar el estrés, reducir tensiones y revitalizar tu energía. Descubre el equilibrio perfecto entre cuerpo y mente.",
+    "lead": "Masajes y faciales a domicilio en Monterrey. Disfruta de un espacio de paz y armonía, donde cada masaje está diseñado para aliviar el estrés, reducir tensiones y revitalizar tu energía. Descubre el equilibrio perfecto entre cuerpo y mente.",
     "ctaServices": "Ver servicios",
     "ctaMore": "Más información",
     "imageAlt": "Cabina de masaje con toallas, velas y plantas en un espacio sereno"
