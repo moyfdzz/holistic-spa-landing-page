@@ -68,6 +68,33 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+  lighthouse:
+    name: Lighthouse
+    # Checks speed, accessibility, best practices and SEO against the budgets in lighthouserc.json.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Build the site
+        run: npm run build
+      # Starts the built site, runs Lighthouse 3 times per page and fails if a budget is broken.
+      - name: Run Lighthouse
+        run: npx lhci autorun
+      - name: Upload the reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/reports/
+          retention-days: 7
+          if-no-files-found: ignore
+
   pr-title:
     name: PR title
     # The PR title becomes the commit message when the PR is squash-merged.
