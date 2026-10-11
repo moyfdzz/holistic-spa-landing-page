@@ -21,6 +21,26 @@ test.describe("brand", () => {
   });
 });
 
+test.describe("social links", () => {
+  test("point to the new profiles and open safely in a new tab", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const footer = page.locator("footer");
+    for (const [name, url] of [
+      ["Instagram", "https://www.instagram.com/masajesrelax.mty/"],
+      ["Facebook", "https://www.facebook.com/masajesrelax.mty"],
+    ]) {
+      const link = footer.getByRole("link", {
+        name: `${name} de Masajes Relax Monterrey`,
+      });
+      await expect(link).toHaveAttribute("href", url);
+      await expect(link).toHaveAttribute("target", "_blank");
+      await expect(link).toHaveAttribute("rel", /noopener/);
+    }
+  });
+});
+
 test.describe("icons", () => {
   test("are inline SVG with no icon font, CDN or Flaticon credit", async ({
     page,

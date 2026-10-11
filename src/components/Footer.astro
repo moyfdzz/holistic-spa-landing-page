@@ -3,6 +3,20 @@ import { Icon } from "astro-icon/components";
 import { site } from "../config/site.js";
 
 const year = new Date().getFullYear();
+
+// REL-14 translates the accessible names.
+const socials = [
+  {
+    name: "Facebook",
+    href: site.socials.facebook,
+    icon: "simple-icons:facebook",
+  },
+  {
+    name: "Instagram",
+    href: site.socials.instagram,
+    icon: "simple-icons:instagram",
+  },
+];
 ---
 
 <footer class="footer">
@@ -61,22 +75,16 @@ const year = new Date().getFullYear();
       <div class="footer__col">
         <h2 class="footer__title">Redes sociales</h2>
         <div class="footer__socials">
-          <a
-            href="https://www.facebook.com/profile.php?id=61572853523014"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook"
-          >
-            <Icon name="simple-icons:facebook" aria-hidden="true" />
-          </a>
-          <a
-            href="https://www.instagram.com/masajes_rossy/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-          >
-            <Icon name="simple-icons:instagram" aria-hidden="true" />
-          </a>
+          {socials.map((social) => (
+            <a
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${social.name} de ${site.name}`}
+            >
+              <Icon name={social.icon} aria-hidden="true" />
+            </a>
+          ))}
         </div>
       </div>
     </div>
