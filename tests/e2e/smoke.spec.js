@@ -503,6 +503,77 @@ test.describe("contact page", () => {
   });
 });
 
+test.describe("contact form", () => {
+  test("shows inline errors in the current language instead of alert()", async ({
+    page,
+  }) => {
+    let dialogs = 0;
+    page.on("dialog", async (dialog) => {
+      dialogs += 1;
+      await dialog.dismiss();
+    });
+    await page.goto("/contact");
+    await page.getByRole("button", { name: "Enviar" }).click();
+    const nameError = page.locator("#name-error");
+    await expect(nameError).toHaveText("Por favor, ingresa tu nombre.");
+    await expect(page.locator("#name")).toHaveAttribute("aria-invalid", "true");
+    await expect(page.locator("#name")).toHaveAttribute(
+      "aria-describedby",
+      "name-error",
+    );
+    await expect(page.locator("#consent-error")).toBeVisible();
+    await expect(page.locator("#name")).toBeFocused();
+    expect(dialogs).toBe(0);
+
+    await page.goto("/en/contact");
+    await page.getByRole("button", { name: "Send" }).click();
+    await expect(page.locator("#name-error")).toHaveText(
+      "Please enter your name.",
+    );
+  });
+
+  test("asks for a phone number only for WhatsApp and calls", async ({
+    page,
+  }) => {
+    await page.goto("/contact");
+    await page.getByLabel("Nombre").fill("Ana García");
+    await page
+      .getByLabel("Correo Electrónico", { exact: true })
+      .fill("ana@example.com");
+    await page.getByLabel(/He leído y acepto/).check();
+    await page.getByLabel(/Cómo prefieres/).selectOption("whatsapp");
+    await page.getByRole("button", { name: "Enviar" }).click();
+    await expect(page.locator("#phone-error")).toBeVisible();
+    await expect(page.locator("#email-error")).toHaveCount(0);
+    await page.getByLabel("Teléfono (opcional)").fill("81 8017 1904");
+    await expect(page.locator("#phone-error")).toHaveCount(0);
+  });
+
+  test("shows the contact details, hours and social links", async ({
+    page,
+  }) => {
+    await page.goto("/contact");
+    const info = page.locator(".info");
+    await expect(info).toContainText("Todos los días, de 8:00 a 22:00");
+    await expect(info).toContainText("Monterrey y su área metropolitana");
+    await expect(info.locator('a[href^="tel:"]')).toBeVisible();
+    await expect(info.locator('a[href*="wa.me"]')).toBeVisible();
+    await expect(
+      info.locator('a[href*="instagram.com/masajesrelax.mty"]'),
+    ).toBeVisible();
+
+    await page.goto("/en/contact");
+    await expect(page.locator(".info")).toContainText(
+      "Every day, 8:00 am to 10:00 pm",
+    );
+  });
+
+  test("has no access key written in the page", async ({ request }) => {
+    const html = await (await request.get("/contact")).text();
+    expect(html).not.toMatch(/name="access_key"[^>]*value="[^"]+"/);
+  });
+});
+
 test.describe("responsive layout", () => {
   for (const path of ["/", "/contact"]) {
     test(`no horizontal scrolling on ${path}`, async ({ page }) => {
@@ -548,4 +619,3 @@ test.describe("motion and scripts", () => {
 });
 
 // To be completed in their feature tickets.
-test.fixme("contact form shows inline validation errors (REL-19)", async () => {});

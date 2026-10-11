@@ -47,6 +47,16 @@ describe("buildLocalBusiness", () => {
     expect(String(data.image)).toMatch(/^https:\/\//);
   });
 
+  it("lists the opening hours of every day", () => {
+    const hours =
+      /** @type {{ dayOfWeek: string[], opens: string, closes: string }} */ (
+        data.openingHoursSpecification
+      );
+    expect(hours.dayOfWeek).toHaveLength(7);
+    expect(hours.opens).toBe(site.hours.opens);
+    expect(hours.closes).toBe(site.hours.closes);
+  });
+
   it("lists the whole metropolitan area and every service", () => {
     const areas = /** @type {{ name: string }[]} */ (data.areaServed);
     expect(areas.map((a) => a.name)).toEqual(serviceAreaCities);
