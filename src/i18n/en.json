@@ -101,5 +101,9 @@
     "facialBenefits": "Facial cleansing and its benefits",
     "socialLabel": "{name} on {network}",
     "copyright": "© {year} {name}."
+  },
+  "whatsapp": {
+    "label": "Chat with us on WhatsApp",
+    "message": "Hi, I'd like information about your massages."
   }
 }

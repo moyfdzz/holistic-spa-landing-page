@@ -8,6 +8,7 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import WhatsAppButton from "../components/WhatsAppButton.astro";
 import { site } from "../config/site.js";
 import { getLangFromUrl, getLocalizedPath } from "../i18n/utils.js";
 
@@ -57,6 +58,7 @@ const alternate = (code: "es" | "en") =>
       <slot />
     </main>
     <Footer />
+    <WhatsAppButton />
 
     <script>
       import { initReveal } from "../utils/reveal.js";
