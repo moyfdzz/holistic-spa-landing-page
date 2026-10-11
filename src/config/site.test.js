@@ -33,6 +33,12 @@ describe("site config", () => {
     expect(site.foundedYear).toBeLessThanOrEqual(new Date().getFullYear());
   });
 
+  it("has opening hours that open before they close", () => {
+    expect(site.hours.opens).toMatch(/^\d{2}:\d{2}$/);
+    expect(site.hours.closes).toMatch(/^\d{2}:\d{2}$/);
+    expect(site.hours.opens < site.hours.closes).toBe(true);
+  });
+
   it("has secure social and site addresses", () => {
     for (const link of [site.socials.instagram, site.socials.facebook]) {
       expect(new URL(link).protocol).toBe("https:");

@@ -8,6 +8,14 @@ Website for a home massage and facial service in the Monterrey metropolitan area
 
 - Node.js 22.22.3 or newer, or 24.16 or newer (see `.nvmrc`)
 
+## Environment variables
+
+The contact form needs the public Web3Forms access key in `PUBLIC_WEB3FORMS_ACCESS_KEY`.
+
+- Locally: copy `.env.example` to `.env` and fill in the value (the file is ignored by Git).
+- On Vercel: Project, Settings, Environment Variables. Add it for Production and Preview, then redeploy.
+- Without it the form still validates, but shows a message asking visitors to use WhatsApp instead.
+
 ## Getting started
 
 ```bash

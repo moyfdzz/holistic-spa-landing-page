@@ -1,10 +1,11 @@
 ---
 import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Button from "../components/Button.astro";
 import Card from "../components/Card.astro";
+import ContactInfo from "../components/ContactInfo.astro";
 import CtaBand from "../components/CtaBand.astro";
 import Section from "../components/Section.astro";
+import ContactForm from "../islands/ContactForm.jsx";
 import contactImage from "../assets/images/why-choose-us-image.webp";
 import { site } from "../config/site.js";
 import { services } from "../data/services.js";
@@ -13,9 +14,15 @@ import {
   getLocalizedPath,
   useTranslations,
 } from "../i18n/utils.js";
+import { buildWhatsAppUrl } from "../utils/whatsapp.js";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+// The access key is public by design (Web3Forms), but it lives in an
+// environment variable so it is not written in the code.
+const web3formsKey = import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? "";
+const contactPath = getLocalizedPath("/contact", lang);
 ---
 
 <BaseLayout
@@ -33,100 +40,33 @@ const t = useTranslations(lang);
     <div class="contact__grid">
       <div data-reveal style="--reveal-delay: 150ms">
         <Card class="contact__card">
-          <form
-            action="https://api.web3forms.com/submit"
-            method="POST"
-            id="contact-form"
-            class="form"
-            data-error-phone-required={t("contact.errors.phoneRequired")}
-            data-error-phone-digits={t("contact.errors.phoneDigits")}
-            data-error-email-required={t("contact.errors.emailRequired")}
-          >
-            <input
-              type="hidden"
-              name="access_key"
-              value="c4a404ec-e768-404a-b4a0-f60271790ca6"
-            />
-            <div class="field">
-              <input
-                type="text"
-                name="name"
-                id="name"
-                placeholder=" "
-                autocomplete="name"
-                required
-              />
-              <label for="name">{t("contact.name")}</label>
-            </div>
-            <div class="field">
-              <input
-                type="email"
-                name="email"
-                id="email"
-                placeholder=" "
-                autocomplete="email"
-                required
-              />
-              <label for="email">{t("contact.email")}</label>
-            </div>
-            <div class="field">
-              <input
-                type="tel"
-                name="phone"
-                id="phone"
-                placeholder=" "
-                autocomplete="tel"
-              />
-              <label for="phone">{t("contact.phone")}</label>
-            </div>
-            <div class="field field--select">
-              <label for="service">{t("contact.service")}</label>
-              <select id="service" name="service" data-service-select>
-                <option value="">{t("contact.servicePlaceholder")}</option>
-                {services.map((service) => (
-                  <option value={service.slug}>
-                    {service.text[lang].name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div class="field">
-              <textarea
-                name="description"
-                id="description"
-                placeholder=" "
-                rows="4"
-              ></textarea>
-              <label for="description">{t("contact.message")}</label>
-            </div>
-            <div class="field field--select">
-              <label for="contact-method">{t("contact.method")}</label>
-              <select id="contact-method" name="contact-method">
-                <option value="email">{t("contact.methodEmail")}</option>
-                <option value="whatsapp">{t("contact.methodWhatsapp")}</option>
-                <option value="phone">{t("contact.methodPhone")}</option>
-              </select>
-            </div>
-            <p class="form__privacy">
-              {t("contact.privacyPrefix")}
-              <a href={getLocalizedPath("/aviso-de-privacidad", lang)}>
-                {t("contact.privacyLink")}
-              </a>
-              .
-            </p>
-            <Button type="submit">{t("contact.submit")}</Button>
-          </form>
+          <ContactForm
+            client:load
+            lang={lang}
+            web3formsKey={web3formsKey}
+            siteName={site.name}
+            services={services.map((service) => ({
+              slug: service.slug,
+              name: service.text[lang].name,
+            }))}
+            whatsappUrl={buildWhatsAppUrl(site.whatsapp, t("whatsapp.message"))}
+            privacyHref={getLocalizedPath("/aviso-de-privacidad", lang)}
+            redirectUrl={new URL(`${contactPath}?sent=1`, site.url).href}
+          />
         </Card>
       </div>
 
-      <div class="contact__media" data-reveal style="--reveal-delay: 250ms">
-        <Image
-          src={contactImage}
-          alt={t("contact.imageAlt")}
-          widths={[420, 640, 860]}
-          sizes="(min-width: 60rem) 40vw, 92vw"
-          class="contact__img"
-        />
+      <div class="contact__side" data-reveal style="--reveal-delay: 250ms">
+        <ContactInfo />
+        <div class="contact__media">
+          <Image
+            src={contactImage}
+            alt={t("contact.imageAlt")}
+            widths={[420, 640, 860]}
+            sizes="(min-width: 60rem) 40vw, 92vw"
+            class="contact__img"
+          />
+        </div>
       </div>
     </div>
   </Section>
@@ -137,12 +77,6 @@ const t = useTranslations(lang);
     {t("contact.ctaText2")}
   </CtaBand>
 </BaseLayout>
-
-<script>
-  import "../scripts/contact-form.js";
-  import { preselectService } from "../scripts/contact-service.js";
-  preselectService();
-</script>
 
 <style>
   .contact__headline {
@@ -166,91 +100,8 @@ const t = useTranslations(lang);
     padding: clamp(1.25rem, 0.5rem + 3vw, 2.5rem);
   }
 
-  .form__privacy {
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-  }
-
-  .form__privacy a {
-    margin-left: 0.25rem;
-    color: var(--sage-700);
-    font-weight: 700;
-  }
-
-  .form {
-    display: grid;
-    gap: var(--space-4);
-    justify-items: start;
-  }
-
-  .field {
-    position: relative;
-    width: 100%;
-  }
-
-  /* Floating labels: the label sits inside the field and moves up when it has text. */
-  .field input,
-  .field textarea,
-  .field select {
-    width: 100%;
-    border: 1.5px solid var(--color-border-input);
-    border-radius: var(--radius-md);
-    background: #fff;
-    color: var(--ink);
-    transition:
-      border-color var(--duration-fast) var(--ease),
-      box-shadow var(--duration-fast) var(--ease);
-  }
-
-  .field input,
-  .field textarea {
-    padding: 1.45rem 1rem 0.55rem;
-  }
-
-  .field textarea {
-    min-height: 8rem;
-    resize: vertical;
-  }
-
-  .field input:focus,
-  .field textarea:focus,
-  .field select:focus {
-    border-color: var(--sage-600);
-    box-shadow: 0 0 0 4px var(--sage-100);
-    outline: 2px solid transparent;
-  }
-
-  .field input.error {
-    border-color: var(--color-danger);
-    box-shadow: 0 0 0 4px rgba(179, 64, 42, 0.14);
-  }
-
-  .field:not(.field--select) label {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    color: var(--color-text-muted);
-    pointer-events: none;
-    transform-origin: left top;
-    transition: transform var(--duration-fast) var(--ease);
-  }
-
-  .field input:focus + label,
-  .field input:not(:placeholder-shown) + label,
-  .field textarea:focus + label,
-  .field textarea:not(:placeholder-shown) + label {
-    transform: translateY(-0.7rem) scale(0.78);
-  }
-
-  .field--select label {
-    display: block;
-    margin-bottom: var(--space-2);
-    font-weight: 600;
-  }
-
-  .field select {
-    min-height: 3.25rem;
-    padding: 0.7rem 1rem;
+  .contact__side {
+    gap: var(--space-5);
   }
 
   .contact__media {
@@ -259,7 +110,7 @@ const t = useTranslations(lang);
 
   .contact__img {
     width: 100%;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);

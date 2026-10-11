@@ -1,0 +1,145 @@
+---
+import { Icon } from "astro-icon/components";
+import Card from "./Card.astro";
+import { site } from "../config/site.js";
+import { getLangFromUrl, useTranslations } from "../i18n/utils.js";
+import { formatHour } from "../utils/date.js";
+import { buildWhatsAppUrl } from "../utils/whatsapp.js";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const telephone = `tel:+${site.phone.replace(/\D/g, "")}`;
+const hours = t("contact.hours", {
+  opens: formatHour(site.hours.opens, lang),
+  closes: formatHour(site.hours.closes, lang),
+});
+const socials = [
+  {
+    name: "Instagram",
+    href: site.socials.instagram,
+    icon: "simple-icons:instagram",
+  },
+  {
+    name: "Facebook",
+    href: site.socials.facebook,
+    icon: "simple-icons:facebook",
+  },
+];
+---
+
+<Card class="info">
+  <h2 class="info__title">{t("contact.infoTitle")}</h2>
+  <dl class="info__list">
+    <div>
+      <dt>
+        <Icon name="simple-icons:whatsapp" aria-hidden="true" />
+        {t("contact.infoWhatsapp")}
+      </dt>
+      <dd>
+        <a
+          href={buildWhatsAppUrl(site.whatsapp, t("whatsapp.message"))}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {site.whatsapp}
+        </a>
+      </dd>
+    </div>
+    <div>
+      <dt>
+        <Icon name="lucide:phone" aria-hidden="true" />
+        {t("contact.infoPhone")}
+      </dt>
+      <dd>
+        <a href={telephone}>{site.phone}</a>
+      </dd>
+    </div>
+    <div>
+      <dt>
+        <Icon name="lucide:map-pin" aria-hidden="true" />
+        {t("contact.infoArea")}
+      </dt>
+      <dd>{t("contact.areaText")}</dd>
+    </div>
+    <div>
+      <dt>
+        <Icon name="lucide:clock" aria-hidden="true" />
+        {t("contact.infoHours")}
+      </dt>
+      <dd>{hours}</dd>
+    </div>
+    <div>
+      <dt>
+        <Icon name="lucide:share-2" aria-hidden="true" />
+        {t("contact.infoSocial")}
+      </dt>
+      <dd class="info__socials">
+        {socials.map((social) => (
+          <a
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("footer.socialLabel", {
+              network: social.name,
+              name: site.name,
+            })}
+          >
+            <Icon name={social.icon} aria-hidden="true" />
+          </a>
+        ))}
+      </dd>
+    </div>
+  </dl>
+</Card>
+
+<style>
+  .info {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .info__title {
+    font-size: var(--text-xl);
+  }
+
+  .info__list {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .info__list dt {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--sage-700);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .info__list dt :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .info__list dd {
+    margin: 0.2rem 0 0 1.6rem;
+    font-weight: 600;
+  }
+
+  .info__list a {
+    color: var(--sage-800);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .info__socials {
+    display: flex;
+    gap: var(--space-3);
+  }
+
+  .info__socials :global(svg) {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+</style>

@@ -1,0 +1,210 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import ContactForm, { getServiceFromSearch } from "./ContactForm.jsx";
+
+const services = [
+  { slug: "shiatsu", name: "Masaje Shiatsu" },
+  { slug: "prenatal", name: "Masaje prenatal" },
+];
+
+/**
+ * Renders the form with test values.
+ * @param {Partial<import("./ContactForm.jsx").ContactFormProps>} [props] - Values to change.
+ * @returns {import("@testing-library/react").RenderResult} The rendered form.
+ */
+function setup(props = {}) {
+  return render(
+    <ContactForm
+      lang="es"
+      web3formsKey="test-key"
+      siteName="Masajes Relax Monterrey"
+      services={services}
+      whatsappUrl="https://wa.me/528180171904"
+      privacyHref="/aviso-de-privacidad"
+      redirectUrl="https://example.com/contact?sent=1"
+      {...props}
+    />,
+  );
+}
+
+/**
+ * Types a value in the field with the given label.
+ * @param {string | RegExp} label - The label text.
+ * @param {string} value - The text to type.
+ */
+function type(label, value) {
+  fireEvent.change(screen.getByLabelText(label), { target: { value } });
+}
+
+/** Fills every required field with valid values. */
+function fillValid() {
+  type("Nombre", "Ana García");
+  type("Correo Electrónico", "ana@example.com");
+  fireEvent.click(screen.getByLabelText(/He leído y acepto/));
+}
+
+describe("getServiceFromSearch", () => {
+  it("returns a known service and ignores everything else", () => {
+    const slugs = ["shiatsu", "prenatal"];
+    expect(getServiceFromSearch("?service=shiatsu", slugs)).toBe("shiatsu");
+    expect(getServiceFromSearch("?service=nope", slugs)).toBe("");
+    expect(getServiceFromSearch("", slugs)).toBe("");
+  });
+});
+
+describe("ContactForm", () => {
+  beforeEach(() => {
+    window.history.replaceState({}, "", "/contact");
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("shows inline errors for an empty form, without alert() or sending", () => {
+    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    const name = screen.getByLabelText("Nombre");
+    expect(name).toHaveAttribute("aria-invalid", "true");
+    expect(name).toHaveAttribute("aria-describedby", "name-error");
+    expect(screen.getByText("Por favor, ingresa tu nombre.")).toHaveAttribute(
+      "role",
+      "alert",
+    );
+    expect(
+      screen.getByText(/Necesitas aceptar el Aviso de Privacidad/),
+    ).toBeInTheDocument();
+    expect(name).toHaveFocus();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(alertSpy).not.toHaveBeenCalled();
+  });
+
+  it("clears an error when the person fixes the field", () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    type("Nombre", "Ana");
+    expect(screen.getByLabelText("Nombre")).toHaveAttribute(
+      "aria-invalid",
+      "false",
+    );
+  });
+
+  it("asks for a phone number when WhatsApp is the contact method", () => {
+    setup();
+    fillValid();
+    fireEvent.change(screen.getByLabelText(/Cómo prefieres/), {
+      target: { value: "whatsapp" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    expect(
+      screen.getByText(/ingresa tu número de teléfono/),
+    ).toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("sends the form, shows a confirmation and clears the fields", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      /** @type {Response} */ ({
+        ok: true,
+        json: async () => ({ success: true }),
+      }),
+    );
+    setup();
+    fillValid();
+    fireEvent.change(screen.getByLabelText(/Servicio de interés/), {
+      target: { value: "prenatal" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(/Gracias/),
+    );
+    const [url, options] = vi.mocked(fetch).mock.calls[0];
+    expect(url).toBe("https://api.web3forms.com/submit");
+    const body = JSON.parse(String(options?.body));
+    expect(body).toMatchObject({
+      access_key: "test-key",
+      name: "Ana García",
+      email: "ana@example.com",
+      service: "prenatal",
+      contact_method: "email",
+      botcheck: false,
+    });
+    expect(screen.getByLabelText("Nombre")).toHaveValue("");
+  });
+
+  it("shows a retry message with a WhatsApp link when sending fails", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      /** @type {Response} */ ({
+        ok: false,
+        json: async () => ({ success: false }),
+      }),
+    );
+    setup();
+    fillValid();
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(/No pudimos enviar/),
+    );
+    expect(
+      screen.getByRole("link", { name: "Escribir por WhatsApp" }),
+    ).toHaveAttribute("href", "https://wa.me/528180171904");
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Ana García");
+  });
+
+  it("shows the same retry message when the network fails", async () => {
+    vi.mocked(fetch).mockRejectedValue(new Error("offline"));
+    setup();
+    fillValid();
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    await waitFor(() =>
+      expect(screen.getByRole("status")).toHaveTextContent(/No pudimos enviar/),
+    );
+  });
+
+  it("says the form is unavailable when there is no access key", () => {
+    setup({ web3formsKey: "" });
+    fillValid();
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    expect(screen.getByRole("status")).toHaveTextContent(/no está disponible/);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(document.querySelector('input[name="access_key"]')).toBeNull();
+  });
+
+  it("has a plain POST fallback with a redirect when JavaScript is not available", () => {
+    setup();
+    const form = document.getElementById("contact-form");
+    expect(form).toHaveAttribute("action", "https://api.web3forms.com/submit");
+    expect(form).toHaveAttribute("method", "POST");
+    expect(document.querySelector('input[name="redirect"]')).toHaveValue(
+      "https://example.com/contact?sent=1",
+    );
+    expect(
+      document.querySelector('input[name="botcheck"]'),
+    ).toBeInTheDocument();
+  });
+
+  it("preselects the service from the address", () => {
+    window.history.replaceState({}, "", "/contact?service=shiatsu");
+    setup();
+    expect(screen.getByLabelText(/Servicio de interés/)).toHaveValue("shiatsu");
+  });
+
+  it("shows a confirmation after a plain submit redirect", () => {
+    window.history.replaceState({}, "", "/contact?sent=1");
+    setup();
+    expect(screen.getByRole("status")).toHaveTextContent(/Gracias/);
+  });
+
+  it("speaks English on the English page", () => {
+    setup({ lang: "en" });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    expect(screen.getByText("Please enter your name.")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/I have read and accept the/),
+    ).toBeInTheDocument();
+  });
+});

@@ -37,7 +37,7 @@ export function trimTrailingSlash(path) {
  * Builds the structured data (schema.org) that describes the business for Google.
  * @param {object} options - What to describe.
  * @param {"es" | "en"} options.lang - Language of the texts.
- * @param {{ name: string, phone: string, foundedYear: number, url: string, socials: { instagram: string, facebook: string }, city: string, region: string }} options.site - The site configuration.
+ * @param {{ name: string, phone: string, hours: { opens: string, closes: string }, foundedYear: number, url: string, socials: { instagram: string, facebook: string }, city: string, region: string }} options.site - The site configuration.
  * @param {{ name: string, description: string }[]} options.services - The services, already in the right language.
  * @param {string} options.description - Short description of the business.
  * @returns {Record<string, unknown>} The JSON-LD object.
@@ -60,6 +60,20 @@ export function buildLocalBusiness({ lang, site, services, description }) {
       addressLocality: site.city,
       addressRegion: "Nuevo León",
       addressCountry: "MX",
+    },
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+      ],
+      opens: site.hours.opens,
+      closes: site.hours.closes,
     },
     areaServed: serviceAreaCities.map((name) => ({ "@type": "City", name })),
     sameAs: [site.socials.instagram, site.socials.facebook],

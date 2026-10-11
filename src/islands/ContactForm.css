@@ -1,0 +1,184 @@
+.cf {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.cf__field {
+  position: relative;
+  width: 100%;
+}
+
+/* Floating labels: the label sits inside the field and moves up when it has text. */
+.cf__field input[type="text"],
+.cf__field input[type="email"],
+.cf__field input[type="tel"],
+.cf__field textarea,
+.cf__field select {
+  width: 100%;
+  border: 1.5px solid var(--color-border-input);
+  border-radius: var(--radius-md);
+  background: #fff;
+  color: var(--ink);
+  transition:
+    border-color var(--duration-fast) var(--ease),
+    box-shadow var(--duration-fast) var(--ease);
+}
+
+.cf__field input[type="text"],
+.cf__field input[type="email"],
+.cf__field input[type="tel"],
+.cf__field textarea {
+  padding: 1.45rem 1rem 0.55rem;
+}
+
+.cf__field textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.cf__field input:focus,
+.cf__field textarea:focus,
+.cf__field select:focus {
+  border-color: var(--sage-600);
+  box-shadow: 0 0 0 4px var(--sage-100);
+  outline: 2px solid transparent;
+}
+
+.cf__field [aria-invalid="true"] {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 4px rgba(179, 64, 42, 0.14);
+}
+
+.cf__field:not(.cf__field--select) label {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform var(--duration-fast) var(--ease);
+}
+
+.cf__field input:focus + label,
+.cf__field input:not(:placeholder-shown) + label,
+.cf__field textarea:focus + label,
+.cf__field textarea:not(:placeholder-shown) + label {
+  transform: translateY(-0.7rem) scale(0.78);
+}
+
+.cf__field--select label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+}
+
+.cf__field select {
+  min-height: 3.25rem;
+  padding: 0.7rem 1rem;
+}
+
+.cf__error {
+  margin-top: var(--space-2);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.cf__consent-field {
+  width: 100%;
+}
+
+.cf__consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  width: 100%;
+  font-size: var(--text-sm);
+}
+
+.cf__consent input {
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.1rem;
+  accent-color: var(--sage-700);
+}
+
+.cf__consent a {
+  margin-left: 0.25rem;
+  color: var(--sage-700);
+  font-weight: 700;
+}
+
+/* The spam trap: invisible to people, tempting to bots. */
+.cf__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.cf__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.8rem 1.6rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease),
+    box-shadow var(--duration-fast) var(--ease);
+}
+
+.cf__submit:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.cf__submit:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.cf__submit:focus-visible {
+  outline-offset: 3px;
+}
+
+.cf__status {
+  width: 100%;
+}
+
+.cf__status:empty {
+  display: none;
+}
+
+.cf__message {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+.cf__message--success {
+  background: var(--sage-100);
+  color: var(--sage-900);
+}
+
+.cf__message--error {
+  background: #fbe9e5;
+  color: #7d2a1b;
+}
+
+.cf__message a {
+  margin-left: 0.25rem;
+  color: inherit;
+  text-decoration: underline;
+}

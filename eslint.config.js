@@ -18,8 +18,6 @@ export default [
       "coverage/",
       "playwright-report/",
       "test-results/",
-      // Legacy code from the original site, replaced by REL-19 (contact form).
-      "src/scripts/contact-form.js",
     ],
   },
 
@@ -58,6 +56,11 @@ export default [
   {
     files: ["**/*.{jsx,tsx}"],
     ...react.configs.flat["jsx-runtime"],
+  },
+  {
+    // Props are described with JSDoc types, which the project type-checks with `astro check`.
+    files: ["**/*.{jsx,tsx}"],
+    rules: { "react/prop-types": "off" },
   },
   {
     files: ["**/*.{jsx,tsx}"],
