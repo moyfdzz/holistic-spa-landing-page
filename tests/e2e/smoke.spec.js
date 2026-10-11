@@ -85,7 +85,7 @@ test.describe("search engines and sharing", () => {
       .find((data) => data["@type"] === "HealthAndBeautyBusiness");
     expect(business.name).toBe("Masajes Relax Monterrey");
     expect(business.areaServed.length).toBeGreaterThanOrEqual(7);
-    expect(business.hasOfferCatalog.itemListElement).toHaveLength(8);
+    expect(business.hasOfferCatalog.itemListElement).toHaveLength(10);
     expect(business.sameAs).toHaveLength(2);
   });
 
@@ -273,17 +273,21 @@ test.describe("services catalog", () => {
   }) => {
     await page.goto("/");
     const cards = page.locator("#services .service-card");
-    await expect(cards).toHaveCount(8);
+    await expect(cards).toHaveCount(10);
     for (const card of await cards.all()) {
       await expect(card.locator(".service-card__text")).not.toBeEmpty();
       await expect(card.locator(".service-card__duration")).toContainText(
         "min",
       );
-      const isFacial = /facial/i.test(
-        (await card.locator(".service-card__name").textContent()) ?? "",
-      );
+      const name =
+        (await card.locator(".service-card__name").textContent()) ?? "";
+      const expected = /craneofacial|reflexolog/i.test(name)
+        ? ["15 min", "30 min"]
+        : /facial/i.test(name)
+          ? ["60 min"]
+          : ["60 min", "90 min", "120 min"];
       await expect(card.locator(".service-card__times li")).toHaveText(
-        isFacial ? ["60 min"] : ["60 min", "90 min", "120 min"],
+        expected,
       );
       await expect(card.locator("img")).toHaveAttribute("alt", /.{10,}/);
     }

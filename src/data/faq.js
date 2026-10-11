@@ -71,12 +71,12 @@ export const faq = [
       es: {
         question: "¿Cuánto dura una sesión?",
         answer:
-          "Depende del servicio: la mayoría de las sesiones dura 60 minutos, el masaje deportivo entre 45 y 60 minutos y el facial hidratante 45 minutos. Puedes ver la duración de cada uno en la sección de servicios.",
+          "Depende del servicio: los masajes se pueden elegir de 60, 90 o 120 minutos, los faciales duran 60 minutos y el masaje craneofacial y la reflexología de pies y manos, 15 o 30 minutos. Puedes ver las opciones de cada uno en la sección de servicios.",
       },
       en: {
         question: "How long does a session last?",
         answer:
-          "It depends on the service: most sessions last 60 minutes, the sports massage 45 to 60 minutes and the moisturizing facial 45 minutes. You can see the length of each one in the services section.",
+          "It depends on the service: massages can be booked for 60, 90 or 120 minutes, facials last 60 minutes, and the craniofacial massage and the foot and hand reflexology last 15 or 30 minutes. You can see the options for each one in the services section.",
       },
     },
   },
