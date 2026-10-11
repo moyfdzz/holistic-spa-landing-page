@@ -8,22 +8,21 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import Seo from "../components/Seo.astro";
 import { site } from "../config/site.js";
-import { getLangFromUrl, getLocalizedPath } from "../i18n/utils.js";
+import { getLangFromUrl } from "../i18n/utils.js";
 
 interface Props {
-  /** Page title shown in the browser tab. */
+  /** Page title shown in the browser tab and in search results. */
   title?: string;
+  /** Short description for search results and sharing. */
+  description: string;
+  /** Structured data (JSON-LD) objects for the page. */
+  jsonLd?: Record<string, unknown>[];
 }
 
-const { title = site.name } = Astro.props;
+const { title = site.name, description, jsonLd } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
-// Full address of this page in another language, for hreflang links.
-const alternate = (code: "es" | "en") =>
-  new URL(
-    getLocalizedPath(Astro.url.pathname.replace(/(.)\/$/, "$1"), code),
-    site.url,
-  ).href;
 ---
 
 <!doctype html>
@@ -39,17 +38,12 @@ const alternate = (code: "es" | "en") =>
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#475d42" />
     <meta name="application-name" content={site.shortName} />
-    <meta property="og:site_name" content={site.name} />
-    <meta property="og:locale" content={lang === "es" ? "es_MX" : "en_US"} />
-    <link rel="alternate" hreflang="es" href={alternate("es")} />
-    <link rel="alternate" hreflang="en" href={alternate("en")} />
-    <link rel="alternate" hreflang="x-default" href={alternate("es")} />
+    <Seo title={title} description={description} jsonLd={jsonLd} />
 
     <!-- Lets the CSS hide "reveal on scroll" content only when scripts run -->
     <script is:inline>
       document.documentElement.classList.add("js");
     </script>
-    <title>{title}</title>
   </head>
   <body>
     <Header />

@@ -6,7 +6,7 @@ test.describe("brand", () => {
     request,
   }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle("Masajes Relax Monterrey");
+    await expect(page).toHaveTitle(/Masajes Relax Monterrey/);
     await expect(page.locator("header .logo")).toContainText(
       "Masajes Relax Monterrey",
     );
@@ -37,6 +37,74 @@ test.describe("about section", () => {
   });
 });
 
+test.describe("search engines and sharing", () => {
+  test("each page has its own title, description, canonical and share tags", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page).toHaveTitle(/Masajes a domicilio en Monterrey/);
+    const description = await page
+      .locator('meta[name="description"]')
+      .getAttribute("content");
+    expect(description?.length).toBeGreaterThan(70);
+    expect(description?.length).toBeLessThanOrEqual(175);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      /^https:\/\/.+\/$/,
+    );
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      /og-image\.png$/,
+    );
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+      "content",
+      "summary_large_image",
+    );
+
+    await page.goto("/en/contact");
+    await expect(page).toHaveTitle(/Contact \| Masajes Relax Monterrey/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      /\/en\/contact$/,
+    );
+    await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute(
+      "content",
+      "en_US",
+    );
+  });
+
+  test("the home page describes the local business for Google", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    const business = blocks
+      .map((text) => JSON.parse(text))
+      .find((data) => data["@type"] === "HealthAndBeautyBusiness");
+    expect(business.name).toBe("Masajes Relax Monterrey");
+    expect(business.areaServed.length).toBeGreaterThanOrEqual(7);
+    expect(business.hasOfferCatalog.itemListElement).toHaveLength(8);
+    expect(business.sameAs).toHaveLength(2);
+  });
+
+  test("robots.txt points to a sitemap that lists both languages", async ({
+    request,
+  }) => {
+    const robots = await (await request.get("/robots.txt")).text();
+    expect(robots).toContain("Sitemap:");
+    expect(robots).toContain("sitemap-index.xml");
+    const index = await (await request.get("/sitemap-index.xml")).text();
+    expect(index).toContain("sitemap-0.xml");
+    const pages = await (await request.get("/sitemap-0.xml")).text();
+    expect(pages).toMatch(/\/en\/<\/loc>/);
+    expect(pages).toMatch(/\/en\/contact</);
+    expect(pages).not.toMatch(/contact\/</);
+    expect(pages).toContain('hreflang="en-US"');
+  });
+});
+
 test.describe("languages", () => {
   test("Spanish is the default and English lives at /en/", async ({ page }) => {
     await page.goto("/");
@@ -44,7 +112,7 @@ test.describe("languages", () => {
     await page.goto("/en/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("h1")).toContainText("Well-Being");
-    await expect(page).toHaveTitle("Masajes Relax Monterrey");
+    await expect(page).toHaveTitle(/Masajes Relax Monterrey/);
   });
 
   test("language switch changes the page language (REL-14)", async ({
@@ -316,11 +384,12 @@ test.describe("home page", () => {
     page,
   }) => {
     await page.goto("/en/");
-    const json = await page
+    const blocks = await page
       .locator('script[type="application/ld+json"]')
-      .first()
-      .textContent();
-    const data = JSON.parse(json ?? "{}");
+      .allTextContents();
+    const data = blocks
+      .map((text) => JSON.parse(text))
+      .find((item) => item["@type"] === "FAQPage");
     expect(data["@type"]).toBe("FAQPage");
     expect(data.mainEntity[0].name).toMatch(/massage/i);
     expect(

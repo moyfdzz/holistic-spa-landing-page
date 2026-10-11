@@ -14,7 +14,10 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 ---
 
-<BaseLayout title={`${t("meta.contactTitle")} | ${site.name}`}>
+<BaseLayout
+  title={`${t("meta.contactTitle")} | ${site.name}`}
+  description={t("meta.contactDescription")}
+>
   <Section class="contact" labelledby="contact-title">
     <div class="contact__headline" data-reveal>
       <h1 id="contact-title" class="section-title">
