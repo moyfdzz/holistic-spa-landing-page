@@ -28,15 +28,31 @@ export function getLangFromUrl(url) {
 }
 
 /**
- * Turns a Spanish-site path into the path for a language.
- * Keeps a `#section` or `?query` at the end.
- * @param {string} path - A path starting with `/`, such as `/contact` or `/#about`.
+ * Pages whose address is different in each language.
+ * Every other page has the same address, with `/en` in front for English.
+ */
+export const translatedRoutes = [
+  { es: "/aviso-de-privacidad", en: "/privacy-notice" },
+];
+
+/**
+ * Turns a path of the site into the path for a language.
+ * Keeps a `#section` or `?query` at the end, and knows pages whose address
+ * changes with the language (see `translatedRoutes`).
+ * @param {string} path - A path starting with `/`, such as `/contact` or `/#about`, in either language.
  * @param {Lang} lang - The language of the path you want.
  * @returns {string} The path for that language, such as `/en/contact` or `/en/#about`.
  */
 export function getLocalizedPath(path, lang) {
   const clean = stripLangPrefix(path.startsWith("/") ? path : `/${path}`);
-  return lang === defaultLang ? clean : `/en${clean}`;
+  const end = clean.search(/[?#]/);
+  const base = end === -1 ? clean : clean.slice(0, end);
+  const rest = end === -1 ? "" : clean.slice(end);
+  const route = translatedRoutes.find(
+    (item) => item.es === base || item.en === base,
+  );
+  const localized = route ? route[lang] : base;
+  return (lang === defaultLang ? localized : `/en${localized}`) + rest;
 }
 
 /**
