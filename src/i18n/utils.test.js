@@ -41,6 +41,23 @@ describe("getLocalizedPath", () => {
   });
 });
 
+describe("getLocalizedPath with translated addresses", () => {
+  it("switches between the Spanish and English address of a page", () => {
+    expect(getLocalizedPath("/aviso-de-privacidad", "en")).toBe(
+      "/en/privacy-notice",
+    );
+    expect(getLocalizedPath("/en/privacy-notice", "es")).toBe(
+      "/aviso-de-privacidad",
+    );
+    expect(getLocalizedPath("/en/privacy-notice", "en")).toBe(
+      "/en/privacy-notice",
+    );
+    expect(getLocalizedPath("/aviso-de-privacidad#datos", "en")).toBe(
+      "/en/privacy-notice#datos",
+    );
+  });
+});
+
 describe("stripLangPrefix", () => {
   it("removes only a real /en prefix", () => {
     expect(stripLangPrefix("/en")).toBe("/");

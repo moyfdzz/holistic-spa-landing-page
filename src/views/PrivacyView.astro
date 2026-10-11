@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Section from "../components/Section.astro";
+import { site } from "../config/site.js";
+import { privacy, privacyUpdated } from "../data/privacy.js";
+import { getLangFromUrl, useTranslations } from "../i18n/utils.js";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const text = privacy[lang];
+const updated = new Date(`${privacyUpdated}T12:00:00Z`).toLocaleDateString(
+  lang === "es" ? "es-MX" : "en-US",
+  { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" },
+);
+---
+
+<BaseLayout
+  title={`${text.title} | ${site.name}`}
+  description={t("meta.privacyDescription")}
+>
+  <Section class="privacy" labelledby="privacy-title">
+    <article class="privacy__doc">
+      <h1 id="privacy-title" class="section-title">
+        {text.title}
+      </h1>
+      <p class="privacy__updated">{t("privacy.updated", { date: updated })}</p>
+      <p class="privacy__intro">{text.intro}</p>
+      {text.sections.map((section) => (
+        <section id={section.id} aria-labelledby={`${section.id}-heading`}>
+          <h2 id={`${section.id}-heading`}>{section.heading}</h2>
+          {section.paragraphs.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
+          {section.items && (
+            <ul>
+              {section.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+    </article>
+  </Section>
+</BaseLayout>
+
+<style>
+  .privacy__doc {
+    max-width: 46rem;
+    margin-inline: auto;
+    line-height: 1.7;
+  }
+
+  .privacy__updated {
+    margin-block: var(--space-2) var(--space-5);
+    color: var(--sage-600);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .privacy__intro {
+    font-size: var(--text-lg);
+  }
+
+  .privacy__doc section {
+    margin-top: var(--space-6);
+  }
+
+  .privacy__doc h2 {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-xl);
+  }
+
+  .privacy__doc p + p,
+  .privacy__doc p + ul {
+    margin-top: var(--space-3);
+  }
+
+  .privacy__doc ul {
+    padding-left: 1.4rem;
+    list-style: disc;
+  }
+
+  .privacy__doc li + li {
+    margin-top: 0.35rem;
+  }
+</style>

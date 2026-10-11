@@ -3,7 +3,8 @@
     "contactTitle": "Contacto",
     "homeTitle": "Masajes a domicilio en Monterrey | Masajes Relax Monterrey",
     "homeDescription": "Masajes relajantes, terapéuticos y faciales a domicilio en Monterrey y su área metropolitana. Reserva por WhatsApp y recibe bienestar en la comodidad de tu hogar.",
-    "contactDescription": "Agenda tu masaje o facial a domicilio en Monterrey. Escríbenos por WhatsApp, llámanos o completa el formulario y te responderemos lo antes posible."
+    "contactDescription": "Agenda tu masaje o facial a domicilio en Monterrey. Escríbenos por WhatsApp, llámanos o completa el formulario y te responderemos lo antes posible.",
+    "privacyDescription": "Aviso de Privacidad de Masajes Relax Monterrey: qué datos recabamos, para qué los usamos y cómo ejercer tus derechos ARCO."
   },
   "common": {
     "skipLink": "Saltar al contenido"
@@ -91,7 +92,9 @@
     "ctaText1": "¿Listo para tu sesión de relajación?",
     "ctaText2": "Llámanos, envíanos un mensaje o completa el formulario. Estamos aquí para brindarte la mejor experiencia en masajes a domicilio.",
     "service": "Servicio de interés (opcional)",
-    "servicePlaceholder": "Elige un servicio"
+    "servicePlaceholder": "Elige un servicio",
+    "privacyPrefix": "Al enviar este formulario aceptas nuestro",
+    "privacyLink": "Aviso de Privacidad"
   },
   "footer": {
     "company": "Compañía",
@@ -103,10 +106,14 @@
     "massageBenefits": "Beneficios de los masajes",
     "facialBenefits": "Limpieza facial y sus beneficios",
     "socialLabel": "{network} de {name}",
-    "copyright": "© {year} {name}."
+    "copyright": "© {year} {name}.",
+    "privacy": "Aviso de Privacidad"
   },
   "whatsapp": {
     "label": "Escríbenos por WhatsApp",
     "message": "Hola, me gustaría información sobre sus masajes."
+  },
+  "privacy": {
+    "updated": "Última actualización: {date}"
   }
 }

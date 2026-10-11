@@ -175,6 +175,54 @@ test.describe("languages", () => {
   });
 });
 
+test.describe("privacy notice", () => {
+  test("is reachable from the footer and the form, in both languages", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page
+      .locator("footer")
+      .getByRole("link", { name: "Aviso de Privacidad" })
+      .click();
+    await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
+    await expect(page.locator("h1")).toHaveText("Aviso de Privacidad");
+    await expect(
+      page.getByRole("heading", { name: /Responsable del tratamiento/ }),
+    ).toBeVisible();
+
+    await page.goto("/contact");
+    await page
+      .locator("form")
+      .getByRole("link", { name: "Aviso de Privacidad" })
+      .click();
+    await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
+
+    await page.goto("/en/contact");
+    await page
+      .locator("form")
+      .getByRole("link", { name: "Privacy Notice" })
+      .click();
+    await expect(page).toHaveURL(/\/en\/privacy-notice$/);
+    await expect(page.locator("h1")).toHaveText("Privacy Notice");
+  });
+
+  test("the language switch goes to the same notice in the other language", async ({
+    page,
+  }) => {
+    await page.goto("/aviso-de-privacidad");
+    await page
+      .getByRole("link", { name: "English", exact: true })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/en\/privacy-notice$/);
+    await page
+      .getByRole("link", { name: "Español", exact: true })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
+  });
+});
+
 test.describe("floating WhatsApp button", () => {
   test("opens WhatsApp with a message in the current language", async ({
     page,

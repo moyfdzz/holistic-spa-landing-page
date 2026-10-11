@@ -3,7 +3,8 @@
     "contactTitle": "Contact",
     "homeTitle": "At-home massage in Monterrey | Masajes Relax Monterrey",
     "homeDescription": "Relaxing and therapeutic massages and facials at home in Monterrey and its metro area. Book on WhatsApp and enjoy well-being in the comfort of your home.",
-    "contactDescription": "Book your at-home massage or facial in Monterrey. Message us on WhatsApp, call us or fill in the form and we'll get back to you as soon as we can."
+    "contactDescription": "Book your at-home massage or facial in Monterrey. Message us on WhatsApp, call us or fill in the form and we'll get back to you as soon as we can.",
+    "privacyDescription": "Privacy Notice of Masajes Relax Monterrey: what data we collect, what we use it for and how to exercise your ARCO rights."
   },
   "common": {
     "skipLink": "Skip to content"
@@ -91,7 +92,9 @@
     "ctaText1": "Ready for your relaxation session?",
     "ctaText2": "Call us, send us a message or fill in the form. We are here to give you the best at-home massage experience.",
     "service": "Service of interest (optional)",
-    "servicePlaceholder": "Choose a service"
+    "servicePlaceholder": "Choose a service",
+    "privacyPrefix": "By sending this form you accept our",
+    "privacyLink": "Privacy Notice"
   },
   "footer": {
     "company": "Company",
@@ -103,10 +106,14 @@
     "massageBenefits": "Benefits of massage",
     "facialBenefits": "Facial cleansing and its benefits",
     "socialLabel": "{name} on {network}",
-    "copyright": "© {year} {name}."
+    "copyright": "© {year} {name}.",
+    "privacy": "Privacy Notice"
   },
   "whatsapp": {
     "label": "Chat with us on WhatsApp",
     "message": "Hi, I'd like information about your massages."
+  },
+  "privacy": {
+    "updated": "Last updated: {date}"
   }
 }

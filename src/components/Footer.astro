@@ -100,6 +100,9 @@ const socials = [
 
     <div class="footer__bottom">
       <p>{t("footer.copyright", { year, name: site.name })}</p>
+      <a href={getLocalizedPath("/aviso-de-privacidad", lang)}>
+        {t("footer.privacy")}
+      </a>
     </div>
   </div>
 </footer>
