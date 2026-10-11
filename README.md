@@ -66,4 +66,6 @@ npm run test:e2e         # end-to-end tests (Playwright, desktop and phone sizes
 
 ## Workflow
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full flow (branches, commits, pull requests, checks and deployment).
+
 One branch per Linear ticket, named `type/REL-N-short-slug` (for example `chore/REL-5-astro-setup`), merged through a pull request.
