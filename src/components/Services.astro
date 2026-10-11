@@ -96,14 +96,30 @@ const t = useTranslations(lang);
       overflow: visible;
     }
 
+    /* Wrapping rows with centered cards: an incomplete last row stays balanced. */
     .services__grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(16.5rem, 1fr));
+      --per-row: 2;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
       gap: var(--space-5);
     }
 
     .services__item {
-      flex: none;
+      flex: 0 0
+        calc((100% - (var(--per-row) - 1) * var(--space-5)) / var(--per-row));
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .services__grid {
+      --per-row: 3;
+    }
+  }
+
+  @media (min-width: 75rem) {
+    .services__grid {
+      --per-row: 4;
     }
   }
 </style>

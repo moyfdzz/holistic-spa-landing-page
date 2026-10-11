@@ -11,6 +11,8 @@ import sport from "../assets/images/ai/sport.webp";
 import deepFacial from "../assets/images/ai/deep-facial.webp";
 import moisturizingFacial from "../assets/images/ai/moisturizing-facial.webp";
 import prenatal from "../assets/images/ai/prenatal.webp";
+import craniofacial from "../assets/images/ai/craniofacial.webp";
+import reflexology from "../assets/images/ai/reflexology.webp";
 
 /**
  * @typedef {object} ServiceText
@@ -35,6 +37,9 @@ const MASSAGE_DURATIONS = [60, 90, 120];
 
 /** Every facial lasts 60 minutes. */
 const FACIAL_DURATIONS = [60];
+
+/** The short services (craniofacial massage and reflexology) take 15 or 30 minutes. */
+const SHORT_DURATIONS = [15, 30];
 
 /** @type {Service[]} */
 export const services = [
@@ -235,6 +240,56 @@ export const services = [
         benefits: ["Eases back and hip pain", "Comfortable and safe"],
         imageAlt:
           "Pregnant woman reclining with pillows while a therapist gives her a gentle, safe massage",
+      },
+    },
+  },
+  {
+    id: "craniofacial",
+    slug: "craneofacial",
+    icon: "lucide:smile",
+    image: craniofacial,
+    durations: SHORT_DURATIONS,
+    text: {
+      es: {
+        name: "Masaje craneofacial",
+        description:
+          "Maniobras suaves en cuero cabelludo, frente, sienes, mandíbula y cuello para soltar la tensión y el cansancio del rostro.",
+        benefits: ["Alivia la tensión", "Relaja la mandíbula"],
+        imageAlt:
+          "Terapeuta sentada junto a la cabecera de una persona recostada, dándole un masaje craneofacial con las manos sobre su frente y sus sienes",
+      },
+      en: {
+        name: "Craniofacial massage",
+        description:
+          "Gentle techniques on the scalp, forehead, temples, jaw and neck to release tension and facial fatigue.",
+        benefits: ["Eases tension", "Relaxes the jaw"],
+        imageAlt:
+          "Therapist seated at the head of a reclining person, giving a craniofacial massage with her hands on their forehead and temples",
+      },
+    },
+  },
+  {
+    id: "reflexology",
+    slug: "reflexologia",
+    icon: "lucide:footprints",
+    image: reflexology,
+    durations: SHORT_DURATIONS,
+    text: {
+      es: {
+        name: "Reflexología de pies y manos",
+        description:
+          "Presión suave sobre puntos específicos de pies y manos para promover la relajación y el bienestar general.",
+        benefits: ["Promueve la relajación", "Alivia el cansancio"],
+        imageAlt:
+          "Terapeuta sentada al pie de la camilla masajeando con ambas manos la planta del pie de una persona recostada, en una sesión de reflexología",
+      },
+      en: {
+        name: "Foot and hand reflexology",
+        description:
+          "Gentle pressure on specific points of the feet and hands to promote relaxation and overall well-being.",
+        benefits: ["Promotes relaxation", "Eases tiredness"],
+        imageAlt:
+          "Therapist seated at the foot of the massage table massaging the sole of a reclining person's foot with both hands during a reflexology session",
       },
     },
   },
