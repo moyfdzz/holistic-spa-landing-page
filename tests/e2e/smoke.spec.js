@@ -279,6 +279,12 @@ test.describe("services catalog", () => {
       await expect(card.locator(".service-card__duration")).toContainText(
         "min",
       );
+      const isFacial = /facial/i.test(
+        (await card.locator(".service-card__name").textContent()) ?? "",
+      );
+      await expect(card.locator(".service-card__times li")).toHaveText(
+        isFacial ? ["60 min"] : ["60 min", "90 min", "120 min"],
+      );
       await expect(card.locator("img")).toHaveAttribute("alt", /.{10,}/);
     }
     const quote = cards.first().locator("[data-quote]");

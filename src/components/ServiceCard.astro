@@ -3,7 +3,6 @@ import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Button from "./Button.astro";
 import { site } from "../config/site.js";
-import { formatDuration } from "../data/services.js";
 import type { Service } from "../data/services.js";
 import {
   getLangFromUrl,
@@ -47,11 +46,15 @@ const contactUrl = `${getLocalizedPath("/contact", lang)}?service=${service.slug
         <li>{benefit}</li>
       ))}
     </ul>
-    <p class="service-card__duration">
+    <div class="service-card__duration">
       <Icon name="lucide:clock" aria-hidden="true" />
       <span class="visually-hidden">{t("services.durationLabel")}:</span>
-      {t("services.duration", { time: formatDuration(service.durationMin) })}
-    </p>
+      <ul class="service-card__times">
+        {service.durations.map((minutes) => (
+          <li>{t("services.duration", { time: minutes })}</li>
+        ))}
+      </ul>
+    </div>
     <div class="service-card__actions">
       <Button
         href={quoteUrl}
@@ -141,18 +144,35 @@ const contactUrl = `${getLocalizedPath("/contact", lang)}?service=${service.slug
   }
 
   .service-card__duration {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.5rem;
     margin-top: auto;
     color: var(--sage-700);
-    font-size: var(--text-sm);
-    font-weight: 600;
   }
 
   .service-card__duration :global(svg) {
+    flex: none;
     width: 1.1rem;
     height: 1.1rem;
+  }
+
+  .service-card__times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .service-card__times li {
+    padding: 0.15rem 0.6rem;
+    border: 1px solid var(--sage-300);
+    border-radius: var(--radius-pill);
+    color: var(--sage-800);
+    font-size: 0.8125rem;
+    font-weight: 700;
   }
 
   .service-card__actions {

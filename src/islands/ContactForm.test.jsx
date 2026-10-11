@@ -3,8 +3,9 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import ContactForm, { getServiceFromSearch } from "./ContactForm.jsx";
 
 const services = [
-  { slug: "shiatsu", name: "Masaje Shiatsu" },
-  { slug: "prenatal", name: "Masaje prenatal" },
+  { slug: "shiatsu", name: "Masaje Shiatsu", durations: [60, 90, 120] },
+  { slug: "facial", name: "Facial", durations: [60] },
+  { slug: "prenatal", name: "Masaje prenatal", durations: [60, 90, 120] },
 ];
 
 /**
@@ -191,6 +192,61 @@ describe("ContactForm", () => {
     window.history.replaceState({}, "", "/contact?service=shiatsu");
     setup();
     expect(screen.getByLabelText(/Servicio de interés/)).toHaveValue("shiatsu");
+  });
+
+  it("offers the lengths of the chosen service and nothing before that", () => {
+    setup();
+    expect(screen.queryByLabelText(/Duración de la sesión/)).toBeNull();
+
+    fireEvent.change(screen.getByLabelText(/Servicio de interés/), {
+      target: { value: "shiatsu" },
+    });
+    const select = screen.getByLabelText(/Duración de la sesión/);
+    expect(select).toHaveValue("");
+    expect(
+      Array.from(select.querySelectorAll("option")).map((o) => o.value),
+    ).toEqual(["", "60", "90", "120"]);
+
+    fireEvent.change(select, { target: { value: "90" } });
+    expect(select).toHaveValue("90");
+  });
+
+  it("picks the only length of a facial and clears a length that no longer exists", () => {
+    setup();
+    const service = screen.getByLabelText(/Servicio de interés/);
+    fireEvent.change(service, { target: { value: "shiatsu" } });
+    fireEvent.change(screen.getByLabelText(/Duración de la sesión/), {
+      target: { value: "120" },
+    });
+
+    fireEvent.change(service, { target: { value: "facial" } });
+    const select = screen.getByLabelText(/Duración de la sesión/);
+    expect(select).toHaveValue("60");
+    expect(select.querySelectorAll("option")).toHaveLength(2);
+  });
+
+  it("sends the chosen length with the message", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      /** @type {Response} */ ({
+        ok: true,
+        json: async () => ({ success: true }),
+      }),
+    );
+    setup();
+    fillValid();
+    fireEvent.change(screen.getByLabelText(/Servicio de interés/), {
+      target: { value: "shiatsu" },
+    });
+    fireEvent.change(screen.getByLabelText(/Duración de la sesión/), {
+      target: { value: "90" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    const [, options] = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(String(options?.body))).toMatchObject({
+      service: "shiatsu",
+      duration: "90 min",
+    });
   });
 
   it("shows a confirmation after a plain submit redirect", () => {

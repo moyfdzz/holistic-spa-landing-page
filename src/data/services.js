@@ -1,6 +1,6 @@
 /**
  * Services shown on the site, with their texts in both languages.
- * The owner reviews the wording and the durations.
+ * The owner reviews the wording.
  * @module data/services
  */
 import relaxing from "../assets/images/relaxing-massage.jpg";
@@ -26,9 +26,15 @@ import prenatal from "../assets/images/prenatal-massage.jpg";
  * @property {string} slug - Used in `?service=<slug>` links to the contact form.
  * @property {string} icon - Icon name from the icon library, such as `lucide:droplets`.
  * @property {ImageMetadata} image - Photo for the card.
- * @property {number | [number, number]} durationMin - Session length in minutes, or a range.
+ * @property {number[]} durations - Session lengths in minutes the client can choose from, shortest first.
  * @property {{ es: ServiceText, en: ServiceText }} text - Texts per language.
  */
+
+/** Every massage can be booked for 60, 90 or 120 minutes. */
+const MASSAGE_DURATIONS = [60, 90, 120];
+
+/** Every facial lasts 60 minutes. */
+const FACIAL_DURATIONS = [60];
 
 /** @type {Service[]} */
 export const services = [
@@ -37,7 +43,7 @@ export const services = [
     slug: "relajante",
     icon: "lucide:flower-2",
     image: relaxing,
-    durationMin: 60,
+    durations: MASSAGE_DURATIONS,
     text: {
       es: {
         name: "Masaje relajante",
@@ -62,7 +68,7 @@ export const services = [
     slug: "descontracturante",
     icon: "lucide:hand",
     image: decontracting,
-    durationMin: 60,
+    durations: MASSAGE_DURATIONS,
     text: {
       es: {
         name: "Masaje descontracturante",
@@ -87,7 +93,7 @@ export const services = [
     slug: "linfatico",
     icon: "lucide:droplets",
     image: linfatic,
-    durationMin: 60,
+    durations: MASSAGE_DURATIONS,
     text: {
       es: {
         name: "Masaje linfático",
@@ -112,7 +118,7 @@ export const services = [
     slug: "shiatsu",
     icon: "lucide:hand-heart",
     image: shiatsu,
-    durationMin: 60,
+    durations: MASSAGE_DURATIONS,
     text: {
       es: {
         name: "Masaje Shiatsu",
@@ -137,7 +143,7 @@ export const services = [
     slug: "deportivo",
     icon: "lucide:dumbbell",
     image: sport,
-    durationMin: [45, 60],
+    durations: MASSAGE_DURATIONS,
     text: {
       es: {
         name: "Masaje deportivo",
@@ -162,7 +168,7 @@ export const services = [
     slug: "facial-limpieza-profunda",
     icon: "lucide:sparkles",
     image: deepFacial,
-    durationMin: 60,
+    durations: FACIAL_DURATIONS,
     text: {
       es: {
         name: "Facial de limpieza profunda",
@@ -187,7 +193,7 @@ export const services = [
     slug: "facial-hidratante",
     icon: "lucide:droplet",
     image: moisturizingFacial,
-    durationMin: 45,
+    durations: FACIAL_DURATIONS,
     text: {
       es: {
         name: "Facial hidratante",
@@ -212,7 +218,7 @@ export const services = [
     slug: "prenatal",
     icon: "lucide:baby",
     image: prenatal,
-    durationMin: 60,
+    durations: MASSAGE_DURATIONS,
     text: {
       es: {
         name: "Masaje prenatal",
@@ -235,12 +241,10 @@ export const services = [
 ];
 
 /**
- * Formats a session length for display.
- * @param {number | [number, number]} durationMin - Minutes, or a `[min, max]` range.
- * @returns {string} Text such as `60` or `45–60`, without the unit.
+ * Finds the session lengths of a service.
+ * @param {string} slug - The service slug, for example `shiatsu`.
+ * @returns {number[]} The lengths in minutes, or an empty list when the slug is unknown.
  */
-export function formatDuration(durationMin) {
-  return Array.isArray(durationMin)
-    ? `${durationMin[0]}–${durationMin[1]}`
-    : String(durationMin);
+export function getDurationsBySlug(slug) {
+  return services.find((service) => service.slug === slug)?.durations ?? [];
 }

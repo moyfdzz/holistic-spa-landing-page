@@ -24,7 +24,7 @@ export function getServiceFromSearch(search, slugs) {
  * @property {"es" | "en"} lang - Language of the form.
  * @property {string} web3formsKey - Public Web3Forms access key. Empty when it is not configured.
  * @property {string} siteName - Business name, used in the email subject.
- * @property {{ slug: string, name: string }[]} services - Services to pick from.
+ * @property {{ slug: string, name: string, durations: number[] }[]} services - Services to pick from, with the session lengths each one offers.
  * @property {string} whatsappUrl - WhatsApp link shown when the form cannot be used.
  * @property {string} privacyHref - Address of the privacy notice.
  * @property {string} redirectUrl - Where Web3Forms sends people after a plain (no JavaScript) submit.
@@ -53,6 +53,7 @@ export default function ContactForm({
     message: "",
     method: /** @type {"email" | "whatsapp" | "phone"} */ ("email"),
     service: "",
+    duration: "",
     consent: false,
   });
   const [errors, setErrors] = useState(
@@ -74,7 +75,14 @@ export default function ContactForm({
       search,
       services.map((s) => s.slug),
     );
-    if (service) setValues((current) => ({ ...current, service }));
+    if (service) {
+      const options = services.find((s) => s.slug === service)?.durations ?? [];
+      setValues((current) => ({
+        ...current,
+        service,
+        duration: options.length === 1 ? String(options[0]) : "",
+      }));
+    }
     if (new URLSearchParams(search).get("sent") === "1") setStatus("success");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [services]);
@@ -85,7 +93,22 @@ export default function ContactForm({
    * @param {string | boolean} value - The new value.
    */
   const update = (field, value) => {
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const next = { ...current, [field]: value };
+      // The lengths depend on the service: keep the choice only if it still exists,
+      // and pick the only option when there is just one (facials).
+      if (field === "service") {
+        const options =
+          services.find((service) => service.slug === value)?.durations ?? [];
+        next.duration =
+          options.length === 1
+            ? String(options[0])
+            : options.map(String).includes(current.duration)
+              ? current.duration
+              : "";
+      }
+      return next;
+    });
     setErrors((current) => {
       const next = { ...current };
       delete next[/** @type {keyof typeof next} */ (field)];
@@ -134,6 +157,7 @@ export default function ContactForm({
           message: values.message.trim(),
           contact_method: values.method,
           service: values.service,
+          duration: values.duration ? `${values.duration} min` : "",
           botcheck: botcheck?.checked ?? false,
         }),
       });
@@ -178,6 +202,9 @@ export default function ContactForm({
       </p>
     ) : null;
 
+  const durationOptions =
+    services.find((service) => service.slug === values.service)?.durations ??
+    [];
   const sending = status === "submitting";
 
   return (
@@ -269,6 +296,25 @@ export default function ContactForm({
           ))}
         </select>
       </div>
+
+      {durationOptions.length > 0 && (
+        <div className="cf__field cf__field--select">
+          <label htmlFor="duration">{t("contact.duration")}</label>
+          <select
+            id="duration"
+            name="duration"
+            value={values.duration}
+            onChange={(e) => update("duration", e.target.value)}
+          >
+            <option value="">{t("contact.durationPlaceholder")}</option>
+            {durationOptions.map((minutes) => (
+              <option key={minutes} value={String(minutes)}>
+                {t("contact.durationOption", { time: minutes })}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="cf__field">
         <textarea
