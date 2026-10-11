@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDuration, services } from "./services.js";
+import { getDurationsBySlug, services } from "./services.js";
 
 describe("services data", () => {
   it("has the 8 current services with unique ids and slugs", () => {
@@ -13,8 +13,8 @@ describe("services data", () => {
       expect(service.slug).toMatch(/^[a-z0-9-]+$/);
       expect(service.icon).toMatch(/^[a-z-]+:[a-z0-9-]+$/);
       expect(service.image).toBeTruthy();
-      const minutes = [service.durationMin].flat();
-      for (const value of minutes) expect(value).toBeGreaterThan(0);
+      expect(service.durations.length).toBeGreaterThan(0);
+      for (const value of service.durations) expect(value).toBeGreaterThan(0);
     }
   });
 
@@ -43,9 +43,23 @@ describe("services data", () => {
   });
 });
 
-describe("formatDuration", () => {
-  it("formats a number and a range", () => {
-    expect(formatDuration(60)).toBe("60");
-    expect(formatDuration([45, 60])).toBe("45–60");
+describe("service durations", () => {
+  it("offers 60, 90 and 120 minutes for every massage", () => {
+    for (const service of services.filter((s) => !s.id.endsWith("Facial"))) {
+      expect(service.durations, service.id).toEqual([60, 90, 120]);
+    }
+  });
+
+  it("offers only 60 minutes for every facial", () => {
+    const facials = services.filter((s) => s.id.endsWith("Facial"));
+    expect(facials).toHaveLength(2);
+    for (const service of facials) expect(service.durations).toEqual([60]);
+  });
+});
+
+describe("getDurationsBySlug", () => {
+  it("returns the lengths of a service and an empty list for unknown slugs", () => {
+    expect(getDurationsBySlug("shiatsu")).toEqual([60, 90, 120]);
+    expect(getDurationsBySlug("nope")).toEqual([]);
   });
 });

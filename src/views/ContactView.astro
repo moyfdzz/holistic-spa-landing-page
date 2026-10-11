@@ -48,6 +48,7 @@ const contactPath = getLocalizedPath("/contact", lang);
             services={services.map((service) => ({
               slug: service.slug,
               name: service.text[lang].name,
+              durations: service.durations,
             }))}
             whatsappUrl={buildWhatsAppUrl(site.whatsapp, t("whatsapp.message"))}
             privacyHref={getLocalizedPath("/aviso-de-privacidad", lang)}
