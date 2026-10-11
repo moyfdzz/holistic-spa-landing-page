@@ -115,5 +115,11 @@
   },
   "privacy": {
     "updated": "Última actualización: {date}"
+  },
+  "testimonials": {
+    "title": "Lo que dicen nuestros clientes",
+    "lead": "Opiniones reales de personas que ya recibieron nuestros servicios a domicilio.",
+    "rating": "{rating} de 5 estrellas",
+    "more": "Ver más reseñas en Google"
   }
 }
