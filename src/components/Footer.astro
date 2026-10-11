@@ -120,6 +120,20 @@ const socials = [
     text-decoration: none;
   }
 
+  /* Easy to tap: every footer link is at least 44 px tall. */
+  .footer__col a,
+  .footer__bottom a,
+  .footer__logo {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .footer__socials a {
+    justify-content: center;
+    min-width: 2.75rem;
+  }
+
   .footer a:hover {
     color: #fff;
     text-decoration: underline;
@@ -163,7 +177,7 @@ const socials = [
 
   .footer__col {
     display: grid;
-    gap: var(--space-2);
+    gap: 0;
     align-content: start;
   }
 

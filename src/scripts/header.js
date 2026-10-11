@@ -30,7 +30,10 @@ export function initHeader(root = document) {
   );
   if (!header || !toggle || !nav) return null;
 
-  const inertTargets = Array.from(root.querySelectorAll("main, footer"));
+  // Everything outside the header is made inert, so focus cannot leave the open menu.
+  const inertTargets = Array.from(
+    root.querySelectorAll("main, footer, [data-whatsapp-button]"),
+  );
 
   /** @param {boolean} isOpen - Whether the menu should be open. */
   const setOpen = (isOpen) => {

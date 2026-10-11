@@ -11,7 +11,8 @@ describe("initHeader", () => {
         <div data-nav-overlay data-open="false"></div>
       </header>
       <main><a href="/x">Main link</a></main>
-      <footer>Footer</footer>`;
+      <footer>Footer</footer>
+      <a data-whatsapp-button href="#">WhatsApp</a>`;
   });
 
   /** @returns {HTMLElement} The toggle button. */
@@ -34,6 +35,9 @@ describe("initHeader", () => {
     expect(toggle().getAttribute("aria-label")).toBe("Cerrar menú");
     expect(document.body.classList.contains("nav-open")).toBe(true);
     expect(document.querySelector("main")?.hasAttribute("inert")).toBe(true);
+    expect(
+      document.querySelector("[data-whatsapp-button]")?.hasAttribute("inert"),
+    ).toBe(true);
     expect(document.activeElement?.id).toBe("one");
 
     toggle().click();

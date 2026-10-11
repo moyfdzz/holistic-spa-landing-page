@@ -57,7 +57,7 @@ const path = Astro.url.pathname.replace(/(.)\/$/, "$1");
   .lang {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0;
     margin-left: auto;
     font-size: var(--text-sm);
     font-weight: 600;
@@ -68,6 +68,10 @@ const path = Astro.url.pathname.replace(/(.)\/$/, "$1");
   }
 
   .lang__link {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
     padding: 0.35rem 0.4rem;
     border-radius: var(--radius-sm);
     color: var(--sage-700);
@@ -83,16 +87,22 @@ const path = Astro.url.pathname.replace(/(.)\/$/, "$1");
     color: var(--sage-800);
   }
 
+  /* A small notice at the bottom, so it never covers the header or the page title. */
   .lang-suggest {
-    position: absolute;
-    inset: 100% 0 auto;
-    z-index: 5;
+    position: fixed;
+    z-index: 45;
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    left: max(var(--space-4), env(safe-area-inset-left));
+    right: 5.5rem;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     gap: var(--space-3);
-    padding: 0.5rem var(--space-4);
-    background: var(--sage-700);
+    max-width: 28rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius-lg);
+    background: var(--sage-800);
+    box-shadow: var(--shadow-lg);
     color: #fff;
     font-size: var(--text-sm);
   }
@@ -107,10 +117,13 @@ const path = Astro.url.pathname.replace(/(.)\/$/, "$1");
   }
 
   .lang-suggest button {
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
     border: 0;
     background: none;
     color: inherit;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     line-height: 1;
     cursor: pointer;
   }
