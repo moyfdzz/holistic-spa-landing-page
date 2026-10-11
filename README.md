@@ -44,6 +44,20 @@ src/styles/        stylesheets
 src/scripts/       legacy browser script, replaced piece by piece
 ```
 
+## Testing
+
+```bash
+npm test                 # unit tests (Vitest + Testing Library, jsdom)
+npm run test:watch       # unit tests in watch mode
+npm run test:coverage    # unit tests with a coverage report
+npm run test:e2e         # end-to-end tests (Playwright, desktop and phone sizes)
+```
+
+- Unit tests live next to the code as `*.test.js` / `*.test.jsx`.
+- End-to-end tests live in `tests/e2e/`. They build the site and test the production output.
+- The first time, install the browser Playwright uses: `npx playwright install chromium`.
+- Test output (`coverage/`, `playwright-report/`, `test-results/`) is git-ignored.
+
 ## Code quality
 
 - ESLint and Prettier run on staged files before every commit (Husky + lint-staged).
