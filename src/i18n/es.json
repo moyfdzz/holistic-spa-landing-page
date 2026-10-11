@@ -58,17 +58,7 @@
   "faq": {
     "title": "Preguntas frecuentes",
     "lead": "Resolvemos las dudas más comunes sobre nuestros servicios a domicilio.",
-    "link": "Solicita más información",
-    "q1": "¿Qué tipos de masajes ofrecen en la comodidad de mi hogar?",
-    "a1": "Ofrecemos una variedad de masajes, incluyendo masaje relajante, terapéutico, deportivo y para aliviar el estrés, todos realizados en la comodidad de tu hogar según tus necesidades.",
-    "q2": "¿Cómo puedo reservar una cita para un masaje a domicilio?",
-    "a2": "Puedes reservar tu cita fácilmente llamándonos, enviándonos un mensaje a través de nuestra página web o por WhatsApp, o por cualquiera de nuestras redes sociales en la parte de abajo. Estamos disponibles para programar tu masaje según tu horario preferido.",
-    "q3": "¿Necesito tener alguna preparación especial antes de recibir el masaje en casa?",
-    "a3": "No necesitas prepararte de manera especial, pero te recomendamos estar en un ambiente cómodo y relajado. Nosotros llevaremos todo lo necesario para el masaje, solo asegúrate de contar con un espacio tranquilo.",
-    "q4": "¿Qué tan lejos viajan para brindar el servicio a domicilio?",
-    "a4": "Ofrecemos nuestros servicios en toda el área metropolitana de Monterrey. Si no estás seguro de si cubrimos tu área, contáctanos y te confirmaremos con gusto.",
-    "q5": "¿Es seguro recibir un masaje en casa?",
-    "a5": "Sí, contamos con capacitación y se siguen estrictas normas de higiene y profesionalismo. Nos aseguramos de que cada servicio sea seguro, relajante y beneficioso para tu bienestar."
+    "link": "Solicita más información"
   },
   "home": {
     "ctaTitle": "Conéctate con {name} para tu Viaje de Bienestar",

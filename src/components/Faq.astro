@@ -1,16 +1,27 @@
 ---
 import { Icon } from "astro-icon/components";
 import Section from "./Section.astro";
+import { faq } from "../data/faq.js";
 import {
   getLangFromUrl,
   getLocalizedPath,
   useTranslations,
 } from "../i18n/utils.js";
 
-// REL-20 moves the questions to a data file with more content.
-const questionKeys = [1, 2, 3, 4, 5];
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
+
+// Structured data so search engines can show the questions.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  inLanguage: lang,
+  mainEntity: faq.map((item) => ({
+    "@type": "Question",
+    name: item.text[lang].question,
+    acceptedAnswer: { "@type": "Answer", text: item.text[lang].answer },
+  })),
+};
 ---
 
 <Section id="FAQ" tone="alt" labelledby="faq-title">
@@ -27,52 +38,34 @@ const t = useTranslations(lang);
     </div>
 
     <div class="accordion">
-      {questionKeys.map((n, index) => (
-        <div
+      {faq.map((item, index) => (
+        <details
           class="accordion__item"
-          id={`question${index + 1}`}
-          data-accordion-item
-          data-open="false"
+          id={`faq-${item.id}`}
+          name="faq"
           data-reveal
           style={`--reveal-delay: ${index * 80}ms`}
         >
-          <h3 class="accordion__heading">
-            <button
-              type="button"
-              class="accordion__button"
-              id={`question${index + 1}-button`}
-              aria-expanded="false"
-              aria-controls={`answer${index + 1}`}
-              data-accordion-toggle
-            >
-              <span>{t(`faq.q${n}`)}</span>
-              <Icon
-                name="lucide:chevron-down"
-                class="accordion__icon"
-                aria-hidden="true"
-              />
-            </button>
-          </h3>
-          <div
-            class="answer"
-            id={`answer${index + 1}`}
-            role="region"
-            aria-labelledby={`question${index + 1}-button`}
-          >
-            <div class="answer__inner">
-              <p class="answer__text">{t(`faq.a${n}`)}</p>
-            </div>
-          </div>
-        </div>
+          <summary class="accordion__button">
+            <h3 class="accordion__question">{item.text[lang].question}</h3>
+            <Icon
+              name="lucide:chevron-down"
+              class="accordion__icon"
+              aria-hidden="true"
+            />
+          </summary>
+          <p class="answer__text">{item.text[lang].answer}</p>
+        </details>
       ))}
     </div>
   </div>
-</Section>
 
-<script>
-  import { initAccordion } from "../scripts/accordion.js";
-  initAccordion();
-</script>
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(structuredData)}
+  />
+</Section>
 
 <style>
   .faq {
@@ -118,15 +111,11 @@ const t = useTranslations(lang);
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
     transition: box-shadow var(--duration) var(--ease);
+    interpolate-size: allow-keywords;
   }
 
-  .accordion__item[data-open="true"] {
+  .accordion__item[open] {
     box-shadow: var(--shadow-md);
-  }
-
-  .accordion__heading {
-    font-family: var(--font-body);
-    font-size: var(--text-base);
   }
 
   .accordion__button {
@@ -134,17 +123,23 @@ const t = useTranslations(lang);
     align-items: center;
     justify-content: space-between;
     gap: var(--space-4);
-    width: 100%;
     min-height: 3.5rem;
     padding: var(--space-4) var(--space-5);
-    border: 0;
     border-radius: var(--radius-lg);
-    background: transparent;
     color: var(--color-heading);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .accordion__button::-webkit-details-marker {
+    display: none;
+  }
+
+  .accordion__question {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
     font-weight: 700;
     line-height: 1.4;
-    text-align: left;
-    cursor: pointer;
   }
 
   .accordion__button :global(.accordion__icon) {
@@ -155,35 +150,34 @@ const t = useTranslations(lang);
     transition: transform var(--duration) var(--ease);
   }
 
-  .accordion__item[data-open="true"] :global(.accordion__icon) {
+  .accordion__item[open] :global(.accordion__icon) {
     transform: rotate(180deg);
   }
 
-  /* The answer grows from zero height; it is hidden from keyboards and screen readers when closed. */
-  .answer {
-    display: grid;
-    grid-template-rows: 0fr;
-    visibility: hidden;
-    transition:
-      grid-template-rows var(--duration) var(--ease),
-      visibility 0s linear var(--duration);
-  }
-
-  .accordion__item[data-open="true"] .answer {
-    grid-template-rows: 1fr;
-    visibility: visible;
-    transition:
-      grid-template-rows var(--duration) var(--ease),
-      visibility 0s;
-  }
-
-  .answer__inner {
+  /* The answer slides open where the browser supports it; elsewhere it just appears. */
+  .accordion__item::details-content {
+    block-size: 0;
     overflow: hidden;
+    transition:
+      block-size var(--duration) var(--ease),
+      content-visibility var(--duration) allow-discrete;
+  }
+
+  .accordion__item[open]::details-content {
+    block-size: auto;
   }
 
   .answer__text {
     padding: 0 var(--space-5) var(--space-5);
     color: var(--color-text-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .accordion__item,
+    .accordion__item::details-content,
+    .accordion__button :global(.accordion__icon) {
+      transition: none;
+    }
   }
 
   @media (min-width: 60rem) {

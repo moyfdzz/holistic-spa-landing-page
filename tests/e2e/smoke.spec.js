@@ -288,20 +288,44 @@ test.describe("home page", () => {
     ).toBeHidden();
   });
 
-  test("FAQ answer opens and closes", async ({ page }) => {
+  test("FAQ answer opens and closes with the keyboard", async ({ page }) => {
     await page.goto("/");
-    const question = page.getByRole("button", { name: /Qué tipos de masajes/ });
-    const answer = page.locator("#answer1");
+    const item = page.locator("#faq-types");
+    const question = item.locator("summary");
     await question.scrollIntoViewIfNeeded();
-    await expect(answer).toBeHidden();
+    await expect(item).not.toHaveAttribute("open", "");
 
-    await question.click();
-    await expect(question).toHaveAttribute("aria-expanded", "true");
-    await expect(answer).toBeVisible();
+    await question.focus();
+    await page.keyboard.press("Enter");
+    await expect(item).toHaveAttribute("open", "");
+    await expect(item.locator(".answer__text")).toBeVisible();
 
-    await question.click();
-    await expect(question).toHaveAttribute("aria-expanded", "false");
-    await expect(answer).toBeHidden();
+    await page.keyboard.press("Space");
+    await expect(item).not.toHaveAttribute("open", "");
+  });
+
+  test("only one FAQ answer is open at a time", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#faq-types summary").click();
+    await page.locator("#faq-booking summary").click();
+    await expect(page.locator("#faq-types")).not.toHaveAttribute("open", "");
+    await expect(page.locator("#faq-booking")).toHaveAttribute("open", "");
+  });
+
+  test("FAQ has structured data in the current language and no old handlers", async ({
+    page,
+  }) => {
+    await page.goto("/en/");
+    const json = await page
+      .locator('script[type="application/ld+json"]')
+      .first()
+      .textContent();
+    const data = JSON.parse(json ?? "{}");
+    expect(data["@type"]).toBe("FAQPage");
+    expect(data.mainEntity[0].name).toMatch(/massage/i);
+    expect(
+      await page.locator("[onclick], a[href^='javascript:']").count(),
+    ).toBe(0);
   });
 });
 

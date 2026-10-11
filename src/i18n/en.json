@@ -58,17 +58,7 @@
   "faq": {
     "title": "Frequently asked questions",
     "lead": "We answer the most common questions about our at-home services.",
-    "link": "Request more information",
-    "q1": "What types of massage do you offer in the comfort of my home?",
-    "a1": "We offer a variety of massages, including relaxing, therapeutic, sports and stress-relief massage, all done in the comfort of your home according to your needs.",
-    "q2": "How can I book an at-home massage?",
-    "a2": "You can easily book by calling us, sending us a message through our website or on WhatsApp, or through any of our social networks below. We are available to schedule your massage at the time that suits you best.",
-    "q3": "Do I need any special preparation before getting a massage at home?",
-    "a3": "You don't need to prepare in any special way, but we recommend being in a comfortable, relaxed setting. We bring everything needed for the massage; just make sure you have a quiet space.",
-    "q4": "How far do you travel to provide the at-home service?",
-    "a4": "We offer our services throughout the Monterrey metropolitan area. If you are not sure whether we cover your area, contact us and we will gladly confirm.",
-    "q5": "Is it safe to get a massage at home?",
-    "a5": "Yes. We are trained and follow strict standards of hygiene and professionalism. We make sure every service is safe, relaxing and good for your well-being."
+    "link": "Request more information"
   },
   "home": {
     "ctaTitle": "Connect with {name} for your Well-Being Journey",
