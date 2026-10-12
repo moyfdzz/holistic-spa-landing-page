@@ -43,6 +43,6 @@ export const site = {
   },
   googleSiteVerification: "7ISuWo6e5ATpM4RIkPnfSrbDnpxiW7uxlrfE9lMC9Ss",
   googleReviewsUrl: "",
-  // Production address; it changes again when the custom domain is connected (REL-26).
-  url: "https://masajesrelaxmty.vercel.app",
+  // Production address: the custom domain (REL-26), with www as the main address.
+  url: "https://www.masajesrelaxmty.com",
 };
