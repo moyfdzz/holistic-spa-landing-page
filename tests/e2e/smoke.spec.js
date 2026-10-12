@@ -601,6 +601,52 @@ test.describe("responsive layout", () => {
   }
 });
 
+test.describe("no sideways scrolling after reading the whole page", () => {
+  // The first check above runs right after loading. Phones only showed the white
+  // strip on the right after the visitor reached the bottom, so this one scrolls
+  // through the page (with animations on) before measuring.
+  for (const path of [
+    "/",
+    "/en/",
+    "/contact",
+    "/en/contact",
+    "/aviso-de-privacidad",
+    "/en/privacy-notice",
+  ]) {
+    test(`${path} cannot be dragged sideways`, async ({ page, isMobile }) => {
+      test.skip(!isMobile, "only phones expand the page to fit wide content");
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+      const startWidth = await page.evaluate(() => window.innerWidth);
+
+      const height = await page.evaluate(
+        () => document.documentElement.scrollHeight,
+      );
+      for (let y = 0; y < height; y += 400) {
+        await page.evaluate((top) => window.scrollTo(0, top), y);
+        await page.waitForTimeout(40);
+      }
+      await page.evaluate(() =>
+        window.scrollTo(0, document.documentElement.scrollHeight),
+      );
+      await page.waitForTimeout(1500);
+
+      const result = await page.evaluate(() => {
+        window.scrollTo(1000, window.scrollY);
+        return {
+          innerWidth: window.innerWidth,
+          scrollWidth: document.documentElement.scrollWidth,
+          scrollX: window.scrollX,
+        };
+      });
+      expect(result.innerWidth).toBe(startWidth);
+      expect(result.scrollWidth).toBeLessThanOrEqual(result.innerWidth);
+      expect(result.scrollX).toBe(0);
+    });
+  }
+});
+
 test.describe("motion and scripts", () => {
   test("content is visible without JavaScript", async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
