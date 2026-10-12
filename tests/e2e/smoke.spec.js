@@ -270,6 +270,30 @@ test.describe("floating WhatsApp button", () => {
   });
 });
 
+test.describe("page structure for screen readers and search engines", () => {
+  test("the home page has each section heading only once", async ({ page }) => {
+    await page.goto("/");
+    const headings = await page.locator("main h2, main h3").allTextContents();
+    const names = headings.map((text) => text.replace(/\s+/g, " ").trim());
+    expect(names.filter((n) => n === "Nuestros Servicios")).toHaveLength(1);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  test("structured data is written without any < character", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    expect(blocks.length).toBeGreaterThanOrEqual(2);
+    for (const block of blocks) {
+      expect(block).not.toContain("<");
+      expect(() => JSON.parse(block)).not.toThrow();
+    }
+  });
+});
+
 test.describe("services catalog", () => {
   test("every service shows a description, duration and a quote button", async ({
     page,

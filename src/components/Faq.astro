@@ -2,6 +2,7 @@
 import { Icon } from "astro-icon/components";
 import Section from "./Section.astro";
 import { faq } from "../data/faq.js";
+import { toSafeJson } from "../utils/seo.js";
 import {
   getLangFromUrl,
   getLocalizedPath,
@@ -63,7 +64,7 @@ const structuredData = {
   <script
     is:inline
     type="application/ld+json"
-    set:html={JSON.stringify(structuredData)}
+    set:html={toSafeJson(structuredData)}
   />
 </Section>
 

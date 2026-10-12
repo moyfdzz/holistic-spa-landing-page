@@ -6,6 +6,7 @@ import {
   buildLocalBusiness,
   serviceAreaCities,
   trimTrailingSlash,
+  toSafeJson,
 } from "./seo.js";
 
 describe("absoluteUrl", () => {
@@ -68,5 +69,17 @@ describe("buildLocalBusiness", () => {
 
   it("can be written as JSON", () => {
     expect(() => JSON.parse(JSON.stringify(data))).not.toThrow();
+  });
+});
+
+describe("toSafeJson", () => {
+  it("never writes a < character, so a value cannot close the script tag", () => {
+    const text = toSafeJson({ name: "</script><script>alert(1)</script>" });
+    expect(text).not.toContain("<");
+  });
+
+  it("gives back exactly the same data when parsed", () => {
+    const data = { a: "x < y", b: ["</b>", 2], c: { d: null } };
+    expect(JSON.parse(toSafeJson(data))).toEqual(data);
   });
 });
