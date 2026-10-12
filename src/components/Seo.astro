@@ -1,7 +1,7 @@
 ---
 import { site } from "../config/site.js";
 import { getLangFromUrl, getLocalizedPath } from "../i18n/utils.js";
-import { absoluteUrl, trimTrailingSlash } from "../utils/seo.js";
+import { absoluteUrl, toSafeJson, trimTrailingSlash } from "../utils/seo.js";
 
 interface Props {
   /** Title of the page, shown in the tab and in search results. */
@@ -54,9 +54,5 @@ const imageUrl = absoluteUrl(image, site.url);
 <meta name="twitter:image" content={imageUrl} />
 
 {jsonLd.map((data) => (
-  <script
-    is:inline
-    type="application/ld+json"
-    set:html={JSON.stringify(data)}
-  />
+  <script is:inline type="application/ld+json" set:html={toSafeJson(data)} />
 ))}

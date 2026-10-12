@@ -91,3 +91,14 @@ export function buildLocalBusiness({ lang, site, services, description }) {
     },
   };
 }
+
+/**
+ * Turns data into JSON that is safe to place inside a `<script>` tag: every `<`
+ * is written as `\u003c`, so no value can ever close the tag or open another one.
+ * Parsing the result gives back exactly the same data.
+ * @param {unknown} data - The structured data to write.
+ * @returns {string} JSON text without any `<` character.
+ */
+export function toSafeJson(data) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}

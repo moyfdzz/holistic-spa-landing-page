@@ -47,18 +47,18 @@ const t = useTranslations(lang);
             <p class="stat__value">
               {t("about.since")} {site.foundedYear}
             </p>
-            <h3 class="stat__label">
+            <p class="stat__label">
               {t("about.yearsPrefix")}
               <span data-years-since={site.foundedYear}>{yearsSince}</span>
               {t("about.yearsSuffix")}
-            </h3>
+            </p>
             <p class="stat__text">{t("about.yearsText")}</p>
           </Card>
         </div>
         <div data-reveal style="--reveal-delay: 300ms">
           <Card class="stat">
             <p class="stat__value">{services.length}</p>
-            <h3 class="stat__label">{t("about.servicesLabel")}</h3>
+            <p class="stat__label">{t("about.servicesLabel")}</p>
             <p class="stat__text">{t("about.servicesText")}</p>
           </Card>
         </div>
