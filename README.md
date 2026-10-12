@@ -2,11 +2,11 @@
 
 Website for **Masajes Relax Monterrey**, a home massage and facial service in Monterrey, Nuevo León, Mexico. The site is in Spanish (default) and English.
 
-- Live site: https://masajesrelaxmty.vercel.app/ (it changes again when the custom domain is connected, see the Linear ticket REL-26)
+- Live site: https://www.masajesrelaxmty.com/ (the old addresses `masajesrelaxmty.vercel.app` and `masajes-rossy.vercel.app` redirect to it)
 - Planning: Linear project "Website Refactor 2026"
 - Contributing: see [CONTRIBUTING.md](CONTRIBUTING.md)
 
-> The GitHub repository and the Vercel project keep their old names until the domain move (REL-26).
+> The GitHub repository and the Vercel project keep their old names; only the public address changed (REL-26).
 
 ## Stack
 
