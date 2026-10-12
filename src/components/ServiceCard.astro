@@ -75,6 +75,9 @@ const contactUrl = `${getLocalizedPath("/contact", lang)}?service=${service.slug
 
 <style>
   .service-card {
+    /* The hidden text for screen readers is positioned inside the card, so the
+       phone carousel clips it and the page cannot be dragged sideways. */
+    position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
