@@ -2,11 +2,11 @@
 
 Website for **Masajes Relax Monterrey**, a home massage and facial service in Monterrey, Nuevo León, Mexico. The site is in Spanish (default) and English.
 
-- Live site: https://www.masajesrelaxmty.com/ (the old addresses `masajesrelaxmty.vercel.app` and `masajes-rossy.vercel.app` redirect to it)
+- Live site: https://www.masajesrelaxmty.com/ (the apex domain redirects to `www`)
 - Planning: Linear project "Website Refactor 2026"
 - Contributing: see [CONTRIBUTING.md](CONTRIBUTING.md)
 
-> The GitHub repository and the Vercel project keep their old names; only the public address changed (REL-26).
+> The GitHub repository keeps its old name; only the public address changed (REL-26).
 
 ## Stack
 
@@ -14,11 +14,11 @@ Website for **Masajes Relax Monterrey**, a home massage and facial service in Mo
 - JavaScript with JSDoc, type-checked with `checkJs` (`jsconfig.json`); Astro files use TypeScript syntax only in their frontmatter
 - Icons from `astro-icon` (Lucide and Simple Icons), fonts self-hosted with Fontsource
 - Tests: Vitest and Testing Library (unit), Playwright and axe (end to end and accessibility), Lighthouse CI (speed budgets)
-- Hosting: Vercel (`@astrojs/vercel`); merging to `main` deploys to production
+- Hosting: Cloudflare Workers (`@astrojs/cloudflare`, free plan); merging to `main` deploys to production
 
 ## Requirements
 
-- Node.js 22.22.3 or newer, or 24.16 or newer (`.nvmrc` has the version CI uses)
+- Node.js 22.23.4 or newer (`.nvmrc` has the version CI uses)
 - npm (comes with Node)
 
 ## Setup
@@ -35,21 +35,21 @@ On Windows PowerShell use `copy .env.example .env`. If PowerShell blocks scripts
 
 ## Scripts
 
-| Command                 | What it does                                                       |
-| ----------------------- | ------------------------------------------------------------------ |
-| `npm run dev`           | Development server with live reload                                |
-| `npm run build`         | Production build (checks and generates the site in `dist/`)        |
-| `npm run preview`       | Serves the production build locally                                |
-| `npm run check`         | Type-checks Astro files and JSDoc-typed JavaScript                 |
-| `npm run lint`          | ESLint (Astro, React, accessibility and JSDoc rules)               |
-| `npm run lint:fix`      | ESLint with automatic fixes (always review the diff)               |
-| `npm run format`        | Formats everything with Prettier                                   |
-| `npm run format:check`  | Checks formatting without changing files                           |
-| `npm test`              | Unit tests (Vitest)                                                |
-| `npm run test:watch`    | Unit tests in watch mode                                           |
-| `npm run test:coverage` | Unit tests with a coverage report                                  |
-| `npm run test:e2e`      | End-to-end and accessibility tests (Playwright, desktop and phone) |
-| `npm run lighthouse`    | Lighthouse budgets on the built site (run `npm run build` first)   |
+| Command                 | What it does                                                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`           | Development server with live reload                                                                                                                           |
+| `npm run build`         | Production build (checks and generates the site in `dist/`)                                                                                                   |
+| `npm run preview`       | Serves the production build locally                                                                                                                           |
+| `npm run check`         | Type-checks Astro files and JSDoc-typed JavaScript                                                                                                            |
+| `npm run lint`          | ESLint (Astro, React, accessibility and JSDoc rules)                                                                                                          |
+| `npm run lint:fix`      | ESLint with automatic fixes (always review the diff)                                                                                                          |
+| `npm run format`        | Formats everything with Prettier                                                                                                                              |
+| `npm run format:check`  | Checks formatting without changing files                                                                                                                      |
+| `npm test`              | Unit tests (Vitest)                                                                                                                                           |
+| `npm run test:watch`    | Unit tests in watch mode                                                                                                                                      |
+| `npm run test:coverage` | Unit tests with a coverage report                                                                                                                             |
+| `npm run test:e2e`      | End-to-end and accessibility tests (Playwright, desktop and phone)                                                                                            |
+| `npm run lighthouse`    | Lighthouse budgets on the built site (run `npm run build` first); it serves `dist/client` with `scripts/serve-dist.mjs`, which adds gzip like Cloudflare does |
 
 The first time you run the end-to-end tests, install the browser: `npx playwright install chromium`.
 
@@ -59,11 +59,11 @@ Before opening a pull request run the same checks as CI: `npm run lint`, `npm ru
 
 Names and purpose only. Never write real values in the code or in Git.
 
-| Name                          | Purpose                                                                               | Where to set it                              |
-| ----------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `PUBLIC_WEB3FORMS_ACCESS_KEY` | Public access key of Web3Forms, used by the contact form to deliver messages by email | `.env` locally; Vercel (Production, Preview) |
+| Name                          | Purpose                                                                               | Where to set it                             |
+| ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `PUBLIC_WEB3FORMS_ACCESS_KEY` | Public access key of Web3Forms, used by the contact form to deliver messages by email | `.env` locally; Cloudflare (build variable) |
 
-`PUBLIC_` variables are readable in the browser, which is how Web3Forms works; restrict the key to the site's domains in the Web3Forms dashboard. After changing a variable in Vercel, redeploy.
+`PUBLIC_` variables are readable in the browser, which is how Web3Forms works; restrict the key to the site's domains in the Web3Forms dashboard. It is read at build time: after changing it in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets), trigger a new build.
 
 ## Project structure
 
@@ -157,11 +157,13 @@ export function getYearsSince(startYear, now = new Date()) {
 
 ## Deployment
 
-The site is deployed on Vercel from this repository.
+The site is deployed on Cloudflare Workers (free plan) from this repository with Workers Builds.
 
-- Merging to `main` deploys to production. Every pull request gets a preview deployment.
-- Set the environment variables in Vercel (Project, Settings, Environment Variables) for Production and Preview, then redeploy.
-- Production address, redirects from the old address and Google Search Console are covered by the launch ticket (REL-26).
+- Merging to `main` builds with `npm run build` and deploys with `npx wrangler deploy`. Other branches run `npx wrangler versions upload` and get a preview URL.
+- The Worker is named `holistic-spa-landing-page` (`wrangler.jsonc`); the name must match the Worker in the Cloudflare dashboard.
+- Security headers are in `public/_headers`. Redirects for the old `.html` addresses are in `astro.config.mjs`; the redirect from the apex domain to `www` is a Cloudflare Redirect Rule.
+- Set the build variables in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets), then trigger a new build.
+- Production address, redirects from the old address and Google Search Console are covered by the launch ticket (REL-26); the move from Vercel is REL-54.
 
 ## Workflow
 

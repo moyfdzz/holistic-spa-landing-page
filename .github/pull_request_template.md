@@ -14,7 +14,7 @@ Linear: <!-- link to the REL-N ticket -->
 
 - [ ] `npm run lint`, `npm run format:check`, `npm run check` pass
 - [ ] `npm test` and `npm run test:e2e` pass
-- [ ] Checked the Vercel preview on desktop and phone (for visual changes)
+- [ ] Checked the Cloudflare preview on desktop and phone (for visual changes)
 
 ## Notes for review
 

@@ -14,9 +14,9 @@ How changes get from an idea to production on this project. Every change follows
    - `fix(REL-19): validate the phone number`
    - Husky checks your message and runs ESLint and Prettier on the files you commit.
 4. **Open a pull request** into `main`, using the template. The PR title must also follow Conventional Commits, because it becomes the commit message when the PR is squash-merged. Mention the ticket (for example `REL-18`) so Linear links it.
-5. **Wait for the checks and the preview.** GitHub Actions runs lint, formatting, type check, unit tests, build and end-to-end tests. Vercel posts a preview link on the PR; check visual changes on desktop and on a phone.
+5. **Wait for the checks and the preview.** GitHub Actions runs lint, formatting, type check, unit tests, build and end-to-end tests. Cloudflare builds a preview URL for the branch; check visual changes on desktop and on a phone.
 6. **Squash and merge** once everything is green. The branch is deleted afterwards.
-7. **Production deploys automatically** from `main` through Vercel.
+7. **Production deploys automatically** from `main` through Cloudflare Workers Builds.
 
 ## Working locally
 
@@ -76,7 +76,7 @@ import { Icon } from "astro-icon/components";
 ## Secrets and personal data
 
 - Never commit secrets, tokens, keys or personal data. Read settings from environment variables and add only the **names** to `.env.example`.
-- `.env` files are ignored by Git. Real values are set in Vercel (Project Settings, Environment Variables).
+- `.env` files are ignored by Git. Real values are set in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets).
 - If you find a secret in the repository, stop, tell the owner, and rotate the credential first. Deleting it in a new commit does not remove it from the history.
 
 ## Dependencies

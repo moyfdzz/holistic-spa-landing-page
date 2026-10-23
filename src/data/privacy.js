@@ -77,7 +77,7 @@ export const privacy = {
         ],
         items: [
           "Web3Forms: recibe y nos entrega los mensajes enviados por el formulario de contacto.",
-          "Vercel: aloja este sitio web.",
+          "Cloudflare: aloja este sitio web y gestiona su dominio.",
           "WhatsApp (Meta): si nos escribes por WhatsApp, la conversación se rige también por el aviso de privacidad de esa plataforma.",
         ],
       },
@@ -155,7 +155,7 @@ export const privacy = {
         ],
         items: [
           "Web3Forms: receives and delivers to us the messages sent through the contact form.",
-          "Vercel: hosts this website.",
+          "Cloudflare: hosts this website and manages its domain.",
           "WhatsApp (Meta): if you message us on WhatsApp, the conversation is also governed by that platform's privacy notice.",
         ],
       },
