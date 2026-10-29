@@ -27,7 +27,7 @@ describe("describeError", () => {
       error = caught;
     }
     expect(describeError(error)).toBe(
-      "Error: Invalid server environment: DATABASE_URL",
+      "Error: Invalid server environment: DATABASE_URL (wrong format)",
     );
     expect(describeError(error)).not.toContain("TU_PASSWORD");
   });

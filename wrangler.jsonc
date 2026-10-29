@@ -4,6 +4,8 @@
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
+  // Keep the variables set in the Cloudflare dashboard when a deploy from GitHub runs.
+  "keep_vars": true,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
