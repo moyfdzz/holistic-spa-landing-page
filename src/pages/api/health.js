@@ -6,6 +6,7 @@ import { env } from "cloudflare:workers";
 import { sql } from "drizzle-orm";
 import { createDb } from "../../server/db/client.js";
 import { parseServerEnv } from "../../server/env.js";
+import { describeError } from "../../server/errors.js";
 import { checkHealth } from "../../server/health.js";
 import { version } from "../../../package.json";
 
@@ -17,6 +18,8 @@ export const prerender = false;
 export async function GET() {
   const { status, body } = await checkHealth({
     version,
+    onError: (error) =>
+      console.error("health check failed:", describeError(error)),
     ping: async () => {
       const db = createDb(parseServerEnv(env).DATABASE_URL);
       await db.execute(sql`select 1`);
