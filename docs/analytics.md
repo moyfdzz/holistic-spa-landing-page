@@ -15,6 +15,20 @@ First-party, cookieless statistics stored in our own Postgres (decision in [ADR-
 
 The visitor id is `hash(salt of the day + IP + user agent + site host)`. The salt is random, secret, stored in `analytics_salts` and deleted by the daily job, so after that day the id cannot be recomputed and a person cannot be followed.
 
+## The tracker
+
+`src/scripts/analytics.js` is loaded on every page (deferred, after the page is shown) and sends events with `navigator.sendBeacon`, or `fetch` with `keepalive` as a fallback. It never blocks the page.
+
+It does nothing when:
+
+- the page is not on the production host (`<meta name="analytics-host">`), such as previews and local runs;
+- the browser sends Do Not Track or Global Privacy Control;
+- the visitor, normally the owner, opted out: open any page of the site with `?notrack` to stop measuring that browser, and with `?notrack=0` to start again. This keeps a flag in `localStorage` (not a cookie) and nothing else is stored in the browser.
+
+Islands and scripts report events with `track(type, props)` from `src/utils/track.js` (the contact form does it). Details such as `props` are always short labels, never text typed by the visitor.
+
+Not sent yet: `web_vital` (real-user speed) and the `chat_*` events, which arrive with their own tickets.
+
 ## How the collector decides
 
 `POST /api/collect` (`src/pages/api/collect.js`) accepts a small JSON body and builds one row (`src/server/analytics/collect.js`). It drops the request, without storing anything, when:

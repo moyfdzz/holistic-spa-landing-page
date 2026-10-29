@@ -38,6 +38,9 @@ const updated = new Date(`${privacyUpdated}T12:00:00Z`).toLocaleDateString(
               ))}
             </ul>
           )}
+          {section.closing?.map((paragraph) => (
+            <p>{paragraph}</p>
+          ))}
         </section>
       ))}
     </article>

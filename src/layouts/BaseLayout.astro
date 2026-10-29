@@ -51,6 +51,7 @@ const lang = getLangFromUrl(Astro.url);
       />
     )}
     <meta name="theme-color" content="#475d42" />
+    <meta name="analytics-host" content={new URL(site.url).hostname} />
     <meta name="application-name" content={site.shortName} />
     <Seo title={title} description={description} jsonLd={jsonLd} />
 
@@ -70,6 +71,9 @@ const lang = getLangFromUrl(Astro.url);
     <script>
       import { initReveal } from "../utils/reveal.js";
       initReveal();
+    </script>
+    <script>
+      import "../scripts/analytics.js";
     </script>
   </body>
 </html>

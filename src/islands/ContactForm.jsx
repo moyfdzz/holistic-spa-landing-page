@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./ContactForm.css";
 import { useTranslations } from "../i18n/utils.js";
 import { validateContactForm } from "../utils/contactValidation.js";
+import { track } from "../utils/track.js";
 import SuccessDialog from "./SuccessDialog.jsx";
 
 const ENDPOINT = "https://api.web3forms.com/submit";
@@ -46,6 +47,7 @@ export default function ContactForm({
   privacyHref,
 }) {
   const t = useTranslations(lang);
+  const started = useRef(false);
   const [values, setValues] = useState({
     name: "",
     email: "",
@@ -124,12 +126,14 @@ export default function ContactForm({
     const result = validateContactForm(values, lang);
     setErrors(result.errors);
     if (!result.valid) {
+      track("form_error", { type: "validation" });
       setStatus("idle");
       const first = FIELD_ORDER.find((field) => result.errors[field]);
       if (first) document.getElementById(first)?.focus();
       return;
     }
     if (!web3formsKey) {
+      track("form_error", { type: "unavailable" });
       setStatus("unavailable");
       return;
     }
@@ -139,6 +143,7 @@ export default function ContactForm({
       form.elements.namedItem("botcheck")
     );
     setStatus("submitting");
+    track("form_submit");
     try {
       const response = await fetch(ENDPOINT, {
         method: "POST",
@@ -162,6 +167,7 @@ export default function ContactForm({
       });
       const data = await response.json();
       if (response.ok && data.success) {
+        track("form_success");
         setStatus("success");
         setValues((current) => ({
           ...current,
@@ -172,9 +178,11 @@ export default function ContactForm({
           consent: false,
         }));
       } else {
+        track("form_error", { type: "service" });
         setStatus("error");
       }
     } catch {
+      track("form_error", { type: "network" });
       setStatus("error");
     }
   };
@@ -212,6 +220,11 @@ export default function ContactForm({
       className="cf"
       noValidate={enhanced}
       onSubmit={handleSubmit}
+      onFocus={() => {
+        if (started.current) return;
+        started.current = true;
+        track("form_start");
+      }}
     >
       <div className="cf__trap" aria-hidden="true">
         <input
