@@ -16,6 +16,13 @@ Website for **Masajes Relax Monterrey**, a home massage and facial service in Mo
 - Tests: Vitest and Testing Library (unit), Playwright and axe (end to end and accessibility), Lighthouse CI (speed budgets)
 - Hosting: Cloudflare Workers (`@astrojs/cloudflare`, free plan); merging to `main` deploys to production
 
+## Architecture and workflow
+
+- [docs/architecture.md](docs/architecture.md): how the site, the planned backend, analytics and the website assistant fit together.
+- [docs/adr/](docs/adr/README.md): decision records (runtime, database, request flow, LLM, admin sign-in, validation, assistant policy, analytics).
+- [docs/ai-workflow.md](docs/ai-workflow.md): how tickets are executed with Claude Code and what a human always decides.
+- [CLAUDE.md](CLAUDE.md): commands, conventions and security rules for Claude Code sessions.
+
 ## Requirements
 
 - Node.js 22.23.4 or newer (`.nvmrc` has the version CI uses)
@@ -82,7 +89,8 @@ src/utils/         pure helpers (dates, WhatsApp links, SEO data, validation)
 src/scripts/       small browser scripts (menu, language switch, WhatsApp button)
 src/styles/        design tokens (tokens.css) and global styles (global.css)
 tests/e2e/         Playwright tests (smoke tests and accessibility)
-docs/              guides (for example the AI images guide)
+docs/              architecture, decision records (docs/adr/), the Claude Code workflow and guides
+CLAUDE.md          guide for Claude Code sessions (commands, conventions, security rules)
 ```
 
 ## Business data

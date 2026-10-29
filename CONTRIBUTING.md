@@ -18,9 +18,11 @@ How changes get from an idea to production on this project. Every change follows
 6. **Squash and merge** once everything is green. The branch is deleted afterwards.
 7. **Production deploys automatically** from `main` through Cloudflare Workers Builds.
 
+Changes made with Claude Code follow the same flow; see [docs/ai-workflow.md](docs/ai-workflow.md) and [CLAUDE.md](CLAUDE.md).
+
 ## Working locally
 
-Requirements: Node.js 22.22.3 or newer, or 24.16 or newer (see `.nvmrc`).
+Requirements: Node.js 22.23.4 or newer (see `.nvmrc`).
 
 ```bash
 npm ci
