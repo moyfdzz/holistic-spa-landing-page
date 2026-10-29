@@ -2,7 +2,7 @@
 node_modules/
 dist/
 .astro/
-.vercel/
+.wrangler/
 
 # Environment files (keep the template)
 .env

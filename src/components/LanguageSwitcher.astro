@@ -5,10 +5,11 @@ import {
   languages,
   useTranslations,
 } from "../i18n/utils.js";
+import { publicPath } from "../utils/seo.js";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const path = Astro.url.pathname.replace(/(.)\/$/, "$1");
+const path = publicPath(Astro.url.pathname);
 ---
 
 <div class="lang" role="group" aria-label={t("lang.label")}>

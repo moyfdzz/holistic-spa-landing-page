@@ -32,7 +32,7 @@ describe("privacy notice", () => {
       "Responsable",
       "finalidades",
       "Web3Forms",
-      "Vercel",
+      "Cloudflare",
       "ARCO",
     ]) {
       expect(all.toLowerCase()).toContain(word.toLowerCase());

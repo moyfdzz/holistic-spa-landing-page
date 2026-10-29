@@ -34,6 +34,16 @@ export function trimTrailingSlash(path) {
 }
 
 /**
+ * Gives the public address of a page from the path Astro reports: the build writes
+ * `contact.html`, which is served at `/contact`, so the `.html` ending is dropped.
+ * @param {string} path - A path starting with `/`, such as `/contact.html`.
+ * @returns {string} The path without `.html` or a trailing slash (`/` stays `/`).
+ */
+export function publicPath(path) {
+  return trimTrailingSlash(path.replace(/\.html$/, ""));
+}
+
+/**
  * Builds the structured data (schema.org) that describes the business for Google.
  * @param {object} options - What to describe.
  * @param {"es" | "en"} options.lang - Language of the texts.

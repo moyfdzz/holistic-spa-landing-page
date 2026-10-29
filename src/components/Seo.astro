@@ -1,7 +1,7 @@
 ---
 import { site } from "../config/site.js";
 import { getLangFromUrl, getLocalizedPath } from "../i18n/utils.js";
-import { absoluteUrl, toSafeJson, trimTrailingSlash } from "../utils/seo.js";
+import { absoluteUrl, publicPath, toSafeJson } from "../utils/seo.js";
 
 interface Props {
   /** Title of the page, shown in the tab and in search results. */
@@ -21,7 +21,7 @@ const {
   jsonLd = [],
 } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
-const path = trimTrailingSlash(Astro.url.pathname);
+const path = publicPath(Astro.url.pathname);
 const addressIn = (code: "es" | "en") =>
   absoluteUrl(getLocalizedPath(path, code), site.url);
 const canonical = addressIn(lang);

@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "startServerCommand": "npx astro preview --port 4321",
+      "startServerCommand": "node scripts/serve-dist.mjs 4321",
       "startServerReadyPattern": "localhost:4321",
       "startServerReadyTimeout": 60000,
       "url": [

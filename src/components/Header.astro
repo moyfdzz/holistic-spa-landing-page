@@ -9,10 +9,11 @@ import {
   useTranslations,
 } from "../i18n/utils.js";
 import { site } from "../config/site.js";
+import { publicPath } from "../utils/seo.js";
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const path = stripLangPrefix(Astro.url.pathname).replace(/\/$/, "") || "/";
+const path = stripLangPrefix(publicPath(Astro.url.pathname)) || "/";
 const links = [
   { href: "/", label: t("nav.home"), current: path === "/" },
   { href: "/#about", label: t("nav.about"), current: false },

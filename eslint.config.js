@@ -12,7 +12,7 @@ export default [
     ignores: [
       "dist/",
       ".astro/",
-      ".vercel/",
+      ".wrangler/",
       "node_modules/",
       "public/",
       "coverage/",
@@ -39,9 +39,9 @@ export default [
     },
   },
 
-  // Config files run in Node.
+  // Config files and scripts run in Node.
   {
-    files: ["*.config.{js,mjs,cjs}"],
+    files: ["*.config.{js,mjs,cjs}", "scripts/**/*.mjs"],
     languageOptions: {
       globals: { ...globals.node },
     },

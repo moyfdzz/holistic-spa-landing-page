@@ -5,6 +5,7 @@ import {
   absoluteUrl,
   buildLocalBusiness,
   serviceAreaCities,
+  publicPath,
   trimTrailingSlash,
   toSafeJson,
 } from "./seo.js";
@@ -21,6 +22,19 @@ describe("trimTrailingSlash", () => {
   it("removes the last slash except on the home page", () => {
     expect(trimTrailingSlash("/contact/")).toBe("/contact");
     expect(trimTrailingSlash("/")).toBe("/");
+  });
+});
+
+describe("publicPath", () => {
+  it("drops the .html ending and the trailing slash", () => {
+    expect(publicPath("/contact.html")).toBe("/contact");
+    expect(publicPath("/en/privacy-notice.html")).toBe("/en/privacy-notice");
+    expect(publicPath("/contact/")).toBe("/contact");
+  });
+
+  it("keeps the home pages", () => {
+    expect(publicPath("/")).toBe("/");
+    expect(publicPath("/en/")).toBe("/en");
   });
 });
 
