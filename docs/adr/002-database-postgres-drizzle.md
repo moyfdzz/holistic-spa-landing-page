@@ -20,6 +20,7 @@ Chat sessions and messages, analytics events and their daily rollups, imports fr
 
 - Idempotency (`message_id` unique), counters and rollups are plain SQL.
 - Every schema change is a reviewed migration. Tests that need a database use a Neon branch or a local Postgres, never real client data.
+- Tests for the schema run the committed migrations in an in-memory Postgres (PGlite), so CI needs no service container and no secrets.
 - Neon free-plan limits (storage, compute hours) must be watched in the observability work (REL-45).
 
 ## Rejected alternatives
