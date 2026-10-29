@@ -6,7 +6,7 @@
 import { site } from "../config/site.js";
 
 /** Date of the last change, as `YYYY-MM-DD`. Update it whenever the text changes. */
-export const privacyUpdated = "2026-10-11";
+export const privacyUpdated = "2026-10-29";
 
 /**
  * @typedef {object} PrivacySection
@@ -14,6 +14,7 @@ export const privacyUpdated = "2026-10-11";
  * @property {string} heading - Section title.
  * @property {string[]} paragraphs - Paragraphs of text.
  * @property {string[]} [items] - Optional bullet list shown after the paragraphs.
+ * @property {string[]} [closing] - Optional paragraphs shown after the bullet list.
  */
 
 /**
@@ -77,7 +78,8 @@ export const privacy = {
         ],
         items: [
           "Web3Forms: recibe y nos entrega los mensajes enviados por el formulario de contacto.",
-          "Cloudflare: aloja este sitio web y gestiona su dominio.",
+          "Cloudflare: aloja este sitio web, gestiona su dominio y reenvía el correo del negocio.",
+          "Neon: aloja la base de datos donde se guardan las estadísticas anónimas del sitio.",
           "WhatsApp (Meta): si nos escribes por WhatsApp, la conversación se rige también por el aviso de privacidad de esa plataforma.",
         ],
       },
@@ -93,12 +95,29 @@ export const privacy = {
         id: "cookies",
         heading: "7. Cookies y tecnologías de rastreo",
         paragraphs: [
-          "Este sitio no usa cookies de publicidad ni herramientas de analítica. Solo guarda en tu navegador tu preferencia de idioma, para recordar si prefieres español o inglés. Si en el futuro agregamos analítica o cookies, actualizaremos este aviso y te pediremos tu consentimiento cuando sea necesario.",
+          "Este sitio no usa cookies de publicidad ni de seguimiento. Solo guarda en tu navegador tu preferencia de idioma, para recordar si prefieres español o inglés. Si en el futuro agregamos cookies, actualizaremos este aviso y te pediremos tu consentimiento cuando sea necesario.",
+        ],
+      },
+      {
+        id: "estadisticas",
+        heading: "8. Estadísticas anónimas del sitio",
+        paragraphs: [
+          "Para saber cuántas personas visitan el sitio y qué les interesa, medimos su uso con una herramienta propia, sin cookies y sin guardar tu dirección IP. Medimos lo siguiente:",
+        ],
+        items: [
+          "Las páginas que visitas, el idioma, el tiempo que pasas en ellas y hasta dónde bajas.",
+          "De dónde llegaste (por ejemplo Google, Google Maps, Instagram o Facebook) y el enlace por el que entraste.",
+          "Tu ubicación aproximada (país, estado y ciudad) y el tipo de dispositivo, navegador y sistema operativo, solo en categorías.",
+          "Si haces clic en WhatsApp, teléfono, correo o redes sociales, y si empiezas o envías el formulario, pero nunca lo que escribes en él.",
+        ],
+        closing: [
+          "No guardamos tu dirección IP, tu nombre ni nada que permita identificarte. Para contar visitas usamos un código que se calcula con un valor secreto que cambia cada día y se borra, por lo que no podemos reconocerte de un día a otro.",
+          "Respetamos la señal «No rastrear» y el Control Global de Privacidad de tu navegador: si están activados, no medimos tu visita. Conservamos los eventos individuales un máximo de 13 meses y después solo guardamos totales.",
         ],
       },
       {
         id: "cambios",
-        heading: "8. Cambios a este aviso",
+        heading: "9. Cambios a este aviso",
         paragraphs: [
           "Si este aviso cambia, publicaremos la versión actualizada en esta misma página y modificaremos la fecha de última actualización.",
         ],
@@ -155,7 +174,8 @@ export const privacy = {
         ],
         items: [
           "Web3Forms: receives and delivers to us the messages sent through the contact form.",
-          "Cloudflare: hosts this website and manages its domain.",
+          "Cloudflare: hosts this website, manages its domain and forwards the business email.",
+          "Neon: hosts the database where the anonymous site statistics are stored.",
           "WhatsApp (Meta): if you message us on WhatsApp, the conversation is also governed by that platform's privacy notice.",
         ],
       },
@@ -171,12 +191,29 @@ export const privacy = {
         id: "cookies",
         heading: "7. Cookies and tracking",
         paragraphs: [
-          "This site does not use advertising cookies or analytics tools. It only stores your language preference in your browser, to remember whether you prefer Spanish or English. If we add analytics or cookies in the future, we will update this notice and ask for your consent when needed.",
+          "This site does not use advertising or tracking cookies. It only stores your language preference in your browser, to remember whether you prefer Spanish or English. If we add cookies in the future, we will update this notice and ask for your consent when needed.",
+        ],
+      },
+      {
+        id: "estadisticas",
+        heading: "8. Anonymous site statistics",
+        paragraphs: [
+          "To know how many people visit the site and what interests them, we measure its use with our own tool, without cookies and without storing your IP address. We measure:",
+        ],
+        items: [
+          "The pages you visit, the language, the time you spend on them and how far you scroll.",
+          "Where you came from (for example Google, Google Maps, Instagram or Facebook) and the link you used.",
+          "Your approximate location (country, state and city) and the kind of device, browser and operating system, only as categories.",
+          "Whether you click WhatsApp, phone, email or social links, and whether you start or send the form, but never what you type in it.",
+        ],
+        closing: [
+          "We do not store your IP address, your name or anything that could identify you. To count visits we use a code calculated with a secret value that changes every day and is deleted, so we cannot recognize you from one day to the next.",
+          "We respect the Do Not Track signal and the Global Privacy Control of your browser: if either is on, we do not measure your visit. We keep individual events for 13 months at most and after that we only keep totals.",
         ],
       },
       {
         id: "cambios",
-        heading: "8. Changes to this notice",
+        heading: "9. Changes to this notice",
         paragraphs: [
           "If this notice changes, we will publish the updated version on this page and change the date of the last update.",
         ],

@@ -27,7 +27,7 @@ const quoteUrl = buildWhatsAppUrl(
 const contactUrl = `${getLocalizedPath("/contact", lang)}?service=${service.slug}`;
 ---
 
-<article class="service-card">
+<article class="service-card" data-service={service.slug}>
   <Image
     src={service.image}
     alt={text.imageAlt}

@@ -33,9 +33,23 @@ describe("privacy notice", () => {
       "finalidades",
       "Web3Forms",
       "Cloudflare",
+      "Neon",
       "ARCO",
     ]) {
       expect(all.toLowerCase()).toContain(word.toLowerCase());
+    }
+  });
+
+  it("describes the anonymous statistics in both languages without promising more than they do", () => {
+    for (const lang of /** @type {const} */ (["es", "en"])) {
+      const section = privacy[lang].sections.find(
+        (s) => s.id === "estadisticas",
+      );
+      expect(section, lang).toBeDefined();
+      const text = JSON.stringify(section).toLowerCase();
+      expect(text).toContain("13");
+      expect(text).toMatch(/do not track|no rastrear/);
+      expect(text).toMatch(/ip/);
     }
   });
 
