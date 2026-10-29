@@ -98,6 +98,8 @@ test.describe("search engines and sharing", () => {
     const robots = await (await request.get("/robots.txt")).text();
     expect(robots).toContain("Sitemap:");
     expect(robots).toContain("sitemap-index.xml");
+    expect(robots).toContain("User-agent: GPTBot\nDisallow: /");
+    expect(robots).not.toContain("User-agent: OAI-SearchBot");
     const index = await (await request.get("/sitemap-index.xml")).text();
     expect(index).toContain("sitemap-0.xml");
     const pages = await (await request.get("/sitemap-0.xml")).text();
@@ -105,6 +107,21 @@ test.describe("search engines and sharing", () => {
     expect(pages).toMatch(/\/en\/contact</);
     expect(pages).not.toMatch(/contact\/</);
     expect(pages).toContain('hreflang="en-US"');
+  });
+});
+
+test.describe("security.txt", () => {
+  test("lists a contact address and the canonical address", async ({
+    request,
+  }) => {
+    const response = await request.get("/.well-known/security.txt");
+    expect(response.status()).toBe(200);
+    const text = await response.text();
+    expect(text).toContain("Contact: mailto:contact@masajesrelaxmty.com");
+    expect(text).toMatch(/^Expires: \d{4}-\d{2}-\d{2}T/m);
+    expect(text).toContain(
+      "Canonical: https://www.masajesrelaxmty.com/.well-known/security.txt",
+    );
   });
 });
 
