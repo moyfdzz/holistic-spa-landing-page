@@ -53,14 +53,15 @@ flowchart LR
 
 ## Where the code lives
 
-| Area                       | Folder                                 |
-| -------------------------- | -------------------------------------- |
-| Public pages and views     | `src/pages/`, `src/views/`             |
-| Business facts and catalog | `src/config/`, `src/data/`             |
-| Server code (planned)      | `src/server/` (agent, db, jobs)        |
-| API routes (planned)       | `src/pages/api/` (`prerender = false`) |
-| Evaluations (planned)      | `evals/`                               |
-| Hosting and headers        | `wrangler.jsonc`, `public/_headers`    |
+| Area                       | Folder                                     |
+| -------------------------- | ------------------------------------------ |
+| Public pages and views     | `src/pages/`, `src/views/`                 |
+| Business facts and catalog | `src/config/`, `src/data/`                 |
+| Server code                | `src/server/` (env, db; later agent, jobs) |
+| API routes                 | `src/pages/api/` (`prerender = false`)     |
+| Migrations                 | `drizzle/`                                 |
+| Evaluations (planned)      | `evals/`                                   |
+| Hosting and headers        | `wrangler.jsonc`, `public/_headers`        |
 
 ## Environments
 

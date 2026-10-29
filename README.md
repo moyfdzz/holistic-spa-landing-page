@@ -56,6 +56,8 @@ On Windows PowerShell use `copy .env.example .env`. If PowerShell blocks scripts
 | `npm run test:watch`    | Unit tests in watch mode                                                                                                                                      |
 | `npm run test:coverage` | Unit tests with a coverage report                                                                                                                             |
 | `npm run test:e2e`      | End-to-end and accessibility tests (Playwright, desktop and phone)                                                                                            |
+| `npm run db:generate`   | Creates a migration in `drizzle/` from changes in `src/server/db/schema.js`                                                                                   |
+| `npm run db:migrate`    | Applies the migrations to the database in `DATABASE_URL` (never at request time)                                                                              |
 | `npm run lighthouse`    | Lighthouse budgets on the built site (run `npm run build` first); it serves `dist/client` with `scripts/serve-dist.mjs`, which adds gzip like Cloudflare does |
 
 The first time you run the end-to-end tests, install the browser: `npx playwright install chromium`.
@@ -70,13 +72,28 @@ Names and purpose only. Never write real values in the code or in Git.
 | ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------- |
 | `PUBLIC_WEB3FORMS_ACCESS_KEY` | Public access key of Web3Forms, used by the contact form to deliver messages by email | `.env` locally; Cloudflare (build variable) |
 
+| `DATABASE_URL` | Neon Postgres connection string. A secret: never commit it, print it or paste it in a chat | `.env` locally for `npm run db:migrate`; `.dev.vars` for `npm run dev`; Cloudflare Worker secret |
+
 `PUBLIC_` variables are readable in the browser, which is how Web3Forms works; restrict the key to the site's domains in the Web3Forms dashboard. It is read at build time: after changing it in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets), trigger a new build.
+
+## Database
+
+Postgres on Neon, accessed with Drizzle (see [ADR-002](docs/adr/002-database-postgres-drizzle.md)). The public pages are still static; only `src/pages/api/**` routes run on demand.
+
+- **Code:** `src/server/` is server-only (`env.js` validates the variables with Zod and fails with the variable name only; `db/schema.js` is the schema; `db/client.js` creates the client per request). ESLint blocks importing it from `src/islands/` and `src/scripts/`.
+- **Change the schema:** edit `src/server/db/schema.js`, run `npm run db:generate`, review the SQL in `drizzle/` and commit it.
+- **Apply migrations:** put the connection string of the right Neon branch in `.env` as `DATABASE_URL` and run `npm run db:migrate`. Run it against `main` (production) after merging a migration, and against `preview` to test. Migrations never run at request time.
+- **Local development:** use the `preview` branch of Neon. Put `DATABASE_URL` in `.dev.vars` (ignored by Git) so `npm run dev` can read it as a Worker variable. In Cloudflare, `DATABASE_URL` is a Worker secret.
+- **Health check:** `GET /api/health` answers 200 when the database responds and 503 otherwise, with no details.
+- **Tests:** the migrations are tested against an in-memory Postgres (PGlite), so no Docker or secrets are needed.
 
 ## Project structure
 
 ```
 public/            static files: favicons, web manifest, share image
 src/assets/        images (Astro creates resized WebP versions at build time)
+src/server/        server-only code: environment, database (Drizzle), health check
+drizzle/           committed SQL migrations
 src/pages/         routes: Spanish at /, English under /en/ (pages are thin, they render a view)
 src/views/         full page content shared by the Spanish and English routes
 src/layouts/       base layout (head, SEO tags, header, footer, WhatsApp button)

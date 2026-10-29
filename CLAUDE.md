@@ -8,7 +8,8 @@ Guide for Claude Code sessions on this repository: the website of Masajes Relax 
 - JavaScript with JSDoc, type-checked with `checkJs`. No TypeScript files (Astro frontmatter may use TypeScript syntax).
 - Spanish at `/` and English at `/en/`; texts in `src/i18n/`, content in `src/data/`, business facts in `src/config/site.js`.
 - Contact form posts to Web3Forms (`PUBLIC_WEB3FORMS_ACCESS_KEY`).
-- Planned (see `docs/adr/`): Postgres on Neon with Drizzle, Clerk for `/admin`, Zod everywhere, the Anthropic SDK for the website chat.
+- Postgres on Neon with Drizzle and Zod (`src/server/`, migrations in `drizzle/`); API routes under `src/pages/api/` are on demand, everything else is prerendered.
+- Planned (see `docs/adr/`): Clerk for `/admin`, the Anthropic SDK for the website chat.
 
 ## Commands
 
@@ -23,6 +24,8 @@ Run these before every commit. All must pass; CI runs the same ones.
 | `npm run build`        | Production build into `dist/`                        |
 | `npm run test:e2e`     | Playwright (builds and serves the site itself)       |
 | `npm run lighthouse`   | Lighthouse budgets (run `npm run build` first)       |
+| `npm run db:generate`  | New migration from `src/server/db/schema.js`         |
+| `npm run db:migrate`   | Apply migrations to `DATABASE_URL` (owner runs it)   |
 | `npm run eval`         | Assistant evaluation (planned, REL-43; not yet here) |
 
 Environment notes:
@@ -47,6 +50,7 @@ Environment notes:
 
 - Never commit or print secrets, tokens, keys or personal data. Only names go in `.env.example`; `.env*` and `.dev.vars*` stay ignored.
 - No real client data (names, phones, chats) in fixtures, tests, evals or logs. Anonymize before anything enters the repo.
+- `DATABASE_URL` and other connection strings are secrets: never read them aloud, log them, or run migrations against production; the owner does that.
 - Never send messages to real people from development or CI.
 - The chat never shows prices or payment details, and never confirms appointments (ADR-007).
 - Ask the owner before changing: DNS, Cloudflare or GitHub settings, CI workflows, rulesets, secrets, or anything that publishes content or sends messages.

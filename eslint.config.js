@@ -47,6 +47,24 @@ export default [
     },
   },
 
+  // Server-only code must never be bundled into code that runs in the browser.
+  {
+    files: ["src/islands/**", "src/scripts/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/server/**", "**/server"],
+              message: "Server-only code cannot be imported from browser code.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // React islands.
   {
     files: ["**/*.{jsx,tsx}"],
