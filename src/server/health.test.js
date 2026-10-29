@@ -29,3 +29,20 @@ describe("checkHealth", () => {
     expect(JSON.stringify(result)).not.toContain("TU_USUARIO");
   });
 });
+
+describe("checkHealth logging hook", () => {
+  it("passes the error to onError and still answers 503 without details", async () => {
+    /** @type {unknown[]} */
+    const seen = [];
+    const result = await checkHealth({
+      ping: async () => {
+        throw new Error("boom");
+      },
+      version: "1.0.0",
+      onError: (error) => seen.push(error),
+    });
+    expect(seen).toHaveLength(1);
+    expect(result.status).toBe(503);
+    expect(JSON.stringify(result)).not.toContain("boom");
+  });
+});

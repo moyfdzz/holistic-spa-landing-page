@@ -17,6 +17,13 @@ The owner wants to see how the website performs: visits, where they come from, w
 - A dashboard in `/admin` (REL-52) shows charts and numbers. Anonymous statistics are described in the privacy notice.
 - The tracker is small and loads without hurting the Lighthouse budgets.
 
+## Implementation notes
+
+- The first slice (REL-49, collector and storage) keeps a single `analytics_events` table plus `analytics_salts`. There is no table partitioning and no `analytics_sessions` table yet: at this traffic an index on time is enough, and sessions (30 minutes without events) are derived from the events by the aggregation job (REL-50).
+- The collector only accepts requests whose `Origin` is the production host, so previews, local runs and other sites never add data.
+- The rate limit per IP is a Cloudflare rate limiting rule in the dashboard (owner step), plus a small body limit and strict validation in the code.
+- Event names, fields and rules are in [../analytics.md](../analytics.md).
+
 ## Consequences
 
 - No cookie banner is needed for the statistics.
