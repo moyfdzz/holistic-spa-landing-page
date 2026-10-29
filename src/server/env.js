@@ -22,8 +22,14 @@ const serverEnvSchema = z.object({
 export function parseServerEnv(source) {
   const result = serverEnvSchema.safeParse(source);
   if (!result.success) {
-    const names = new Set(result.error.issues.map((issue) => issue.path[0]));
-    throw new Error(`Invalid server environment: ${[...names].join(", ")}`);
+    // Name each variable and say whether it is missing or malformed, never its value.
+    const problems = new Map();
+    for (const issue of result.error.issues) {
+      const reason = issue.code === "invalid_type" ? "missing" : "wrong format";
+      problems.set(String(issue.path[0]), reason);
+    }
+    const list = [...problems].map(([name, reason]) => `${name} (${reason})`);
+    throw new Error(`Invalid server environment: ${list.join(", ")}`);
   }
   return result.data;
 }

@@ -12,7 +12,7 @@ describe("parseServerEnv", () => {
 
   it("fails when a variable is missing, naming it", () => {
     expect(() => parseServerEnv({})).toThrow(
-      "Invalid server environment: DATABASE_URL",
+      "Invalid server environment: DATABASE_URL (missing)",
     );
   });
 
@@ -23,7 +23,9 @@ describe("parseServerEnv", () => {
     } catch (error) {
       message = /** @type {Error} */ (error).message;
     }
-    expect(message).toBe("Invalid server environment: DATABASE_URL");
+    expect(message).toBe(
+      "Invalid server environment: DATABASE_URL (wrong format)",
+    );
     expect(message).not.toContain("TU_PASSWORD");
   });
 });
