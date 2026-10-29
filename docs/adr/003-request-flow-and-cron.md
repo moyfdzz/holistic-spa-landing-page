@@ -12,7 +12,7 @@ The website chat sends a visitor message and expects an answer in a few seconds.
 
 - `POST /api/chat` answers synchronously: validate the request, call the agent, run every guardrail, then return the answer or a hand-off. The unvalidated text of a model is never streamed. The widget shows a typing indicator while it waits.
 - Each visitor message has a `messageId`; a retried request returns the stored answer and never makes a second model call.
-- All scheduled work runs from one Cloudflare Cron Trigger handler that dispatches to small jobs (rollups, retention, Google imports). The free plan allows 5 Cron Triggers per account and 15 minutes per run; one handler leaves room for other projects.
+- All scheduled work runs from one Cloudflare Cron Trigger handler (`src/worker.js`, `scheduled`) that dispatches to small jobs (rollups, retention, Google imports). Today there is one daily trigger that runs the analytics job. The free plan allows 5 Cron Triggers per account and 15 minutes per run; one handler leaves room for other projects.
 - Work that can finish after the response (for example storing metrics) uses `waitUntil`, which the free plan allows for up to 30 seconds.
 
 ## Consequences

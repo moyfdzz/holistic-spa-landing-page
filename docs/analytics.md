@@ -60,6 +60,20 @@ Any other event name is rejected. `props` has at most 8 keys and short values.
 
 UTM parameters win; otherwise the referrer host decides: `google_maps`, `google_search`, `bing`, `instagram`, `facebook`, `whatsapp`, `other_site`, `direct`, `internal` (navigation inside the site) and `campaign` (any other UTM source). A visit from Google Maps looks like normal Google traffic unless the link in the Business Profile has `?utm_source=google&utm_medium=maps`; the same goes for the Instagram, Facebook and WhatsApp profiles.
 
-## Sessions and daily numbers
+## The daily job
 
-A session is the same visitor id with less than 30 minutes without events. Sessions and daily rollups are computed from the events by the aggregation job (REL-50), together with the retention rules.
+A Cloudflare Cron Trigger (`wrangler.jsonc`, `triggers.crons`: 07:30 UTC, which is 01:30 in Monterrey) calls the `scheduled` handler of `src/worker.js`, which runs `runDailyJob` (`src/server/analytics/jobs.js`). In this order:
+
+1. **Totals.** It recomputes yesterday and the day before into `analytics_daily` (one row per day, dimension and key). Recomputing a day gives the same result and replaces the old rows in one statement, so a failed run leaves nothing half done and a rerun is safe. A "day" starts at midnight in Monterrey, the same boundary as the visitor salt.
+2. **Salts.** It deletes the salts of earlier days, so the visitor ids of those days can no longer be recomputed.
+3. **Retention.** It deletes raw events older than 13 months (`RAW_EVENT_RETENTION_MONTHS`). The daily totals stay for good because they hold no visitor ids.
+
+It logs counts only. If it fails, the run is recorded as failed in Cloudflare (Worker, Settings, Triggers or Observability).
+
+`analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq` and `whatsapp` (by placement). Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" will be the sum of the daily ones: the design cannot recognize the same person on two days.
+
+Not built yet (the rest of REL-50): the query API for the dashboard, the live counter, the CSV export and the speed percentiles.
+
+## Sessions
+
+A session is the same visitor id with less than 30 minutes without events (`SESSION_GAP_MINUTES` in `src/server/analytics/rollup.js`). Sessions are computed by the daily job and stored only as counts.

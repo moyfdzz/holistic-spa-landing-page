@@ -5,12 +5,32 @@
  * @module server/analytics/visitor
  */
 
+/** Time zone of the business. Its midnight is where a "day" starts, for salts and for daily totals. */
+export const analyticsTimeZone = "America/Monterrey";
+
 /**
- * Day key (UTC) used to pick the salt.
+ * Day key in the time zone of the business, used to pick the salt and to group daily totals.
  * @param {Date} date - A moment in time.
  * @returns {string} The day as `YYYY-MM-DD`.
  */
 export function dayKey(date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: analyticsTimeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+/**
+ * Adds days to a day key.
+ * @param {string} day - A day as `YYYY-MM-DD`.
+ * @param {number} amount - Days to add (negative to go back).
+ * @returns {string} The new day as `YYYY-MM-DD`.
+ */
+export function addDays(day, amount) {
+  const date = new Date(`${day}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + amount);
   return date.toISOString().slice(0, 10);
 }
 
