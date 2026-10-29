@@ -15,6 +15,13 @@
       "when": 1793309933453,
       "tag": "0001_analytics_events",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793316896973,
+      "tag": "0002_analytics_daily",
+      "breakpoints": true
     }
   ]
 }

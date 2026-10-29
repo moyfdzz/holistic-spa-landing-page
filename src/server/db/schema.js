@@ -7,7 +7,9 @@ import {
   bigserial,
   date,
   index,
+  integer,
   jsonb,
+  primaryKey,
   pgTable,
   text,
   timestamp,
@@ -62,4 +64,25 @@ export const analyticsEvents = pgTable(
     index("analytics_events_occurred_at_idx").on(table.occurredAt),
     index("analytics_events_visitor_idx").on(table.visitorId, table.occurredAt),
   ],
+);
+
+/**
+ * Daily totals, one row per day, dimension and key (for example `channel` and `instagram`).
+ * They are computed from `analytics_events` by the daily job and kept for good: they hold no
+ * visitor ids. `dimension = "total"` has the numbers of the whole day.
+ */
+export const analyticsDaily = pgTable(
+  "analytics_daily",
+  {
+    day: date("day").notNull(),
+    dimension: text("dimension").notNull(),
+    key: text("key").notNull(),
+    visitors: integer("visitors").notNull().default(0),
+    sessions: integer("sessions").notNull().default(0),
+    pageViews: integer("page_views").notNull().default(0),
+    events: integer("events").notNull().default(0),
+    engagedSeconds: integer("engaged_seconds").notNull().default(0),
+    bounces: integer("bounces").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.day, table.dimension, table.key] })],
 );

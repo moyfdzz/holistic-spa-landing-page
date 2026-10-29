@@ -1,11 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "holistic-spa-landing-page",
-  "main": "@astrojs/cloudflare/entrypoints/server",
+  "main": "src/worker.js",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   // Keep the variables set in the Cloudflare dashboard when a deploy from GitHub runs.
   "keep_vars": true,
+  // Daily job at 07:30 UTC (01:30 in Monterrey): totals, then deleting what must not be kept.
+  "triggers": {
+    "crons": ["30 7 * * *"],
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
