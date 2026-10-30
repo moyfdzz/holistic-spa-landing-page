@@ -1,0 +1,67 @@
+---
+import {
+  granularityOptions,
+  type Granularity,
+} from "../../server/admin/overview.js";
+
+interface Props {
+  /** How the chart is grouped now. */
+  current: Granularity;
+  /** Page the links go to, for example `/admin`. */
+  action: string;
+  /** The query string of the page now, so the range stays when the grouping changes. */
+  query: URLSearchParams;
+}
+
+const { current, action, query } = Astro.props;
+
+/** Address of the same page with another grouping. */
+const hrefFor = (value: string) => {
+  const next = new URLSearchParams(query);
+  next.set("g", value);
+  return `${action}?${next.toString()}`;
+};
+---
+
+<nav class="group" aria-label="Agrupar la gráfica">
+  <ul>
+    {granularityOptions.map(([value, label]) => (
+      <li>
+        <a
+          href={hrefFor(value)}
+          aria-current={current === value ? "true" : undefined}
+        >
+          {label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .group ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .group a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--text-sm);
+  }
+  .group a[aria-current="true"] {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+</style>

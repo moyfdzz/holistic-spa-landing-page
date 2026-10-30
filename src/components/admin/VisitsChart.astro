@@ -1,0 +1,492 @@
+---
+import { buildLineChart, describeSeries } from "../../server/admin/chart.js";
+import {
+  formatAxisBucket,
+  formatBucket,
+  formatCount,
+} from "../../server/admin/format.js";
+import type { Overview } from "../../server/admin/overview.js";
+
+interface Props {
+  /** The visits series of the overview. */
+  visits: Overview["visits"];
+  /** Unique part of the ids, so two charts on a page do not share them. */
+  id?: string;
+}
+
+const { visits, id = "visits" } = Astro.props;
+const { buckets, values, previousBuckets, previousValues, granularity } =
+  visits;
+const compared = previousValues !== null && previousBuckets !== null;
+
+// Two drawings of the same data: one drawn for a phone and one for a wide screen, so the text
+// is the same size on both. CSS shows the one that fits.
+const drawings = [
+  {
+    name: "narrow",
+    chart: buildLineChart({
+      values,
+      previous: previousValues,
+      width: 360,
+      height: 250,
+    }),
+  },
+  {
+    name: "wide",
+    chart: buildLineChart({
+      values,
+      previous: previousValues,
+      width: 720,
+      height: 290,
+    }),
+  },
+] as const;
+
+const summary = describeSeries({
+  what: "Visitantes",
+  buckets,
+  values,
+  granularity,
+  previousTotal: visits.previousTotal,
+});
+const labels = buckets.map((bucket) => formatBucket(bucket, granularity));
+const previousLabels = (previousBuckets ?? []).map((bucket) =>
+  formatBucket(bucket, granularity),
+);
+const summaryId = `${id}-summary`;
+const hint = "Pasa el cursor o toca la gráfica para ver cada punto.";
+---
+
+<section class="chart" aria-labelledby={`${id}-title`}>
+  <h2 class="chart__title" id={`${id}-title`}>
+    Visitas en el tiempo
+  </h2>
+  <p class="chart__summary" id={summaryId}>
+    {summary}
+  </p>
+
+  <ul class="chart__legend" aria-label="Leyenda">
+    <li>
+      <svg width="28" height="10" aria-hidden="true">
+        <line
+          class="chart__key chart__key--now"
+          x1="1"
+          y1="5"
+          x2="27"
+          y2="5"
+        ></line>
+      </svg>
+      Periodo elegido
+    </li>
+    {compared && (
+      <li>
+        <svg width="28" height="10" aria-hidden="true">
+          <line
+            class="chart__key chart__key--before"
+            x1="1"
+            y1="5"
+            x2="27"
+            y2="5"
+          ></line>
+        </svg>
+        Periodo anterior
+      </li>
+    )}
+  </ul>
+
+  <div
+    class="chart__plot"
+    data-visits-chart
+    data-labels={JSON.stringify(labels)}
+    data-values={JSON.stringify(values)}
+    data-previous-labels={JSON.stringify(previousLabels)}
+    data-previous-values={JSON.stringify(previousValues ?? [])}
+    tabindex={values.length > 0 ? 0 : undefined}
+    role="group"
+    aria-label="Gráfica de visitas. Con las flechas del teclado recorres los puntos."
+  >
+    <div class="chart__tip" data-hint={hint}>
+      {hint}
+    </div>
+    {drawings.map(({ name, chart }) => (
+      <svg
+        class={`chart__svg chart__svg--${name}`}
+        viewBox={`0 0 ${chart.width} ${chart.height}`}
+        role="img"
+        aria-labelledby={summaryId}
+        data-width={chart.width}
+        data-left={chart.plot.left}
+        data-right={chart.plot.right}
+        data-top={chart.plot.top}
+        data-bottom={chart.plot.bottom}
+        data-max={chart.max}
+      >
+        {chart.yTicks.map((tick) => (
+          <g>
+            <line
+              class="chart__grid"
+              x1={chart.plot.left}
+              x2={chart.plot.right}
+              y1={tick.y}
+              y2={tick.y}
+            ></line>
+            <text
+              class="chart__tick"
+              x={chart.plot.left - 8}
+              y={tick.y + 4}
+              text-anchor="end"
+            >
+              {formatCount(tick.value)}
+            </text>
+          </g>
+        ))}
+        {chart.xLabels.map((label, position) => (
+          <text
+            class="chart__tick"
+            x={label.x}
+            y={chart.height - 10}
+            text-anchor={
+              position === 0
+                ? "start"
+                : position === chart.xLabels.length - 1
+                  ? "end"
+                  : "middle"
+            }
+          >
+            {formatAxisBucket(buckets[label.index], granularity)}
+          </text>
+        ))}
+        {chart.area && <path class="chart__area" d={chart.area}></path>}
+        {chart.previousLine && (
+          <path class="chart__before" d={chart.previousLine}></path>
+        )}
+        {chart.line && <path class="chart__now" d={chart.line}></path>}
+        {chart.points.length > 0 && (
+          <g>
+            <circle
+              class="chart__ring"
+              cx={chart.points[chart.points.length - 1].x}
+              cy={chart.points[chart.points.length - 1].y}
+              r="6"
+            ></circle>
+            <circle
+              class="chart__dot"
+              cx={chart.points[chart.points.length - 1].x}
+              cy={chart.points[chart.points.length - 1].y}
+              r="4"
+            ></circle>
+          </g>
+        )}
+        <line
+          class="chart__cross is-hidden"
+          x1="0"
+          x2="0"
+          y1={chart.plot.top}
+          y2={chart.plot.bottom}
+        ></line>
+        <g class="chart__hover is-hidden">
+          <circle class="chart__ring" r="6"></circle>
+          <circle class="chart__dot" r="4"></circle>
+        </g>
+      </svg>
+    ))}
+    <p class="visually-hidden chart__live" aria-live="polite"></p>
+  </div>
+
+  <details class="chart__table">
+    <summary>Ver números</summary>
+    <table>
+      <caption class="visually-hidden">
+        Visitantes por
+        {granularity === "day"
+          ? "día"
+          : granularity === "week"
+            ? "semana"
+            : granularity === "month"
+              ? "mes"
+              : "año"}
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Periodo</th>
+          <th scope="col">Visitantes</th>
+          {compared && <th scope="col">Periodo anterior</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {labels.map((label, index) => (
+          <tr>
+            <th scope="row">{label}</th>
+            <td>{formatCount(values[index])}</td>
+            {compared && (
+              <td>
+                {previousValues && index < previousValues.length
+                  ? `${formatCount(previousValues[index])} (${previousLabels[index]})`
+                  : "—"}
+              </td>
+            )}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </details>
+</section>
+
+<style>
+  .chart {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-sm);
+  }
+  .chart__title {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+  .chart__summary {
+    margin: var(--space-2) 0 var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .chart__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    list-style: none;
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    font-size: var(--text-sm);
+  }
+  .chart__legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .chart__key {
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .chart__key--now {
+    stroke: var(--color-primary);
+  }
+  .chart__key--before,
+  .chart__before {
+    stroke: var(--color-border-input);
+    stroke-dasharray: 6 5;
+  }
+  .chart__plot {
+    position: relative;
+    touch-action: pan-y;
+    border-radius: var(--radius-sm);
+  }
+  .chart__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .chart__svg--wide {
+    display: none;
+  }
+  @media (min-width: 36rem) {
+    .chart__svg--narrow {
+      display: none;
+    }
+    .chart__svg--wide {
+      display: block;
+    }
+  }
+  .chart__grid {
+    stroke: var(--color-border);
+    stroke-width: 1;
+  }
+  .chart__tick {
+    fill: var(--color-text-muted);
+    font-size: 12px;
+    font-family: var(--font-body);
+  }
+  .chart__area {
+    fill: var(--color-primary);
+    fill-opacity: 0.1;
+  }
+  .chart__now,
+  .chart__before {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .chart__now {
+    stroke: var(--color-primary);
+  }
+  .chart__ring {
+    fill: var(--color-surface);
+  }
+  .chart__dot {
+    fill: var(--color-primary);
+  }
+  .chart__cross {
+    stroke: var(--color-text-muted);
+    stroke-width: 1;
+  }
+  .chart__tip {
+    display: grid;
+    align-content: center;
+    gap: 0.1rem;
+    min-height: 4.5rem;
+    margin-bottom: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface-alt);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+  .chart__tip strong {
+    color: var(--color-heading);
+  }
+  @media (min-width: 36rem) {
+    .chart__tip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0 var(--space-5);
+      min-height: 3rem;
+    }
+  }
+  .chart__cross.is-hidden,
+  .chart__hover.is-hidden {
+    display: none;
+  }
+  .chart__table {
+    margin-top: var(--space-3);
+  }
+  .chart__table summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .chart__table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+  .chart__table th,
+  .chart__table td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+</style>
+
+<script>
+  // Cursor and readout: pointer and arrow keys pick a point. Everything else is already in the
+  // page as text, so without this script the chart is still complete.
+  function setup(root: HTMLElement) {
+    const labels: string[] = JSON.parse(root.dataset.labels ?? "[]");
+    const values: number[] = JSON.parse(root.dataset.values ?? "[]");
+    const previousLabels: string[] = JSON.parse(
+      root.dataset.previousLabels ?? "[]",
+    );
+    const previous: number[] = JSON.parse(root.dataset.previousValues ?? "[]");
+    const tip = root.querySelector<HTMLElement>(".chart__tip");
+    const live = root.querySelector<HTMLElement>(".chart__live");
+    if (!tip || values.length === 0) return;
+    const number = new Intl.NumberFormat("es-MX");
+
+    const visible = () =>
+      Array.from(root.querySelectorAll<SVGSVGElement>(".chart__svg")).find(
+        (svg) => svg.getClientRects().length > 0,
+      );
+
+    const hint = tip.dataset.hint ?? "";
+    const hide = () => {
+      tip.textContent = hint;
+      root
+        .querySelectorAll<SVGElement>(".chart__cross, .chart__hover")
+        .forEach((el) => el.classList.add("is-hidden"));
+    };
+
+    let current = -1;
+    const show = (index: number, speak = false) => {
+      const svg = visible();
+      if (!svg) return;
+      const n = values.length;
+      const index0 = Math.min(Math.max(index, 0), n - 1);
+      current = index0;
+      const left = Number(svg.dataset.left);
+      const right = Number(svg.dataset.right);
+      const top = Number(svg.dataset.top);
+      const bottom = Number(svg.dataset.bottom);
+      const max = Number(svg.dataset.max) || 1;
+      const x =
+        n === 1
+          ? (left + right) / 2
+          : left + (index0 * (right - left)) / (n - 1);
+      const y = top + (bottom - top) * (1 - values[index0] / max);
+
+      const cross = svg.querySelector<SVGLineElement>(".chart__cross");
+      const hover = svg.querySelector<SVGGElement>(".chart__hover");
+      cross?.setAttribute("x1", String(x));
+      cross?.setAttribute("x2", String(x));
+      cross?.classList.remove("is-hidden");
+      hover?.classList.remove("is-hidden");
+      hover?.querySelectorAll("circle").forEach((c) => {
+        c.setAttribute("cx", String(x));
+        c.setAttribute("cy", String(y));
+      });
+
+      const text = `${labels[index0]}: ${number.format(values[index0])} visitantes`;
+      const before =
+        index0 < previous.length
+          ? `Periodo anterior (${previousLabels[index0]}): ${number.format(previous[index0])}`
+          : "";
+      tip.replaceChildren();
+      const strong = document.createElement("strong");
+      strong.textContent = labels[index0];
+      const now = document.createElement("div");
+      now.textContent = `${number.format(values[index0])} visitantes`;
+      tip.append(strong, now);
+      if (before) {
+        const old = document.createElement("div");
+        old.textContent = before;
+        tip.append(old);
+      }
+      if (speak && live)
+        live.textContent = before ? `${text}. ${before}` : text;
+    };
+
+    const fromPointer = (event: PointerEvent) => {
+      const svg = visible();
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const unit = Number(svg.dataset.width) / rect.width;
+      const left = Number(svg.dataset.left);
+      const right = Number(svg.dataset.right);
+      const x = (event.clientX - rect.left) * unit;
+      const n = values.length;
+      show(n === 1 ? 0 : Math.round(((x - left) / (right - left)) * (n - 1)));
+    };
+
+    root.addEventListener("pointermove", fromPointer);
+    root.addEventListener("pointerdown", fromPointer);
+    root.addEventListener("pointerleave", hide);
+    root.addEventListener("blur", hide);
+    root.addEventListener("keydown", (event) => {
+      const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+      if (event.key === "Escape") return hide();
+      if (event.key === "Home") show(0, true);
+      else if (event.key === "End") show(values.length - 1, true);
+      else if (step) show((current < 0 ? values.length : current) + step, true);
+      else return;
+      event.preventDefault();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-visits-chart]").forEach(setup);
+</script>

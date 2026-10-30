@@ -474,6 +474,93 @@ describe("analytics query (in-memory Postgres)", () => {
     });
   });
 
+  describe("contacts and the previous series", () => {
+    beforeEach(async () => {
+      await db.insert(analyticsDaily).values([
+        daily("2026-11-02", "conversion", "contacted", { visitors: 4 }),
+        daily("2026-11-03", "conversion", "contacted", { visitors: 3 }),
+        daily("2026-11-02", "event", "form_success", {
+          events: 2,
+          visitors: 2,
+        }),
+        daily("2026-11-03", "event", "form_success", {
+          events: 1,
+          visitors: 1,
+        }),
+        daily("2026-11-02", "event", "whatsapp_click", {
+          events: 5,
+          visitors: 4,
+        }),
+        daily("2026-11-03", "event", "page_view", {
+          events: 40,
+          visitors: 30,
+        }),
+        daily("2026-10-30", "conversion", "contacted", { visitors: 1 }),
+        daily("2026-10-30", "event", "whatsapp_click", {
+          events: 2,
+          visitors: 1,
+        }),
+      ]);
+    });
+
+    it("adds up the contacts of the range", async () => {
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-02", to: "2026-11-03" }),
+      );
+      expect(result.contacts).toEqual({
+        visitors: 7,
+        messages: 3,
+        whatsapp: 5,
+      });
+    });
+
+    it("gives zeros when nobody contacted", async () => {
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-10-29", to: "2026-10-29" }),
+      );
+      expect(result.contacts).toEqual({
+        visitors: 0,
+        messages: 0,
+        whatsapp: 0,
+      });
+    });
+
+    it("gives the contacts and the series of the previous period when comparing", async () => {
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-02", to: "2026-11-03", compare: true }),
+      );
+      // The two days before: 31 Oct and 1 Nov.
+      expect(result.comparison?.contacts).toEqual({
+        visitors: 0,
+        messages: 0,
+        whatsapp: 0,
+      });
+      expect(result.comparison?.series.map((point) => point.bucket)).toEqual([
+        "2026-11-01",
+      ]);
+      expect(result.comparison?.series[0].visitors).toBe(5);
+    });
+
+    it("compares a longer range with the period before it", async () => {
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-01", to: "2026-11-03", compare: true }),
+      );
+      expect(result.comparison).toMatchObject({
+        from: "2026-10-29",
+        to: "2026-10-31",
+        contacts: { visitors: 1, whatsapp: 2 },
+      });
+      expect(result.comparison?.series.map((point) => point.bucket)).toEqual([
+        "2026-10-29",
+        "2026-10-30",
+      ]);
+    });
+  });
+
   describe("distributions", () => {
     /**
      * @param {string} day - The day.

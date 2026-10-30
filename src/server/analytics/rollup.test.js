@@ -181,6 +181,41 @@ describe("computeDailyRollup", () => {
   });
 });
 
+describe("contacted visitors", () => {
+  const rows = (/** @type {Parameters<typeof event>[0][]} */ list) =>
+    computeDailyRollup(
+      list.map((item) => event(item)),
+      "2026-10-29",
+    );
+
+  it("counts a visitor once, whichever way they contacted the business", () => {
+    const result = rows([
+      { visitorId: "a", type: "whatsapp_click", minute: 1 },
+      { visitorId: "a", type: "phone_click", minute: 2 },
+      { visitorId: "b", type: "form_success", minute: 3 },
+      { visitorId: "c", type: "email_click", minute: 4 },
+    ]);
+    expect(find(result, "conversion", "contacted")?.visitors).toBe(3);
+  });
+
+  it("does not count opening the form, a social link or a language switch", () => {
+    const result = rows([
+      { visitorId: "a", type: "contact_view" },
+      { visitorId: "a", type: "form_start" },
+      { visitorId: "a", type: "form_submit" },
+      { visitorId: "a", type: "social_click" },
+      { visitorId: "a", type: "language_switch" },
+    ]);
+    expect(find(result, "conversion", "contacted")).toBeUndefined();
+  });
+
+  it("counts a visitor who contacted without a page view in the same day", () => {
+    const result = rows([{ visitorId: "z", type: "whatsapp_click" }]);
+    expect(find(result, "conversion", "contacted")?.visitors).toBe(1);
+    expect(find(result, "total")?.visitors).toBe(1);
+  });
+});
+
 describe("computeDistributions", () => {
   /**
    * @param {number} seconds - Seconds of active time.
