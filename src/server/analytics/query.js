@@ -50,6 +50,7 @@ export const breakdownDimensions = /** @type {const} */ ([
   "whatsapp",
   "event",
   "contacted_channel",
+  "scroll",
 ]);
 
 const dayText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -163,6 +164,12 @@ function rowsOf(result) {
  */
 
 /**
+ * @typedef {Record<string, { events: number, visitors: number }>} EventCounts
+ * How many times each kind of event happened in the range, and the sum of the daily visitors
+ * who did it. A kind that never happened is missing.
+ */
+
+/**
  * @typedef {object} Comparison
  * @property {string} from - First day of the previous period.
  * @property {string} to - Last day of the previous period.
@@ -179,6 +186,7 @@ function rowsOf(result) {
  * @property {string | null} through - Last day with totals; today and the days the job has not reached are not in them.
  * @property {Metrics} totals - Totals of the range.
  * @property {Contacts} contacts - How many contacted the business in the range.
+ * @property {EventCounts} events - Every kind of event of the range, not only the top ones.
  * @property {Distributions} distributions - Median and p75 of the active time per session (and of the speed measures).
  * @property {SeriesPoint[]} series - One point per bucket with data.
  * @property {Record<string, BreakdownEntry[]>} breakdowns - The top rows of each dimension.
@@ -289,6 +297,28 @@ async function readContacts(db, from, to) {
 }
 
 /**
+ * Counts every kind of event of a range. There are few kinds, so none is left out.
+ * @param {Db} db - The database.
+ * @param {string} from - First day.
+ * @param {string} to - Last day.
+ * @returns {Promise<EventCounts>} The counts by event name.
+ */
+async function readEvents(db, from, to) {
+  const result = await db.execute(sql`
+    select key, coalesce(sum(events), 0)::int as events, coalesce(sum(visitors), 0)::int as visitors
+    from analytics_daily
+    where dimension = 'event' and day >= ${from}::date and day <= ${to}::date
+    group by key
+  `);
+  return Object.fromEntries(
+    rowsOf(result).map((row) => [
+      String(row.key),
+      { events: Number(row.events), visitors: Number(row.visitors) },
+    ]),
+  );
+}
+
+/**
  * Reads the histograms of a range, sums them and gives the median and p75 of each metric.
  * @param {Db} db - The database.
  * @param {string} from - First day.
@@ -388,10 +418,11 @@ async function readBreakdown(db, from, to, dimension, limit) {
 export async function queryAnalytics(db, query) {
   const { from, to, granularity, compare } = query;
 
-  const [totals, contacts, distributions, series, lastResult] =
+  const [totals, contacts, events, distributions, series, lastResult] =
     await Promise.all([
       totalsOf(db, from, to),
       readContacts(db, from, to),
+      readEvents(db, from, to),
       readDistributions(db, from, to),
       readSeries(db, query),
       db.execute(sql`
@@ -446,6 +477,7 @@ export async function queryAnalytics(db, query) {
     through: lastDay ? String(lastDay) : null,
     totals,
     contacts,
+    events,
     distributions,
     series,
     breakdowns,

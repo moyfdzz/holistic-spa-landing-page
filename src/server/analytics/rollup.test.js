@@ -216,6 +216,60 @@ describe("contacted visitors", () => {
   });
 });
 
+describe("scroll depth", () => {
+  const rows = (/** @type {Parameters<typeof event>[0][]} */ list) =>
+    computeDailyRollup(
+      list.map((item) => event(item)),
+      "2026-10-29",
+    );
+  const leave = (
+    /** @type {number} */ scroll,
+    /** @type {string} */ visitorId,
+    minute = 1,
+  ) => ({
+    visitorId,
+    type: "engagement",
+    props: { seconds: 20, scroll },
+    minute,
+  });
+
+  it("counts the page views by how far down they got", () => {
+    const result = rows([
+      leave(100, "a"),
+      leave(100, "b"),
+      leave(25, "c"),
+      leave(0, "d"),
+    ]);
+    expect(find(result, "scroll", "100")?.events).toBe(2);
+    expect(find(result, "scroll", "25")?.events).toBe(1);
+    expect(find(result, "scroll", "0")?.events).toBe(1);
+    expect(find(result, "scroll", "50")).toBeUndefined();
+  });
+
+  it("counts a visitor once for each depth and every page view in the events", () => {
+    const result = rows([
+      leave(50, "a", 1),
+      leave(50, "a", 5),
+      leave(100, "a", 9),
+    ]);
+    expect(find(result, "scroll", "50")).toMatchObject({
+      events: 2,
+      visitors: 1,
+    });
+    expect(find(result, "scroll", "100")).toMatchObject({
+      events: 1,
+      visitors: 1,
+    });
+  });
+
+  it("ignores an engagement event with no depth", () => {
+    const result = rows([
+      { visitorId: "a", type: "engagement", props: { seconds: 5 } },
+    ]);
+    expect(result.some((row) => row.dimension === "scroll")).toBe(false);
+  });
+});
+
 describe("contacted sessions by channel", () => {
   const rows = (/** @type {Parameters<typeof event>[0][]} */ list) =>
     computeDailyRollup(
