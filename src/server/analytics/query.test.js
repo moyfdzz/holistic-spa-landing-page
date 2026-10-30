@@ -9,6 +9,8 @@ import {
   BREAKDOWN_LIMIT,
   clearAnalyticsCache,
   countLiveVisitors,
+  MAX_EXPORT_ROWS,
+  readTable,
   TODAY_TTL_MS,
   parseAnalyticsQuery,
   queryAnalytics,
@@ -387,6 +389,82 @@ describe("analytics query (in-memory Postgres)", () => {
         bucket: "2026-11-04",
         visitors: 0,
       });
+    });
+  });
+
+  describe("export tables", () => {
+    it("returns every row of a dimension, not only the top ones", async () => {
+      await db.insert(analyticsDaily).values(
+        Array.from({ length: BREAKDOWN_LIMIT + 5 }, (_, index) =>
+          daily(
+            "2026-11-03",
+            "city",
+            `city-${String(index).padStart(2, "0")}`,
+            {
+              visitors: 1,
+            },
+          ),
+        ),
+      );
+      const rows = await readTable(
+        db,
+        whole({ to: "2026-11-03" }),
+        "city",
+        now,
+      );
+      expect(rows).toHaveLength(BREAKDOWN_LIMIT + 5);
+    });
+
+    it("returns the series with its buckets", async () => {
+      const rows = await readTable(
+        db,
+        whole({ granularity: "week", to: "2026-11-03" }),
+        "series",
+        now,
+      );
+      expect(
+        rows.map((row) => [
+          /** @type {{ bucket: string }} */ (row).bucket,
+          row.visitors,
+        ]),
+      ).toEqual([
+        ["2026-10-26", 35],
+        ["2026-11-02", 70],
+      ]);
+    });
+
+    it("matches what the dashboard shows for the same range", async () => {
+      const query = whole({ to: "2026-11-03" });
+      const shown = await queryAnalytics(db, query);
+      const rows = await readTable(db, query, "channel", now);
+      expect(rows).toEqual(shown.breakdowns.channel);
+    });
+
+    it("is empty for a dimension with no rows", async () => {
+      expect(
+        await readTable(db, whole({ to: "2026-11-03" }), "os", now),
+      ).toEqual([]);
+    });
+
+    it("includes today when the range ends today", async () => {
+      await db.insert(analyticsEvents).values({
+        occurredAt: new Date("2026-11-04T16:00:00Z"),
+        visitorId: "a",
+        type: "page_view",
+        path: "/",
+        locale: "es",
+        channel: "direct",
+        device: "desktop",
+        browser: "Chrome",
+        os: "Windows",
+        screen: "large",
+      });
+      const rows = await readTable(db, whole(), "series", now);
+      expect(rows.at(-1)).toMatchObject({ bucket: "2026-11-04", visitors: 1 });
+    });
+
+    it("keeps the row limit above what a dashboard needs", () => {
+      expect(MAX_EXPORT_ROWS).toBeGreaterThan(BREAKDOWN_LIMIT);
     });
   });
 
