@@ -78,9 +78,9 @@ It logs counts only. If it fails, the run is recorded as failed in Cloudflare (W
 
 The answer has `range`, `through` (the last day with totals), `totals`, `series` (one point per day, week starting Monday, month or year that has data), `breakdowns` (the top 20 keys of each dimension, by visitors) and `comparison` (the previous period of the same length with the change of each number, when `compare=previous`). `bounceRate` is bounces over sessions and `avgEngagedSeconds` is engaged seconds per session.
 
-- **Today is not in the totals.** The daily job writes yesterday and the day before, so the numbers reach yesterday (`through`). Only `live` includes today.
+- **Today is included.** When the range ends today, a cache miss first recomputes today from the raw events with `rollupDay` (the same idempotent statement the daily job uses) and then reads the totals. That GET therefore writes today's rows; the daily job recomputes yesterday and the day before, so late events settle the day. Today is recomputed at most once a minute per Worker instance.
 - **`live`** is the count of distinct visitors with an event in the last 30 minutes, read from the raw events and never cached.
-- Totals are cached for 3 minutes inside the Worker instance, which is enough because the data changes once a day.
+- Answers are cached inside the Worker instance for 3 minutes, or 1 minute when the range ends today.
 - A monthly or yearly `visitors` is the sum of the daily ones: show it as such.
 
 Not built yet (the rest of REL-50): the CSV export, the median of active time and the speed percentiles.
