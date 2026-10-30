@@ -30,6 +30,8 @@ export default defineConfig({
     react(),
     icon(),
     sitemap({
+      // The admin area is private: it must not be listed for search engines.
+      filter: (page) => !new URL(page).pathname.startsWith("/admin"),
       i18n: { defaultLocale: "es", locales: { es: "es-MX", en: "en-US" } },
       // Same addresses as the canonical links: no trailing slash, except the home pages.
       serialize(item) {

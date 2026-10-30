@@ -1,0 +1,92 @@
+---
+import { compareValues } from "../../server/analytics/range.js";
+
+interface Props {
+  /** What the number is, for example "Visitantes". */
+  label: string;
+  /** The value in the chosen period. */
+  value: number;
+  /** The value in the previous period, to show the change. Leave out when there is none. */
+  previous?: number;
+  /** A short note under the number, for example "suma de visitantes diarios". */
+  note?: string;
+  /** The unit shown after the number, for example "%" or "s". */
+  unit?: string;
+}
+
+const { label, value, previous, note, unit } = Astro.props;
+const change = previous === undefined ? null : compareValues(value, previous);
+const text = new Intl.NumberFormat("es-MX").format(value);
+const changeText =
+  !change || change.direction === "same"
+    ? "Sin cambio frente al periodo anterior"
+    : change.direction === "new"
+      ? "Nuevo frente al periodo anterior"
+      : `${change.direction === "up" ? "Sube" : "Baja"} ${Math.abs(change.percent ?? 0)} % frente al periodo anterior`;
+---
+
+<article class="kpi">
+  <h3 class="kpi__label">{label}</h3>
+  <p class="kpi__value">
+    {text}
+    {unit && <span class="kpi__unit">{unit}</span>}
+  </p>
+  {change && (
+    <p class={`kpi__change kpi__change--${change.direction}`}>
+      <span aria-hidden="true">
+        {change.direction === "up"
+          ? "▲"
+          : change.direction === "down"
+            ? "▼"
+            : "•"}
+        {change.percent !== null && ` ${Math.abs(change.percent)} %`}
+      </span>
+      <span class="visually-hidden">{changeText}</span>
+    </p>
+  )}
+  {note && <p class="kpi__note">{note}</p>}
+</article>
+
+<style>
+  .kpi {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-sm);
+  }
+  .kpi__label {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+  .kpi__value {
+    margin: var(--space-1) 0 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-2xl);
+    color: var(--color-heading);
+  }
+  .kpi__unit {
+    font-size: var(--text-base);
+    margin-left: var(--space-1);
+    color: var(--color-text-muted);
+  }
+  .kpi__change {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+  .kpi__change--up {
+    color: var(--sage-700);
+  }
+  .kpi__change--down {
+    color: var(--color-danger);
+  }
+  .kpi__note {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>

@@ -1,0 +1,169 @@
+---
+import "@fontsource/lora/latin-600.css";
+import "@fontsource/quicksand/latin-400.css";
+import "@fontsource/quicksand/latin-500.css";
+import "@fontsource/quicksand/latin-600.css";
+import "../styles/tokens.css";
+import "../styles/global.css";
+
+interface Props {
+  /** Title of the page, shown in the tab and as the heading. */
+  title: string;
+  /** Section of the menu that is open. */
+  current: "resumen" | "sitio" | "conversaciones" | "ia";
+}
+
+const { title, current } = Astro.props;
+
+const sections = [
+  { id: "resumen", label: "Resumen", href: "/admin" },
+  { id: "sitio", label: "Sitio web", href: "/admin/sitio" },
+  {
+    id: "conversaciones",
+    label: "Conversaciones",
+    href: "/admin/conversaciones",
+  },
+  { id: "ia", label: "IA", href: "/admin/ia" },
+] as const;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} · Administración</title>
+    <!-- The owner's own visits are not measured: this browser stops sending statistics. -->
+    <script is:inline>
+      try {
+        localStorage.setItem("analytics-optout", "1");
+      } catch {
+        /* storage blocked: nothing to do */
+      }
+    </script>
+  </head>
+  <body class="admin">
+    <a class="admin__skip" href="#contenido">
+      Saltar al contenido
+    </a>
+    <header class="admin__bar">
+      <p class="admin__brand">Masajes Relax · Administración</p>
+      <nav class="admin__nav" aria-label="Secciones de administración">
+        <ul>
+          {sections.map((section) => (
+            <li>
+              <a
+                href={section.href}
+                aria-current={section.id === current ? "page" : undefined}
+              >
+                {section.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <form class="admin__signout" method="post" action="/api/admin/sign-out">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </header>
+    <main id="contenido" class="admin__main">
+      <h1>{title}</h1>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  .admin {
+    background: var(--color-surface-alt);
+    min-height: 100vh;
+  }
+  .admin__skip {
+    position: absolute;
+    left: var(--space-3);
+    top: -4rem;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    z-index: 10;
+  }
+  .admin__skip:focus {
+    top: var(--space-3);
+  }
+  .admin__bar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2) var(--space-4);
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .admin__brand {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    color: var(--color-heading);
+  }
+  .admin__nav {
+    grid-column: 1 / -1;
+    overflow-x: auto;
+  }
+  .admin__nav ul {
+    display: flex;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .admin__nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-pill);
+    color: var(--color-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .admin__nav a[aria-current="page"] {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .admin__nav a:focus-visible,
+  .admin__signout button:focus-visible,
+  .admin a:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .admin__signout button {
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--color-text);
+    font: inherit;
+    cursor: pointer;
+  }
+  .admin__main {
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: var(--space-5) var(--space-4) var(--space-8);
+  }
+  .admin__main h1 {
+    font-size: var(--text-xl);
+    margin-block: 0 var(--space-4);
+  }
+  @media (min-width: 48rem) {
+    .admin__bar {
+      grid-template-columns: auto 1fr auto;
+    }
+    .admin__nav {
+      grid-column: auto;
+    }
+  }
+</style>
