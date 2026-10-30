@@ -8,6 +8,17 @@ import { histogramOf, vitalMetrics } from "./distribution.js";
 /** Minutes without events after which the same visitor starts a new session. */
 export const SESSION_GAP_MINUTES = 30;
 
+/**
+ * Events that count as contacting the business: a click to WhatsApp, phone or email, or a
+ * contact form that was sent. Opening the form, a social link or a language switch is not.
+ */
+export const CONTACT_EVENTS = /** @type {const} */ ([
+  "whatsapp_click",
+  "phone_click",
+  "email_click",
+  "form_success",
+]);
+
 /** A session with one page view and less engaged time than this (seconds) counts as a bounce. */
 export const BOUNCE_SECONDS = 10;
 
@@ -238,6 +249,9 @@ export function computeDailyRollup(events, day) {
   const total = row("total", "");
   for (const event of events) {
     addVisitor("total", "", event.visitorId);
+    // One row for the visitors who contacted the business, whatever the way.
+    if (CONTACT_EVENTS.includes(/** @type {never} */ (event.type)))
+      addVisitor("conversion", "contacted", event.visitorId);
     total.events += 1;
     row("event", event.type).events += 1;
     addVisitor("event", event.type, event.visitorId);

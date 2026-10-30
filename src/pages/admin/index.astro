@@ -1,13 +1,112 @@
 ---
+import { env } from "cloudflare:workers";
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import DateRangePicker from "../../components/admin/DateRangePicker.astro";
 import EmptyState from "../../components/admin/EmptyState.astro";
+import GranularityPicker from "../../components/admin/GranularityPicker.astro";
+import KpiTile from "../../components/admin/KpiTile.astro";
+import VisitsChart from "../../components/admin/VisitsChart.astro";
+import { loadOverview } from "../../server/admin/dashboard.js";
+import { formatCount, formatDay } from "../../server/admin/format.js";
+import { analyticsLaunchDay } from "../../server/analytics/range.js";
 
 export const prerender = false;
+
+const loaded = await loadOverview(
+  env,
+  Object.fromEntries(Astro.url.searchParams),
+  new Date(),
+);
+const { request, overview, live } = loaded;
 ---
 
 <AdminLayout title="Resumen" current="resumen">
-  <EmptyState
-    title="Aquí verás lo más importante de un vistazo."
-    text="Las visitas del sitio llegan con el panel de Sitio web, y las conversaciones con el asistente, más adelante."
-  />
+  <p class="live" aria-live="polite">
+    <span class="live__dot" aria-hidden="true"></span>
+    <span>
+      Ahora mismo hay <strong>{formatCount(live)}</strong>
+      {live === 1 ? "visitante" : "visitantes"} en el sitio (últimos 30
+      minutos).
+    </span>
+  </p>
+
+  <DateRangePicker range={request.range} action="/admin" />
+
+  {!loaded.ok || !overview ? (
+    <EmptyState
+      title="No pudimos leer los números."
+      text="Intenta de nuevo en un momento. Si sigue igual, revisa los registros del Worker en Cloudflare."
+    />
+  ) : overview.empty ? (
+    <EmptyState
+      title="Aún no hay datos en este periodo."
+      text={`El seguimiento empezó el ${formatDay(analyticsLaunchDay, "long")}.`}
+    />
+  ) : (
+    <>
+      <div class="tiles">
+        {overview.tiles.map((tile) => (
+          <KpiTile
+            label={tile.label}
+            value={tile.value}
+            display={tile.display}
+            previous={tile.previous}
+            note={tile.note}
+          />
+        ))}
+      </div>
+      <p class="aside">
+        Una persona que vuelve otro día cuenta otra vez: el sitio no recuerda a
+        nadie de un día a otro. Por eso los visitantes de varios días son la
+        suma de los de cada día.
+      </p>
+      <div class="chart-head">
+        <GranularityPicker
+          current={overview.visits.granularity}
+          action="/admin"
+          query={Astro.url.searchParams}
+        />
+      </div>
+      <VisitsChart visits={overview.visits} />
+    </>
+  )}
 </AdminLayout>
+
+<style>
+  .live {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+  .live__dot {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+  }
+  .tiles {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(2, 1fr);
+    margin-bottom: var(--space-3);
+  }
+  @media (min-width: 48rem) {
+    .tiles {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .aside {
+    margin: 0 0 var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .chart-head {
+    margin-bottom: var(--space-3);
+  }
+</style>

@@ -155,10 +155,19 @@ function rowsOf(result) {
  */
 
 /**
+ * @typedef {object} Contacts
+ * @property {number} visitors - Sum of the daily visitors who contacted the business (WhatsApp, phone, email or a sent form).
+ * @property {number} messages - Contact forms that were sent.
+ * @property {number} whatsapp - Clicks on any WhatsApp link.
+ */
+
+/**
  * @typedef {object} Comparison
  * @property {string} from - First day of the previous period.
  * @property {string} to - Last day of the previous period.
  * @property {Metrics} totals - Totals of the previous period.
+ * @property {Contacts} contacts - Contacts of the previous period.
+ * @property {SeriesPoint[]} series - The series of the previous period, with the same granularity.
  * @property {Distributions} distributions - Medians and percentiles of the previous period.
  * @property {Record<"visitors" | "sessions" | "pageViews" | "events" | "avgEngagedSeconds" | "medianEngagedSeconds", ReturnType<typeof compareValues>>} changes - Change of each number.
  */
@@ -168,6 +177,7 @@ function rowsOf(result) {
  * @property {{ from: string, to: string, granularity: typeof granularities[number] }} range - What was asked, after being put in order.
  * @property {string | null} through - Last day with totals; today and the days the job has not reached are not in them.
  * @property {Metrics} totals - Totals of the range.
+ * @property {Contacts} contacts - How many contacted the business in the range.
  * @property {Distributions} distributions - Median and p75 of the active time per session (and of the speed measures).
  * @property {SeriesPoint[]} series - One point per bucket with data.
  * @property {Record<string, BreakdownEntry[]>} breakdowns - The top rows of each dimension.
@@ -250,6 +260,30 @@ function changesOf(
       current.avgEngagedSeconds,
       previous.avgEngagedSeconds,
     ),
+  };
+}
+
+/**
+ * Counts the ways the business was contacted in a range.
+ * @param {Db} db - The database.
+ * @param {string} from - First day.
+ * @param {string} to - Last day.
+ * @returns {Promise<Contacts>} The counts.
+ */
+async function readContacts(db, from, to) {
+  const result = await db.execute(sql`
+    select
+      coalesce(sum(case when dimension = 'conversion' and key = 'contacted' then visitors end), 0)::int as visitors,
+      coalesce(sum(case when dimension = 'event' and key = 'form_success' then events end), 0)::int as messages,
+      coalesce(sum(case when dimension = 'event' and key = 'whatsapp_click' then events end), 0)::int as whatsapp
+    from analytics_daily
+    where day >= ${from}::date and day <= ${to}::date
+  `);
+  const row = rowsOf(result)[0];
+  return {
+    visitors: Number(row?.visitors ?? 0),
+    messages: Number(row?.messages ?? 0),
+    whatsapp: Number(row?.whatsapp ?? 0),
   };
 }
 
@@ -353,14 +387,16 @@ async function readBreakdown(db, from, to, dimension, limit) {
 export async function queryAnalytics(db, query) {
   const { from, to, granularity, compare } = query;
 
-  const [totals, distributions, series, lastResult] = await Promise.all([
-    totalsOf(db, from, to),
-    readDistributions(db, from, to),
-    readSeries(db, query),
-    db.execute(sql`
+  const [totals, contacts, distributions, series, lastResult] =
+    await Promise.all([
+      totalsOf(db, from, to),
+      readContacts(db, from, to),
+      readDistributions(db, from, to),
+      readSeries(db, query),
+      db.execute(sql`
       select max(day)::text as day from analytics_daily where dimension = 'total'
     `),
-  ]);
+    ]);
 
   const breakdowns = Object.fromEntries(
     await Promise.all(
@@ -378,13 +414,22 @@ export async function queryAnalytics(db, query) {
   if (compare) {
     const length = daysBetween(from, to);
     const previous = { from: addDays(from, -length), to: addDays(from, -1) };
-    const [previousTotals, previousDistributions] = await Promise.all([
+    const [
+      previousTotals,
+      previousContacts,
+      previousSeries,
+      previousDistributions,
+    ] = await Promise.all([
       totalsOf(db, previous.from, previous.to),
+      readContacts(db, previous.from, previous.to),
+      readSeries(db, { ...query, ...previous }),
       readDistributions(db, previous.from, previous.to),
     ]);
     comparison = {
       ...previous,
       totals: previousTotals,
+      contacts: previousContacts,
+      series: previousSeries,
       distributions: previousDistributions,
       changes: changesOf(
         totals,
@@ -399,6 +444,7 @@ export async function queryAnalytics(db, query) {
     range: { from, to, granularity },
     through: lastDay ? String(lastDay) : null,
     totals,
+    contacts,
     distributions,
     series,
     breakdowns,

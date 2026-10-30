@@ -72,7 +72,7 @@ A Cloudflare Cron Trigger (`wrangler.jsonc`, `triggers.crons`: 07:30 UTC, which 
 
 It logs counts only. If it fails, the run is recorded as failed in Cloudflare (Worker, Settings, Triggers or Observability).
 
-`analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq` and `whatsapp` (by placement). Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" are the sum of the daily ones: the design cannot recognize the same person on two days.
+`analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq`, `whatsapp` (by placement) and `conversion`. The `conversion` row (key `contacted`) counts the visitors of the day who contacted the business: a click to WhatsApp, phone or email, or a contact form that was sent (`CONTACT_EVENTS` in `rollup.js`). Opening the form, a social link or a language switch is not a contact. Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" are the sum of the daily ones: the design cannot recognize the same person on two days.
 
 ## The query API
 
@@ -84,6 +84,16 @@ The answer has `range`, `through` (the last day with totals), `totals`, `series`
 - **`live`** is the count of distinct visitors with an event in the last 30 minutes, read from the raw events and never cached.
 - Answers are cached inside the Worker instance for 3 minutes, or 1 minute when the range ends today.
 - A monthly or yearly `visitors` is the sum of the daily ones: show it as such.
+
+## The Resumen page
+
+`/admin` (`src/pages/admin/index.astro`) is rendered on the server from the same functions as the API, with no JavaScript framework: `loadOverview` (`src/server/admin/dashboard.js`) reads the totals and the live counter, and `buildOverview` (`overview.js`) turns them into the tiles and the series. It shows:
+
+- **Ahora mismo**: visitors in the last 30 minutes.
+- Six tiles with the change against the previous period: visitors, sessions, active time (average per session, median in the note), messages from the contact form, WhatsApp clicks and conversion (visitors who contacted the business over all visitors). The previous period is left out when it ends before the tracker existed (29 Oct 2026), so "7 días" has no comparison during the first week.
+- **Visitas en el tiempo**: a line chart with the previous period as a dashed line. It groups by day, week, month or year (`?g=`, automatic by default: days up to two months, weeks up to nine, months up to three years). Buckets without data are zero, so the line has no gaps.
+
+The charts are plain SVG drawn on the server (`src/server/admin/chart.js` has the geometry and `VisitsChart.astro` the markup), so the panel loads no chart library. Each chart has a text summary, a legend, a "Ver números" table with the same data, a reading line that follows the pointer or the arrow keys, and no information that depends on color alone (the previous period is dashed). There is no dark theme in the site yet, so the charts have only the light one.
 
 ## CSV export
 

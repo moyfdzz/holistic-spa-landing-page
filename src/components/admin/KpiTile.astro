@@ -6,6 +6,8 @@ interface Props {
   label: string;
   /** The value in the chosen period. */
   value: number;
+  /** The value as it is written, for example `1 min` or `12.5 %`. Defaults to the number. */
+  display?: string;
   /** The value in the previous period, to show the change. Leave out when there is none. */
   previous?: number;
   /** A short note under the number, for example "suma de visitantes diarios". */
@@ -14,9 +16,9 @@ interface Props {
   unit?: string;
 }
 
-const { label, value, previous, note, unit } = Astro.props;
+const { label, value, display, previous, note, unit } = Astro.props;
 const change = previous === undefined ? null : compareValues(value, previous);
-const text = new Intl.NumberFormat("es-MX").format(value);
+const text = display ?? new Intl.NumberFormat("es-MX").format(value);
 const changeText =
   !change || change.direction === "same"
     ? "Sin cambio frente al periodo anterior"
@@ -64,8 +66,11 @@ const changeText =
   .kpi__value {
     margin: var(--space-1) 0 0;
     font-family: var(--font-heading);
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
+    line-height: 1.2;
     color: var(--color-heading);
+    /* A duration such as "1 min 14 s" stays on one line so the tiles keep the same height. */
+    overflow-wrap: anywhere;
   }
   .kpi__unit {
     font-size: var(--text-base);
