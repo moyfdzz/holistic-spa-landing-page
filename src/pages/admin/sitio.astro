@@ -4,6 +4,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import BarList from "../../components/admin/BarList.astro";
 import DateRangePicker from "../../components/admin/DateRangePicker.astro";
 import EmptyState from "../../components/admin/EmptyState.astro";
+import KpiTile from "../../components/admin/KpiTile.astro";
 import VitalTile from "../../components/admin/VitalTile.astro";
 import { loadSite } from "../../server/admin/dashboard.js";
 import { formatDay, formatPercent } from "../../server/admin/format.js";
@@ -41,6 +42,101 @@ const { ok, range, site } = await loadSite(
         rows={site.sources}
         head={["Fuente", "Sesiones", "Con contacto"]}
         csv={csvHref("channel", range)}
+      />
+      <BarList
+        id="funnel"
+        title="Embudo de contacto"
+        note="Cuántos visitantes llegan a cada paso hasta enviar el formulario. El porcentaje es contra el paso anterior."
+        rows={site.funnel}
+        head={["Paso", "Visitantes", "Del paso anterior"]}
+        csv={csvHref("event", range)}
+      />
+      <div class="pair">
+        <BarList
+          id="ways"
+          title="Otras formas de contactar"
+          note="Clics en los enlaces de WhatsApp, teléfono y correo."
+          rows={site.contactWays}
+          head={["Forma", "Clics"]}
+          csv={csvHref("event", range)}
+          empty="Nadie ha pulsado estos enlaces en este periodo."
+        />
+        <BarList
+          id="whatsapp"
+          title="Desde dónde pulsan WhatsApp"
+          note="El botón flotante y los demás enlaces de WhatsApp, por separado."
+          rows={site.whatsappPlaces}
+          head={["Lugar", "Clics"]}
+          csv={csvHref("whatsapp", range)}
+          empty="Nadie ha pulsado WhatsApp en este periodo."
+        />
+      </div>
+      <section class="doing" aria-labelledby="doing-title">
+        <h2 id="doing-title">Qué hacen en el sitio</h2>
+        <div class="doing__tiles">
+          {site.engagement.tiles.map((tile) => (
+            <KpiTile
+              label={tile.label}
+              value={tile.value}
+              display={tile.display}
+              note={tile.note}
+            />
+          ))}
+        </div>
+      </section>
+      <BarList
+        id="scroll"
+        title="Hasta dónde bajan"
+        note="Páginas vistas según lo más abajo que llegó la persona."
+        rows={site.engagement.scroll}
+        head={["Hasta dónde", "Páginas vistas", "Del total"]}
+        csv={csvHref("scroll", range)}
+        empty="Aún no hay visitas medidas en este periodo."
+      />
+      <div class="pair">
+        <BarList
+          id="pages"
+          title="Páginas más vistas"
+          rows={site.engagement.pages}
+          head={["Página", "Vistas"]}
+          csv={csvHref("path", range)}
+        />
+        <BarList
+          id="landing"
+          title="Páginas de entrada"
+          note="La primera página que ve la persona al llegar."
+          rows={site.engagement.landing}
+          head={["Página", "Sesiones"]}
+          csv={csvHref("path", range)}
+        />
+      </div>
+      <div class="pair">
+        <BarList
+          id="services"
+          title="Servicios más vistos"
+          note="Veces que la tarjeta del servicio apareció en pantalla."
+          rows={site.engagement.services}
+          head={["Servicio", "Vistas"]}
+          csv={csvHref("service", range)}
+          empty="Aún no se ha visto ninguna tarjeta de servicio."
+        />
+        <BarList
+          id="faq"
+          title="Preguntas más abiertas"
+          note="Preguntas frecuentes que la gente despliega."
+          rows={site.engagement.faq}
+          head={["Pregunta", "Aperturas"]}
+          csv={csvHref("faq", range)}
+          empty="Nadie ha abierto una pregunta frecuente en este periodo."
+        />
+      </div>
+      <BarList
+        id="languages"
+        title="Idioma"
+        note="Visitantes según el idioma de la página que vieron."
+        rows={site.engagement.languages}
+        head={["Idioma", "Visitantes"]}
+        csv={csvHref("locale", range)}
       />
       <div class="pair">
         <BarList
@@ -117,6 +213,20 @@ const { ok, range, site } = await loadSite(
     .pair {
       grid-template-columns: 1fr 1fr;
       align-items: start;
+    }
+  }
+  .doing h2 {
+    margin: var(--space-3) 0 var(--space-3);
+    font-size: var(--text-lg);
+  }
+  .doing__tiles {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 64rem) {
+    .doing__tiles {
+      grid-template-columns: repeat(4, 1fr);
     }
   }
   .speed h2 {

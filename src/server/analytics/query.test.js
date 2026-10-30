@@ -474,6 +474,74 @@ describe("analytics query (in-memory Postgres)", () => {
     });
   });
 
+  describe("event counts", () => {
+    beforeEach(async () => {
+      await db.insert(analyticsDaily).values([
+        daily("2026-11-02", "event", "contact_view", {
+          events: 10,
+          visitors: 8,
+        }),
+        daily("2026-11-03", "event", "contact_view", {
+          events: 5,
+          visitors: 4,
+        }),
+        daily("2026-11-03", "event", "form_success", {
+          events: 1,
+          visitors: 1,
+        }),
+        daily("2026-10-30", "event", "contact_view", {
+          events: 99,
+          visitors: 99,
+        }),
+        daily("2026-11-03", "channel", "direct", { events: 7, visitors: 7 }),
+      ]);
+    });
+
+    it("adds up every kind of event of the range", async () => {
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-02", to: "2026-11-03" }),
+      );
+      expect(result.events).toEqual({
+        contact_view: { events: 15, visitors: 12 },
+        form_success: { events: 1, visitors: 1 },
+      });
+    });
+
+    it("leaves out the kinds that did not happen and the days outside the range", async () => {
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-03", to: "2026-11-03" }),
+      );
+      expect(result.events.form_start).toBeUndefined();
+      expect(result.events.contact_view).toEqual({ events: 5, visitors: 4 });
+    });
+
+    it("does not lose a kind of event when there are more kinds than a breakdown holds", async () => {
+      await db.insert(analyticsDaily).values(
+        Array.from({ length: BREAKDOWN_LIMIT + 5 }, (_, index) =>
+          daily(
+            "2026-11-03",
+            "event",
+            `kind-${String(index).padStart(2, "0")}`,
+            {
+              events: 1000,
+              visitors: 1000,
+            },
+          ),
+        ),
+      );
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-03", to: "2026-11-03" }),
+      );
+      expect(result.events.form_success).toEqual({ events: 1, visitors: 1 });
+      expect(Object.keys(result.breakdowns.event)).toHaveLength(
+        BREAKDOWN_LIMIT,
+      );
+    });
+  });
+
   describe("contacts and the previous series", () => {
     beforeEach(async () => {
       await db.insert(analyticsDaily).values([

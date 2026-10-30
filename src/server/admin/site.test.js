@@ -1,10 +1,20 @@
 import { describe, expect, it } from "vitest";
+import { faq } from "../../data/faq.js";
+import { services } from "../../data/services.js";
 import {
+  buildContactWays,
+  buildEngagement,
+  buildFunnel,
+  buildScroll,
   buildSite,
   buildSources,
   buildVitals,
+  buildWhatsappPlaces,
+  faqName,
   outsideShare,
+  pageName,
   rateVital,
+  serviceName,
 } from "./site.js";
 
 /**
@@ -41,6 +51,7 @@ function result(breakdowns, extra = {}) {
   return /** @type {import("../analytics/query.js").AnalyticsResult} */ ({
     totals: { ...entry("total"), events: 10, visitors: 5 },
     distributions: {},
+    events: {},
     breakdowns,
     series: [],
     comparison: null,
@@ -225,5 +236,237 @@ describe("buildSite", () => {
     expect(site.empty).toBe(true);
     expect(site.sources).toEqual([]);
     expect(site.outside).toBeNull();
+  });
+});
+
+describe("names", () => {
+  it("names the pages of the site and leaves any other path as it is", () => {
+    expect(pageName("/")).toBe("Inicio");
+    expect(pageName("/en/contact")).toBe("Contacto (en inglés)");
+    expect(pageName("/aviso-de-privacidad")).toBe("Aviso de privacidad");
+    expect(pageName("/wp-login.php")).toBe("/wp-login.php");
+  });
+
+  it("names a service by the slug the tracker sends, with the data of the site", () => {
+    for (const service of services) {
+      expect(serviceName(service.slug)).toBe(service.text.es.name);
+    }
+    expect(serviceName("no-existe")).toBe("no-existe");
+  });
+
+  it("names a question of the FAQ by its id", () => {
+    for (const item of faq) {
+      expect(faqName(item.id)).toBe(item.text.es.question);
+    }
+    expect(faqName("no-existe")).toBe("no-existe");
+  });
+});
+
+describe("buildScroll", () => {
+  it("gives the five depths in order, with the share of the page views of each", () => {
+    const rows = buildScroll([
+      entry("100", { events: 50 }),
+      entry("0", { events: 30 }),
+      entry("50", { events: 20 }),
+    ]);
+    expect(rows.map((row) => row.label)).toEqual([
+      "Casi no bajaron",
+      "Hasta un cuarto de la página",
+      "Hasta la mitad",
+      "Hasta tres cuartos",
+      "Llegaron hasta el final",
+    ]);
+    expect(rows.map((row) => row.value)).toEqual([30, 0, 20, 0, 50]);
+    expect(plain(rows[4].note ?? "")).toBe("50 %");
+    expect(rows[4].share).toBe(1);
+    expect(rows[1].share).toBe(0);
+  });
+
+  it("has nothing when no page view was measured", () => {
+    expect(buildScroll([])).toEqual([]);
+  });
+});
+
+describe("buildFunnel", () => {
+  /**
+   * @param {Record<string, number>} visitors - Visitors of each kind of event.
+   * @param {number} [total] - Visitors of the range.
+   * @returns {import("../analytics/query.js").AnalyticsResult} A small answer of the query API.
+   */
+  const withEvents = (visitors, total = 100) =>
+    result(
+      {},
+      {
+        totals: { ...entry("total"), events: 10, visitors: total },
+        events: Object.fromEntries(
+          Object.entries(visitors).map(([key, count]) => [
+            key,
+            { events: count, visitors: count },
+          ]),
+        ),
+      },
+    );
+
+  it("goes from all the visitors to the messages that arrived, with the share of each step", () => {
+    const rows = buildFunnel(
+      withEvents({
+        contact_view: 40,
+        form_start: 20,
+        form_submit: 10,
+        form_success: 8,
+      }),
+    );
+    expect(rows.map((row) => row.label)).toEqual([
+      "Visitantes",
+      "Abrieron la página de contacto",
+      "Empezaron el formulario",
+      "Enviaron el formulario",
+      "El mensaje llegó",
+    ]);
+    expect(rows.map((row) => row.value)).toEqual([100, 40, 20, 10, 8]);
+    expect(rows[0].note).toBeUndefined();
+    expect(plain(rows[1].note ?? "")).toBe("40 % del paso anterior");
+    expect(plain(rows[2].note ?? "")).toBe("50 % del paso anterior");
+    expect(plain(rows[4].note ?? "")).toBe("80 % del paso anterior");
+    expect(rows[1].share).toBe(0.4);
+  });
+
+  it("keeps the steps that nobody reached, so the funnel shows where it stops", () => {
+    const rows = buildFunnel(withEvents({ contact_view: 10 }));
+    expect(rows.map((row) => row.value)).toEqual([100, 10, 0, 0, 0]);
+    expect(plain(rows[2].note ?? "")).toBe("0 % del paso anterior");
+    // After a step nobody reached there is nothing to divide by.
+    expect(rows[3].note).toBeUndefined();
+    expect(rows[3].cells.map(plain)).toEqual([
+      "Enviaron el formulario",
+      "0",
+      "—",
+    ]);
+  });
+
+  it("never goes above 100 % when the steps are not nested", () => {
+    const rows = buildFunnel(withEvents({ contact_view: 5, form_start: 9 }));
+    expect(plain(rows[2].note ?? "")).toBe("100 % del paso anterior");
+  });
+
+  it("has a table with the visitors of each step and its share", () => {
+    const rows = buildFunnel(withEvents({ contact_view: 25 }));
+    expect(rows[1].cells.map(plain)).toEqual([
+      "Abrieron la página de contacto",
+      "25",
+      "25 %",
+    ]);
+  });
+});
+
+describe("contact ways", () => {
+  it("counts the clicks to WhatsApp, phone and email, most used first", () => {
+    const rows = buildContactWays(
+      result(
+        {},
+        {
+          events: {
+            whatsapp_click: { events: 30, visitors: 20 },
+            phone_click: { events: 4, visitors: 4 },
+            email_click: { events: 9, visitors: 7 },
+          },
+        },
+      ),
+    );
+    expect(rows.map((row) => [row.label, row.value])).toEqual([
+      ["Clics en WhatsApp", 30],
+      ["Clics en el correo", 9],
+      ["Clics en el teléfono", 4],
+    ]);
+  });
+
+  it("names the places of the WhatsApp links, the floating button apart from the rest", () => {
+    const rows = buildWhatsappPlaces([
+      entry("floating", { events: 12 }),
+      entry("hero", { events: 5 }),
+      entry("service_card", { events: 8 }),
+      entry("somewhere-new", { events: 1 }),
+    ]);
+    expect(rows.map((row) => row.label)).toEqual([
+      "Botón flotante",
+      "Tarjeta de servicio",
+      "Portada",
+      "somewhere-new",
+    ]);
+  });
+});
+
+describe("buildEngagement", () => {
+  const breakdowns = {
+    path: [
+      entry("/", { pageViews: 300, sessions: 120 }),
+      entry("/contact", { pageViews: 80, sessions: 5 }),
+      entry("/en/", { pageViews: 40, sessions: 40 }),
+    ],
+    service: [
+      entry("relajante", { events: 50 }),
+      entry("shiatsu", { events: 12 }),
+    ],
+    faq: [entry("booking", { events: 9 })],
+    locale: [entry("es", { visitors: 90 }), entry("en", { visitors: 10 })],
+  };
+  const totals = {
+    ...entry("total"),
+    events: 100,
+    visitors: 80,
+    sessions: 100,
+    pageViews: 250,
+    avgEngagedSeconds: 65,
+    bounceRate: 0.321,
+  };
+
+  it("makes the four tiles of what the visitors do", () => {
+    const { tiles } = buildEngagement(
+      result(breakdowns, {
+        totals,
+        distributions: { engaged_seconds: { samples: 40, p50: 38, p75: 80 } },
+      }),
+    );
+    const byId = Object.fromEntries(tiles.map((tile) => [tile.id, tile]));
+    expect(plain(byId.engaged.display)).toBe("1 min 5 s");
+    expect(plain(byId.median.display)).toBe("38 s");
+    expect(plain(byId.bounce.display)).toBe("32.1 %");
+    expect(byId.pages.display).toBe("2.5");
+  });
+
+  it("says there is no median when nobody measured it, and does not divide by zero", () => {
+    const { tiles } = buildEngagement(
+      result({}, { totals: { ...totals, sessions: 0, pageViews: 0 } }),
+    );
+    const byId = Object.fromEntries(tiles.map((tile) => [tile.id, tile]));
+    expect(byId.median.display).toBe("Sin datos");
+    expect(byId.pages.display).toBe("0");
+  });
+
+  it("ranks the pages by views and the landing pages by sessions", () => {
+    const { pages, landing } = buildEngagement(result(breakdowns, { totals }));
+    expect(pages.map((row) => [row.label, row.value])).toEqual([
+      ["Inicio", 300],
+      ["Contacto", 80],
+      ["Inicio (en inglés)", 40],
+    ]);
+    expect(landing.map((row) => [row.label, row.value])).toEqual([
+      ["Inicio", 120],
+      ["Inicio (en inglés)", 40],
+      ["Contacto", 5],
+    ]);
+  });
+
+  it("names the services, the questions and the languages", () => {
+    const engagement = buildEngagement(result(breakdowns, { totals }));
+    expect(engagement.services.map((row) => row.label)).toEqual([
+      serviceName("relajante"),
+      serviceName("shiatsu"),
+    ]);
+    expect(engagement.faq[0].label).toBe(faqName("booking"));
+    expect(engagement.languages.map((row) => row.label)).toEqual([
+      "Español",
+      "Inglés",
+    ]);
   });
 });

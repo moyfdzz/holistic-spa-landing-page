@@ -279,6 +279,12 @@ export function computeDailyRollup(events, day) {
       const seconds = prop(event.props, "seconds");
       if (typeof seconds === "number" && seconds > 0)
         total.engagedSeconds += Math.round(seconds);
+      // How far down the page the visitor got: 0, 25, 50, 75 or 100, one count per page view.
+      const scroll = prop(event.props, "scroll");
+      if (typeof scroll === "number") {
+        row("scroll", String(scroll)).events += 1;
+        addVisitor("scroll", String(scroll), event.visitorId);
+      }
     }
     for (const [dimension, type, name] of propDimensions) {
       if (event.type !== type) continue;

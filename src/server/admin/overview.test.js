@@ -66,6 +66,7 @@ function result(extra = {}) {
     through: "2026-11-04",
     totals: metrics,
     contacts: { visitors: 5, messages: 2, whatsapp: 7 },
+    events: {},
     distributions: { engaged_seconds: { samples: 30, p50: 42, p75: 90 } },
     series: [
       { ...metrics, bucket: "2026-11-02", visitors: 10 },
