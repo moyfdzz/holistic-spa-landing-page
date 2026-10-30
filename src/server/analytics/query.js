@@ -250,6 +250,50 @@ export async function countLiveVisitors(db, now) {
 }
 
 /**
+ * Reads the series of a range, one point per bucket with data.
+ * @param {Db} db - The database.
+ * @param {AnalyticsQuery} query - The query.
+ * @returns {Promise<SeriesPoint[]>} The points in time order.
+ */
+async function readSeries(db, { from, to, granularity }) {
+  // `granularity` comes from a fixed list, so it is safe to use as the unit of `date_trunc`.
+  const unit = sql.raw(`'${granularity}'`);
+  const result = await db.execute(sql`
+    select date_trunc(${unit}, day)::date::text as bucket, ${sums}
+    from analytics_daily
+    where dimension = 'total' and day >= ${from}::date and day <= ${to}::date
+    group by 1 order by 1
+  `);
+  return rowsOf(result).map((row) => ({
+    bucket: String(row.bucket),
+    ...toMetrics(row),
+  }));
+}
+
+/**
+ * Reads the values of one dimension over a range, the most visited first.
+ * @param {Db} db - The database.
+ * @param {string} from - First day.
+ * @param {string} to - Last day.
+ * @param {typeof breakdownDimensions[number]} dimension - The dimension.
+ * @param {number} limit - Most rows to return.
+ * @returns {Promise<BreakdownEntry[]>} The rows.
+ */
+async function readBreakdown(db, from, to, dimension, limit) {
+  const result = await db.execute(sql`
+    select key, ${sums} from analytics_daily
+    where dimension = ${dimension} and day >= ${from}::date and day <= ${to}::date
+    group by key
+    order by sum(visitors) desc, sum(events) desc, key
+    limit ${limit}
+  `);
+  return rowsOf(result).map((row) => ({
+    key: String(row.key),
+    ...toMetrics(row),
+  }));
+}
+
+/**
  * Runs the query of the dashboard.
  * @param {Db} db - The database.
  * @param {AnalyticsQuery} query - A query from `parseAnalyticsQuery`.
@@ -257,17 +301,10 @@ export async function countLiveVisitors(db, now) {
  */
 export async function queryAnalytics(db, query) {
   const { from, to, granularity, compare } = query;
-  // `granularity` comes from a fixed list, so it is safe to use as the unit of `date_trunc`.
-  const unit = sql.raw(`'${granularity}'`);
 
-  const [totals, seriesResult, lastResult] = await Promise.all([
+  const [totals, series, lastResult] = await Promise.all([
     totalsOf(db, from, to),
-    db.execute(sql`
-      select date_trunc(${unit}, day)::date::text as bucket, ${sums}
-      from analytics_daily
-      where dimension = 'total' and day >= ${from}::date and day <= ${to}::date
-      group by 1 order by 1
-    `),
+    readSeries(db, query),
     db.execute(sql`
       select max(day)::text as day from analytics_daily where dimension = 'total'
     `),
@@ -275,30 +312,14 @@ export async function queryAnalytics(db, query) {
 
   const breakdowns = Object.fromEntries(
     await Promise.all(
-      breakdownDimensions.map(async (dimension) => {
-        const result = await db.execute(sql`
-          select key, ${sums} from analytics_daily
-          where dimension = ${dimension} and day >= ${from}::date and day <= ${to}::date
-          group by key
-          order by sum(visitors) desc, sum(events) desc, key
-          limit ${BREAKDOWN_LIMIT}
-        `);
-        return [
-          dimension,
-          rowsOf(result).map((row) => ({
-            key: String(row.key),
-            ...toMetrics(row),
-          })),
-        ];
-      }),
+      breakdownDimensions.map(async (dimension) => [
+        dimension,
+        await readBreakdown(db, from, to, dimension, BREAKDOWN_LIMIT),
+      ]),
     ),
   );
 
   const lastDay = rowsOf(lastResult)[0]?.day;
-  const series = rowsOf(seriesResult).map((row) => ({
-    bucket: String(row.bucket),
-    ...toMetrics(row),
-  }));
 
   /** @type {{ from: string, to: string, totals: Metrics, changes: ReturnType<typeof changesOf> } | null} */
   let comparison = null;
@@ -329,6 +350,22 @@ export const CACHE_TTL_MS = 3 * 60 * 1000;
 /** How long an answer that includes today is reused. Today is recomputed at most this often. */
 export const TODAY_TTL_MS = 60 * 1000;
 
+/** When today was last recomputed in this Worker instance, in milliseconds. */
+let lastTodayRefresh = 0;
+
+/**
+ * Recomputes today from the raw events, at most once a minute per Worker instance.
+ * @param {Db} db - The database.
+ * @param {Date} now - The current time.
+ * @returns {Promise<void>}
+ */
+export async function refreshToday(db, now) {
+  const age = now.getTime() - lastTodayRefresh;
+  if (age >= 0 && age < TODAY_TTL_MS) return;
+  await rollupDay(db, dayKey(now));
+  lastTodayRefresh = now.getTime();
+}
+
 /** Most answers kept at once. */
 const CACHE_MAX_ENTRIES = 50;
 
@@ -354,7 +391,7 @@ export async function queryAnalyticsCached(db, query, now) {
   const ttl = endsToday ? TODAY_TTL_MS : CACHE_TTL_MS;
   if (hit && now.getTime() - hit.at < ttl)
     return /** @type {AnalyticsResult} */ (hit.value);
-  if (endsToday) await rollupDay(db, today);
+  if (endsToday) await refreshToday(db, now);
   const value = await queryAnalytics(db, query);
   if (cache.size >= CACHE_MAX_ENTRIES) {
     const oldest = cache.keys().next().value;
@@ -367,4 +404,30 @@ export async function queryAnalyticsCached(db, query, now) {
 /** Empties the cache. Only the tests need it. */
 export function clearAnalyticsCache() {
   cache.clear();
+  lastTodayRefresh = 0;
+}
+
+/** Tables the dashboard can export: the series and each dimension. */
+export const exportTables = /** @type {const} */ ([
+  "series",
+  ...breakdownDimensions,
+]);
+
+/** Most rows of a table in an export. */
+export const MAX_EXPORT_ROWS = 10000;
+
+/**
+ * Reads a whole table of the dashboard for the CSV export: every row, not only the top ones.
+ * When the range ends today it recomputes today first, like the dashboard does.
+ * @param {Db} db - The database.
+ * @param {AnalyticsQuery} query - A query from `parseAnalyticsQuery`.
+ * @param {typeof exportTables[number]} table - `series` or a dimension.
+ * @param {Date} now - The current time.
+ * @returns {Promise<(SeriesPoint | BreakdownEntry)[]>} The rows, at most `MAX_EXPORT_ROWS`.
+ */
+export async function readTable(db, query, table, now) {
+  if (query.to === dayKey(now)) await refreshToday(db, now);
+  if (table === "series")
+    return (await readSeries(db, query)).slice(0, MAX_EXPORT_ROWS);
+  return readBreakdown(db, query.from, query.to, table, MAX_EXPORT_ROWS);
 }

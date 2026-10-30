@@ -83,7 +83,13 @@ The answer has `range`, `through` (the last day with totals), `totals`, `series`
 - Answers are cached inside the Worker instance for 3 minutes, or 1 minute when the range ends today.
 - A monthly or yearly `visitors` is the sum of the daily ones: show it as such.
 
-Not built yet (the rest of REL-50): the CSV export, the median of active time and the speed percentiles.
+## CSV export
+
+`GET /api/admin/analytics/export?table=series|<dimension>&from&to&granularity` (`src/pages/api/admin/analytics/export.js`, formatting in `src/server/analytics/csv.js`) downloads one table of the dashboard: `series`, or any dimension of `breakdownDimensions` (`channel`, `path`, `city`...). It takes the same range and granularity as the query API, answers `400` for a wrong `table` or range, and follows the same admin guard. A dimension is exported whole (up to 10000 rows), not only its top 20, and today is included like in the dashboard.
+
+The file is UTF-8 with a byte order mark so Excel shows accents, with `\r\n` line ends, and is named `analytics-<table>-<from>_<to>.csv`. The keys of the rows come from visitors (paths, referrer hosts, cities), so a cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`; otherwise a spreadsheet could run it as a formula.
+
+Not built yet (the rest of REL-50): the median of active time and the speed percentiles.
 
 ## Sessions
 
