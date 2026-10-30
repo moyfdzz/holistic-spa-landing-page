@@ -29,6 +29,13 @@
       "when": 1793383921737,
       "tag": "0003_analytics_distributions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793392600522,
+      "tag": "0004_search_console",
+      "breakpoints": true
     }
   ]
 }
