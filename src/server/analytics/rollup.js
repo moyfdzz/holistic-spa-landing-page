@@ -19,6 +19,15 @@ export const CONTACT_EVENTS = /** @type {const} */ ([
   "form_success",
 ]);
 
+/**
+ * Tells whether an event is a way of contacting the business.
+ * @param {string} type - The event name.
+ * @returns {boolean} True for a click to WhatsApp, phone or email, or a sent form.
+ */
+function isContactEvent(type) {
+  return CONTACT_EVENTS.includes(/** @type {never} */ (type));
+}
+
 /** A session with one page view and less engaged time than this (seconds) counts as a bounce. */
 export const BOUNCE_SECONDS = 10;
 
@@ -250,7 +259,7 @@ export function computeDailyRollup(events, day) {
   for (const event of events) {
     addVisitor("total", "", event.visitorId);
     // One row for the visitors who contacted the business, whatever the way.
-    if (CONTACT_EVENTS.includes(/** @type {never} */ (event.type)))
+    if (isContactEvent(event.type))
       addVisitor("conversion", "contacted", event.visitorId);
     total.events += 1;
     row("event", event.type).events += 1;
@@ -285,6 +294,13 @@ export function computeDailyRollup(events, day) {
     const views = session.filter((event) => event.type === "page_view").length;
     const { seconds: engaged } = engagedOf(session);
     const bounced = views <= 1 && engaged < BOUNCE_SECONDS;
+    // A session that ended in a contact counts for the channel it started from, so the
+    // conversion of each source is its contacted sessions over its sessions.
+    if (session.some((item) => isContactEvent(item.type)))
+      row(
+        "contacted_channel",
+        String(landing.channel ?? "(unknown)"),
+      ).sessions += 1;
     total.sessions += 1;
     if (bounced) total.bounces += 1;
     for (const [dimension, column] of eventDimensions) {

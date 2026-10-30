@@ -216,6 +216,64 @@ describe("contacted visitors", () => {
   });
 });
 
+describe("contacted sessions by channel", () => {
+  const rows = (/** @type {Parameters<typeof event>[0][]} */ list) =>
+    computeDailyRollup(
+      list.map((item) => event(item)),
+      "2026-10-29",
+    );
+
+  it("counts a session that ended in a contact for the channel it started from", () => {
+    const result = rows([
+      { visitorId: "a", channel: "instagram", minute: 0 },
+      // After the landing, the visitor moves inside the site and the channel becomes internal.
+      {
+        visitorId: "a",
+        channel: "internal",
+        type: "whatsapp_click",
+        minute: 3,
+      },
+      { visitorId: "b", channel: "instagram", minute: 1 },
+      { visitorId: "c", channel: "direct", minute: 2 },
+    ]);
+    expect(find(result, "contacted_channel", "instagram")?.sessions).toBe(1);
+    expect(find(result, "contacted_channel", "direct")).toBeUndefined();
+    expect(find(result, "contacted_channel", "internal")).toBeUndefined();
+    // The sessions of the channel are the ones it already had.
+    expect(find(result, "channel", "instagram")?.sessions).toBe(2);
+  });
+
+  it("counts a session once even with several contacts", () => {
+    const result = rows([
+      { visitorId: "a", channel: "direct", minute: 0 },
+      { visitorId: "a", type: "whatsapp_click", minute: 1 },
+      { visitorId: "a", type: "phone_click", minute: 2 },
+      { visitorId: "a", type: "form_success", minute: 3 },
+    ]);
+    expect(find(result, "contacted_channel", "direct")?.sessions).toBe(1);
+  });
+
+  it("counts the two sessions of a visitor who contacted in both", () => {
+    const result = rows([
+      { visitorId: "a", channel: "direct", minute: 0 },
+      { visitorId: "a", type: "phone_click", minute: 1 },
+      { visitorId: "a", channel: "google_search", minute: 90 },
+      { visitorId: "a", type: "whatsapp_click", minute: 91 },
+    ]);
+    expect(find(result, "contacted_channel", "direct")?.sessions).toBe(1);
+    expect(find(result, "contacted_channel", "google_search")?.sessions).toBe(
+      1,
+    );
+  });
+
+  it("has no rows when nobody contacted", () => {
+    const result = rows([{ visitorId: "a", minute: 0 }]);
+    expect(result.some((row) => row.dimension === "contacted_channel")).toBe(
+      false,
+    );
+  });
+});
+
 describe("computeDistributions", () => {
   /**
    * @param {number} seconds - Seconds of active time.

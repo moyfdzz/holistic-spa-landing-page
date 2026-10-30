@@ -1,0 +1,191 @@
+---
+import type { BarRow } from "../../server/admin/site.js";
+
+interface Props {
+  /** Heading of the block. */
+  title: string;
+  /** Unique part of the ids, so two blocks on a page do not share them. */
+  id: string;
+  /** The bars, longest first. */
+  rows: BarRow[];
+  /** Header of the table of numbers: one title for each cell of a row. */
+  head: string[];
+  /** A sentence under the heading that says what the bars measure. */
+  note?: string;
+  /** Address that downloads the same numbers as CSV. */
+  csv?: string;
+  /** What to say when there is nothing to show. */
+  empty?: string;
+}
+
+const {
+  title,
+  id,
+  rows,
+  head,
+  note,
+  csv,
+  empty = "Aún no hay datos en este periodo.",
+} = Astro.props;
+---
+
+<section class="bars" aria-labelledby={`${id}-title`}>
+  <h2 class="bars__title" id={`${id}-title`}>
+    {title}
+  </h2>
+  {note && <p class="bars__note">{note}</p>}
+  {rows.length === 0 ? (
+    <p class="bars__empty">{empty}</p>
+  ) : (
+    <>
+      <ul class="bars__list">
+        {rows.map((row) => (
+          <li class="bars__row">
+            <span class="bars__head">
+              <span class="bars__label">{row.label}</span>
+              {row.note && <small class="bars__small">{row.note}</small>}
+            </span>
+            <span class="bars__track" aria-hidden="true">
+              <span
+                class="bars__fill"
+                style={`width: ${Math.max(row.share * 100, 1)}%`}
+              />
+            </span>
+            <span class="bars__value">{row.display}</span>
+          </li>
+        ))}
+      </ul>
+      <details class="bars__table">
+        <summary>Ver números</summary>
+        <table>
+          <caption class="visually-hidden">{title}</caption>
+          <thead>
+            <tr>
+              {head.map((cell) => (
+                <th scope="col">{cell}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr>
+                {row.cells.map((cell, index) =>
+                  index === 0 ? <th scope="row">{cell}</th> : <td>{cell}</td>,
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+      {csv && (
+        <a class="bars__csv" href={csv} download>
+          Descargar CSV
+        </a>
+      )}
+    </>
+  )}
+</section>
+
+<style>
+  .bars {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-sm);
+  }
+  .bars__title {
+    margin: 0;
+    font-size: var(--text-lg);
+  }
+  .bars__note,
+  .bars__empty {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .bars__list {
+    display: grid;
+    gap: var(--space-3);
+    list-style: none;
+    margin: var(--space-4) 0 0;
+    padding: 0;
+  }
+  .bars__row {
+    display: grid;
+    /* The number has the same width in every row, so all the bars share one scale. */
+    grid-template-columns: 1fr 3.5rem;
+    gap: var(--space-1) var(--space-3);
+    align-items: center;
+  }
+  .bars__head {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0 var(--space-3);
+  }
+  .bars__label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-heading);
+  }
+  .bars__track {
+    display: block;
+    height: 0.75rem;
+    background: var(--color-surface-alt);
+    border-radius: 0 4px 4px 0;
+  }
+  .bars__fill {
+    display: block;
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 0 4px 4px 0;
+  }
+  .bars__value {
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .bars__small {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .bars__table {
+    margin-top: var(--space-3);
+  }
+  .bars__table summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+  .bars__table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+  .bars__table th,
+  .bars__table td {
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: break-word;
+  }
+  @media (min-width: 36rem) {
+    .bars__table th,
+    .bars__table td {
+      padding: var(--space-2) var(--space-3);
+    }
+  }
+  .bars__csv {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+</style>

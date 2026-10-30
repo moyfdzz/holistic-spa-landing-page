@@ -8,6 +8,9 @@ const numberFormat = new Intl.NumberFormat("es-MX");
 const decimalFormat = new Intl.NumberFormat("es-MX", {
   maximumFractionDigits: 1,
 });
+const scoreFormat = new Intl.NumberFormat("es-MX", {
+  maximumFractionDigits: 3,
+});
 
 /**
  * Days are keys like `2026-10-29` (already Monterrey days), so they are formatted as UTC dates
@@ -110,4 +113,24 @@ export function formatBucket(bucket, granularity) {
 export function formatAxisBucket(bucket, granularity) {
   if (granularity === "day" || granularity === "week") return formatDay(bucket);
   return formatBucket(bucket, granularity);
+}
+
+/**
+ * Writes a score that has no unit, with up to three decimals (a layout shift of 0.08).
+ * @param {number} value - The score.
+ * @returns {string} For example `0.08`.
+ */
+export function formatScore(value) {
+  return scoreFormat.format(value);
+}
+
+/**
+ * Writes a time in milliseconds, in seconds from one second up.
+ * @param {number} milliseconds - The time.
+ * @returns {string} For example `850 ms` or `2.4 s`, with a no-break space.
+ */
+export function formatMilliseconds(milliseconds) {
+  return milliseconds >= 1000
+    ? `${decimalFormat.format(milliseconds / 1000)}\u00a0s`
+    : `${Math.round(milliseconds)}\u00a0ms`;
 }

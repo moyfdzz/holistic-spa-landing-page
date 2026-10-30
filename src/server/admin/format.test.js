@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   formatAxisBucket,
+  formatMilliseconds,
+  formatScore,
   formatBucket,
   formatCount,
   formatDay,
@@ -71,5 +73,20 @@ describe("days and buckets", () => {
     expect(formatAxisBucket("2026-10-26", "day")).toMatch(/^26 oct/);
     expect(formatAxisBucket("2026-10-01", "month")).toMatch(/^oct.* 2026$/);
     expect(formatAxisBucket("2026-01-01", "year")).toBe("2026");
+  });
+});
+
+describe("speed formats", () => {
+  it("writes milliseconds, and seconds from one second up", () => {
+    expect(plain(formatMilliseconds(850))).toBe("850 ms");
+    expect(plain(formatMilliseconds(999.6))).toBe("1000 ms");
+    expect(plain(formatMilliseconds(1000))).toBe("1 s");
+    expect(plain(formatMilliseconds(2450))).toBe("2.5 s");
+  });
+
+  it("writes a score with up to three decimals", () => {
+    expect(formatScore(0.08)).toBe("0.08");
+    expect(formatScore(0.1234)).toBe("0.123");
+    expect(formatScore(0)).toBe("0");
   });
 });
