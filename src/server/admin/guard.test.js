@@ -101,6 +101,67 @@ describe("guardAdminRequest", () => {
     expect(result.response.status).toBe(403);
   });
 
+  it("shows a page with a sign-out button to a signed-in user who is not allowed", async () => {
+    const result = await guardAdminRequest(
+      page(),
+      deps({ email: "intruso@example.com" }),
+    );
+    if (result.allow) throw new Error("must not allow");
+    expect(result.response.status).toBe(403);
+    expect(result.response.headers.get("content-type")).toContain("text/html");
+    const html = await result.response.text();
+    expect(html).toContain('action="/api/admin/sign-out"');
+    expect(html).not.toContain("intruso@example.com");
+  });
+
+  it("answers the API with 403 JSON for a user who is not allowed", async () => {
+    const result = await guardAdminRequest(
+      api(),
+      deps({ email: "intruso@example.com" }),
+    );
+    if (result.allow) throw new Error("must not allow");
+    expect(result.response.status).toBe(403);
+    expect(result.response.headers.get("content-type")).toContain(
+      "application/json",
+    );
+  });
+
+  it("lets a signed-in user who is not allowed sign out, from this site only", async () => {
+    const signOut = (headers = {}) =>
+      new Request("https://www.example.com/api/admin/sign-out", {
+        method: "POST",
+        headers,
+      });
+    const notAllowed = deps({ email: "intruso@example.com" });
+    const same = await guardAdminRequest(
+      signOut({ origin: "https://www.example.com" }),
+      notAllowed,
+    );
+    expect(same.allow).toBe(true);
+    const cross = await guardAdminRequest(
+      signOut({ origin: "https://evil.example" }),
+      notAllowed,
+    );
+    expect(cross.allow).toBe(false);
+    const anonymous = await guardAdminRequest(
+      signOut({ origin: "https://www.example.com" }),
+      deps({ status: "signed-out" }),
+    );
+    if (anonymous.allow) throw new Error("must not allow");
+    expect(anonymous.response.status).toBe(401);
+  });
+
+  it("does not open other admin routes to a user who is not allowed", async () => {
+    const result = await guardAdminRequest(
+      new Request("https://www.example.com/api/admin/other", {
+        method: "POST",
+        headers: { origin: "https://www.example.com" },
+      }),
+      deps({ email: "intruso@example.com" }),
+    );
+    expect(result.allow).toBe(false);
+  });
+
   it("refuses a user without a verified email", async () => {
     const result = await guardAdminRequest(page(), deps({ email: null }));
     if (result.allow) throw new Error("must not allow");

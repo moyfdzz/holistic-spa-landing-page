@@ -7,6 +7,7 @@
 import { isAdminEmail } from "./allowlist.js";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const SIGN_OUT_PATH = "/api/admin/sign-out";
 
 /**
  * @typedef {object} AuthState
@@ -62,6 +63,44 @@ function refuse(status, message, api) {
 }
 
 /**
+ * The page a signed-in visitor sees when their account is not allowed. It explains the refusal
+ * and offers to sign out, so they can come back with another account.
+ * @returns {Response} The 403 page.
+ */
+function forbiddenPage() {
+  const html = `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Sin acceso · Administración</title>
+    <style>
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 1rem; background: #f6f2ea; color: #2b2b2b; font-family: system-ui, sans-serif; }
+      main { max-width: 28rem; }
+      h1 { font-size: 1.5rem; margin: 0 0 0.75rem; }
+      p { line-height: 1.5; margin: 0 0 1.25rem; }
+      button { min-height: 44px; padding: 0 1.25rem; border: 1px solid #4a5d44; border-radius: 999px; background: #4a5d44; color: #fff; font: inherit; cursor: pointer; }
+      button:focus-visible { outline: 3px solid #1a56db; outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Esta cuenta no tiene acceso</h1>
+      <p>Iniciaste sesión, pero esta cuenta no está autorizada para la administración. Cierra la sesión para entrar con otra cuenta.</p>
+      <form method="post" action="/api/admin/sign-out">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </main>
+  </body>
+</html>`;
+  return new Response(html, {
+    status: 403,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+
+/**
  * Decides what to do with a request to the admin area.
  * @param {Request} request - The request.
  * @param {GuardDeps} deps - What the guard needs from outside.
@@ -106,6 +145,11 @@ export async function guardAdminRequest(request, deps) {
     };
   }
 
+  // Any signed-in account may end its own session, allowed or not.
+  if (request.method === "POST" && url.pathname === SIGN_OUT_PATH) {
+    return { allow: true, userId: auth.userId, sessionId: auth.sessionId };
+  }
+
   let email = null;
   try {
     email = await deps.getVerifiedEmail(auth.userId);
@@ -113,7 +157,10 @@ export async function guardAdminRequest(request, deps) {
     return { allow: false, response: refuse(401, "Unauthorized", api) };
   }
   if (!isAdminEmail(deps.allowedEmails, email)) {
-    return { allow: false, response: refuse(403, "Forbidden", api) };
+    return {
+      allow: false,
+      response: api ? refuse(403, "Forbidden", true) : forbiddenPage(),
+    };
   }
   return { allow: true, userId: auth.userId, sessionId: auth.sessionId };
 }
