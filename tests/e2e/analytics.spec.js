@@ -92,6 +92,41 @@ test.describe("anonymous analytics", () => {
     expect(JSON.stringify(events)).not.toContain("Ana");
   });
 
+  test("reports the speed of the page once, when it is hidden, without any personal data", async ({
+    page,
+  }) => {
+    const events = await openTracked(page, "/");
+    await expect.poll(() => events.length).toBeGreaterThan(0);
+    await page.waitForLoadState("load");
+    // Hide the page without leaving it: Playwright does not see the beacons sent while a page
+    // unloads, and the tracker reacts to the same `visibilitychange` event.
+    const hide = () =>
+      page.evaluate(() => {
+        Object.defineProperty(document, "visibilityState", {
+          value: "hidden",
+          configurable: true,
+        });
+        document.dispatchEvent(new Event("visibilitychange"));
+      });
+    await hide();
+    await expect
+      .poll(() => events.filter((event) => event.type === "web_vital").length)
+      .toBe(1);
+    await hide();
+    await page.waitForTimeout(300);
+    expect(events.filter((event) => event.type === "web_vital")).toHaveLength(
+      1,
+    );
+    const vital = /** @type {{ props: Record<string, unknown> }} */ (
+      events.find((event) => event.type === "web_vital")
+    );
+    expect(Object.keys(vital.props).length).toBeGreaterThan(0);
+    for (const [name, value] of Object.entries(vital.props)) {
+      expect(["lcp", "inp", "cls", "fcp", "ttfb"], name).toContain(name);
+      expect(typeof value, name).toBe("number");
+    }
+  });
+
   test("respects Do Not Track", async ({ page }) => {
     const events = await openTracked(page, "/", async (p) => {
       await p.addInitScript(() => {

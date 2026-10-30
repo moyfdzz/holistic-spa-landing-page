@@ -14,7 +14,28 @@
 export const distributionBounds = /** @type {const} */ ({
   /** Seconds a visitor was active in one session. */
   engaged_seconds: [5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 1800, 3600],
+  // The next five come from the `web_vital` event, one sample per page view. The "good" and
+  // "poor" limits of each (2500 and 4000 ms for LCP, and so on) are bounds, so shares can be read.
+  /** Largest Contentful Paint, in milliseconds. */
+  lcp: [500, 1000, 1500, 2000, 2500, 3000, 4000, 6000, 10000],
+  /** Interaction to Next Paint, in milliseconds. */
+  inp: [50, 100, 200, 300, 500, 1000, 2000],
+  /** Cumulative Layout Shift, a score without unit. */
+  cls: [0.01, 0.05, 0.1, 0.15, 0.25, 0.5, 1],
+  /** First Contentful Paint, in milliseconds. */
+  fcp: [500, 1000, 1800, 2500, 3000, 4000, 6000],
+  /** Time to First Byte, in milliseconds. */
+  ttfb: [200, 400, 800, 1200, 1800, 3000],
 });
+
+/** The metrics that come from the `web_vital` event, in the order shown. */
+export const vitalMetrics = /** @type {const} */ ([
+  "lcp",
+  "inp",
+  "cls",
+  "fcp",
+  "ttfb",
+]);
 
 /** @typedef {keyof typeof distributionBounds} DistributionMetric */
 
@@ -103,7 +124,7 @@ export function percentileOf(metric, buckets, percent) {
       const low = index === 0 ? 0 : bounds[index - 1];
       const high = bounds[index];
       return (
-        Math.round((low + ((rank - seen) / count) * (high - low)) * 10) / 10
+        Math.round((low + ((rank - seen) / count) * (high - low)) * 1000) / 1000
       );
     }
     seen += count;

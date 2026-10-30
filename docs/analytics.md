@@ -27,7 +27,9 @@ It does nothing when:
 
 Islands and scripts report events with `track(type, props)` from `src/utils/track.js` (the contact form does it). Details such as `props` are always short labels, never text typed by the visitor.
 
-Not sent yet: `web_vital` (real-user speed) and the `chat_*` events, which arrive with their own tickets.
+Not sent yet: the `chat_*` events, which arrive with their own tickets.
+
+The speed of the page (`web_vital`, see below) is measured with the browser's own performance entries in `src/scripts/vitals.js`, in memory, and sent once, the first time the page is hidden. `VITALS_SAMPLE_RATE` in that file is the share of page views that report it (1 is all of them); lower it if traffic grows.
 
 ## How the collector decides
 
@@ -52,7 +54,7 @@ It answers `204` for everything it accepts or deliberately ignores, so the track
 | `phone_click`, `email_click`, `social_click`, `language_switch`                          | Clicks                                                   |
 | `service_card_view`, `faq_open`                                                          | Content interest (`props.id`)                            |
 | `chat_open`, `chat_message`, `chat_suggestion_click`, `chat_handoff_click`, `chat_close` | The website chat, when it exists                         |
-| `web_vital`                                                                              | Real-user speed (`props.name`, `props.value`)            |
+| `web_vital`                                                                              | Real-user speed, once per page view (see below)          |
 
 Any other event name is rejected. `props` has at most 8 keys and short values.
 
@@ -89,7 +91,7 @@ The answer has `range`, `through` (the last day with totals), `totals`, `series`
 
 The file is UTF-8 with a byte order mark so Excel shows accents, with `\r\n` line ends, and is named `analytics-<table>-<from>_<to>.csv`. The keys of the rows come from visitors (paths, referrer hosts, cities), so a cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`; otherwise a spreadsheet could run it as a formula.
 
-Not built yet (the rest of REL-50): the speed percentiles (the tracker does not send `web_vital` yet).
+Nothing is left of REL-50 except what the dashboard (REL-52) will show with these numbers.
 
 ## Histograms (median and percentiles)
 
@@ -100,6 +102,12 @@ A median or a percentile of several days cannot be computed from the daily media
 - Like the totals, today's histograms are recomputed when a range ends today, and the daily job settles yesterday and the day before.
 
 The query API returns them as `distributions` (`{ engaged_seconds: { samples, p50, p75 } }`, a metric with no samples is missing) and, with `compare=previous`, the previous period's in `comparison.distributions` plus `comparison.changes.medianEngagedSeconds`.
+
+## Speed of the page (Core Web Vitals)
+
+The tracker sends one `web_vital` event per page view, the first time the page is hidden (a tab switch or leaving). `props` has the measures the browser could take: `lcp`, `inp`, `fcp` and `ttfb` in milliseconds and `cls` as a score (rounded to three decimals). A browser that does not support a measure leaves it out (Safari has no LCP, INP or CLS), so each metric has its own sample count. Nothing is sent when nothing was measured, or when the visit may not be measured at all.
+
+The daily job turns them into histograms in `analytics_distributions`, with the limit of "good" and of "poor" of each metric as bucket bounds: LCP 2500 and 4000, INP 200 and 500, CLS 0.1 and 0.25, FCP 1800 and 3000, TTFB 800 and 1800. The query API gives the median and p75 of each in `distributions`. INP follows the usual rule: the slowest interaction, ignoring one for every 50. CLS is the worst window of shifts (at most 5 seconds, less than 1 second between shifts).
 
 ## Sessions
 

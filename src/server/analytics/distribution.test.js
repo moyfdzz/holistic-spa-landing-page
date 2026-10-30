@@ -107,3 +107,30 @@ describe("summarize", () => {
     expect(summary).toEqual({ samples: 4, p50: 15, p75: 17.5 });
   });
 });
+
+describe("speed metrics", () => {
+  it("have the limits of good and poor of each Core Web Vital as bounds", () => {
+    const limits = {
+      lcp: [2500, 4000],
+      inp: [200, 500],
+      cls: [0.1, 0.25],
+      fcp: [1800, 3000],
+      ttfb: [800, 1800],
+    };
+    for (const [name, [good, poor]] of Object.entries(limits)) {
+      const bounds = /** @type {readonly number[]} */ (
+        distributionBounds[
+          /** @type {keyof typeof distributionBounds} */ (name)
+        ]
+      );
+      expect(bounds, name).toContain(good);
+      expect(bounds, name).toContain(poor);
+    }
+  });
+
+  it("keep three decimals so a layout shift score is not rounded away", () => {
+    const buckets = histogramOf("cls", [0.06, 0.07, 0.08, 0.09]);
+    // Four samples in the 0.05 to 0.1 bucket: the median is halfway.
+    expect(percentileOf("cls", buckets, 50)).toBe(0.075);
+  });
+});
