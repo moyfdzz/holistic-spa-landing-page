@@ -1,13 +1,19 @@
 ---
+import { env } from "cloudflare:workers";
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import BarList from "../../components/admin/BarList.astro";
 import DateRangePicker from "../../components/admin/DateRangePicker.astro";
-import KpiTile from "../../components/admin/KpiTile.astro";
 import EmptyState from "../../components/admin/EmptyState.astro";
-import { resolveRange } from "../../server/analytics/range.js";
+import VitalTile from "../../components/admin/VitalTile.astro";
+import { loadSite } from "../../server/admin/dashboard.js";
+import { formatDay, formatPercent } from "../../server/admin/format.js";
+import { csvHref, HOME_STATE } from "../../server/admin/site.js";
+import { analyticsLaunchDay } from "../../server/analytics/range.js";
 
 export const prerender = false;
 
-const range = resolveRange(
+const { ok, range, site } = await loadSite(
+  env,
   Object.fromEntries(Astro.url.searchParams),
   new Date(),
 );
@@ -15,26 +21,131 @@ const range = resolveRange(
 
 <AdminLayout title="Sitio web" current="sitio">
   <DateRangePicker range={range} action="/admin/sitio" />
-  <div class="tiles">
-    <KpiTile
-      label="Visitantes"
-      value={0}
-      previous={0}
-      note="Suma de visitantes diarios"
+
+  {!ok || !site ? (
+    <EmptyState
+      title="No pudimos leer los números."
+      text="Intenta de nuevo en un momento. Si sigue igual, revisa los registros del Worker en Cloudflare."
     />
-    <KpiTile label="Páginas vistas" value={0} previous={0} />
-  </div>
-  <EmptyState
-    title="Las gráficas llegan en el siguiente paso."
-    text="Esta pantalla ya tiene el selector de periodo y las tarjetas; los números se conectan con los totales diarios."
-  />
+  ) : site.empty ? (
+    <EmptyState
+      title="Aún no hay datos en este periodo."
+      text={`El seguimiento empezó el ${formatDay(analyticsLaunchDay, "long")}.`}
+    />
+  ) : (
+    <div class="blocks">
+      <BarList
+        id="sources"
+        title="De dónde llegan"
+        note="Sesiones según la fuente por la que empezó la visita, y cuántas de ellas terminaron en un contacto (WhatsApp, llamada, correo o formulario)."
+        rows={site.sources}
+        head={["Fuente", "Sesiones", "Con contacto"]}
+        csv={csvHref("channel", range)}
+      />
+      <div class="pair">
+        <BarList
+          id="states"
+          title="Estados"
+          note={
+            site.outside
+              ? `${formatPercent(site.outside.share)} de los visitantes con ubicación conocida están fuera de ${HOME_STATE}.`
+              : "Visitantes por estado."
+          }
+          rows={site.states}
+          head={["Estado", "Visitantes"]}
+          csv={csvHref("region", range)}
+        />
+        <BarList
+          id="cities"
+          title="Ciudades"
+          note="Visitantes por ciudad. Es una ubicación aproximada."
+          rows={site.cities}
+          head={["Ciudad", "Visitantes"]}
+          csv={csvHref("city", range)}
+        />
+      </div>
+      <div class="pair">
+        <BarList
+          id="devices"
+          title="Dispositivos"
+          note="Visitantes por tipo de dispositivo."
+          rows={site.devices}
+          head={["Dispositivo", "Visitantes"]}
+          csv={csvHref("device", range)}
+        />
+        <BarList
+          id="browsers"
+          title="Navegadores"
+          note="Visitantes por navegador."
+          rows={site.browsers}
+          head={["Navegador", "Visitantes"]}
+          csv={csvHref("browser", range)}
+        />
+      </div>
+      <section class="speed" aria-labelledby="speed-title">
+        <h2 id="speed-title">Velocidad del sitio</h2>
+        <p class="speed__note">
+          Qué tan rápido carga el sitio para quienes lo visitan, medido en sus
+          propios dispositivos. Se muestra el valor que alcanzan o superan tres
+          de cada cuatro visitas (p75).
+        </p>
+        <div class="speed__tiles">
+          {site.vitals.map((tile) => (
+            <VitalTile tile={tile} />
+          ))}
+        </div>
+      </section>
+      <p class="aside">
+        Una persona que vuelve otro día cuenta otra vez: el sitio no recuerda a
+        nadie de un día a otro. Por eso los visitantes de varios días son la
+        suma de los de cada día.
+      </p>
+    </div>
+  )}
 </AdminLayout>
 
 <style>
-  .tiles {
+  .blocks {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .pair {
+    display: grid;
+    gap: var(--space-4);
+  }
+  @media (min-width: 48rem) {
+    .pair {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .speed h2 {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-lg);
+  }
+  .speed__note {
+    margin: var(--space-2) 0 var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .speed__tiles {
     display: grid;
     gap: var(--space-3);
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-    margin-bottom: var(--space-5);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 36rem) {
+    .speed__tiles {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 64rem) {
+    .speed__tiles {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .aside {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
   }
 </style>

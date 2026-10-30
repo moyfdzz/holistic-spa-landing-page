@@ -1,0 +1,81 @@
+---
+import { formatCount } from "../../server/admin/format.js";
+import { ratingLabels, type VitalTile } from "../../server/admin/site.js";
+
+interface Props {
+  /** The speed measure to show. */
+  tile: VitalTile;
+}
+
+const { tile } = Astro.props;
+const rating = tile.rating ? ratingLabels[tile.rating] : null;
+---
+
+<article class="vital">
+  <h3 class="vital__name">{tile.name}</h3>
+  <p class="vital__what">{tile.what}</p>
+  <p class="vital__value">{tile.display}</p>
+  {rating ? (
+    <p class={`vital__rating vital__rating--${tile.rating}`}>
+      <span aria-hidden="true">{rating.mark}</span>
+      {rating.text}
+    </p>
+  ) : (
+    <p class="vital__rating">Aún no hay mediciones</p>
+  )}
+  <p class="vital__limits">{tile.limits}</p>
+  {tile.samples > 0 && (
+    <p class="vital__limits">
+      p75 de {formatCount(tile.samples)}{" "}
+      {tile.samples === 1 ? "visita medida" : "visitas medidas"}.
+      {tile.samples < 10 && " Son pocas: toma el número con cautela."}
+    </p>
+  )}
+</article>
+
+<style>
+  .vital {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-sm);
+  }
+  .vital__name {
+    margin: 0;
+    font-size: var(--text-base);
+    color: var(--color-text-muted);
+  }
+  .vital__what {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .vital__value {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-xl);
+    line-height: 1.2;
+    color: var(--color-heading);
+  }
+  .vital__rating {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+  .vital__rating--good {
+    color: var(--sage-700);
+  }
+  .vital__rating--needs {
+    color: var(--clay-700);
+  }
+  .vital__rating--poor {
+    color: var(--color-danger);
+  }
+  .vital__limits {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>

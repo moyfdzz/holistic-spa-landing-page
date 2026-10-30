@@ -49,6 +49,7 @@ export const breakdownDimensions = /** @type {const} */ ([
   "faq",
   "whatsapp",
   "event",
+  "contacted_channel",
 ]);
 
 const dayText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);

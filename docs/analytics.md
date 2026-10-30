@@ -72,7 +72,7 @@ A Cloudflare Cron Trigger (`wrangler.jsonc`, `triggers.crons`: 07:30 UTC, which 
 
 It logs counts only. If it fails, the run is recorded as failed in Cloudflare (Worker, Settings, Triggers or Observability).
 
-`analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq`, `whatsapp` (by placement) and `conversion`. The `conversion` row (key `contacted`) counts the visitors of the day who contacted the business: a click to WhatsApp, phone or email, or a contact form that was sent (`CONTACT_EVENTS` in `rollup.js`). Opening the form, a social link or a language switch is not a contact. Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" are the sum of the daily ones: the design cannot recognize the same person on two days.
+`analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq`, `whatsapp` (by placement) and `conversion`. The `conversion` row (key `contacted`) counts the visitors of the day who contacted the business: a click to WhatsApp, phone or email, or a contact form that was sent (`CONTACT_EVENTS` in `rollup.js`). Opening the form, a social link or a language switch is not a contact. `contacted_channel` has one row per channel with the **sessions** that ended in a contact, counted for the channel the session started from, so the conversion of a source is its contacted sessions over its sessions (a session is counted once however many contacts it has). Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" are the sum of the daily ones: the design cannot recognize the same person on two days.
 
 ## The query API
 
@@ -94,6 +94,17 @@ The answer has `range`, `through` (the last day with totals), `totals`, `series`
 - **Visitas en el tiempo**: a line chart with the previous period as a dashed line. It groups by day, week, month or year (`?g=`, automatic by default: days up to two months, weeks up to nine, months up to three years). Buckets without data are zero, so the line has no gaps.
 
 The charts are plain SVG drawn on the server (`src/server/admin/chart.js` has the geometry and `VisitsChart.astro` the markup), so the panel loads no chart library. Each chart has a text summary, a legend, a "Ver números" table with the same data, a reading line that follows the pointer or the arrow keys, and no information that depends on color alone (the previous period is dashed). There is no dark theme in the site yet, so the charts have only the light one.
+
+## The Sitio web page
+
+`/admin/sitio` (`src/pages/admin/sitio.astro`) reads the same totals as the API (`loadSite` in `dashboard.js`, `buildSite` in `site.js`) for the range chosen with the date picker. Its blocks are plain HTML bars and tiles, each with a "Ver números" table and a link that downloads the same numbers as CSV:
+
+- **De dónde llegan**: sessions by the channel they started from, with the share of them that ended in a contact. Visits that move inside the site (`internal`) have no sessions of their own and are not listed.
+- **Estados** and **Ciudades**: visitors by state and by city, with the share of the visitors with a known state who are outside Nuevo León. A value Cloudflare could not read shows as "Sin datos".
+- **Dispositivos** and **Navegadores**: visitors by type of device and by browser.
+- **Velocidad del sitio**: the p75 of LCP, INP, CLS, FCP and TTFB with the limits of good and poor (the same ones that are bucket bounds, see above). A rating is always a word and a sign (✓ Bueno, ! Necesita mejorar, ✕ Malo), never a color alone, and a metric with fewer than 10 measured page views says so.
+
+All the bars of a block share one scale, so they can be compared with each other. Each breakdown holds the top 20 rows.
 
 ## CSV export
 
