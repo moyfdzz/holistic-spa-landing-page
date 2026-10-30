@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeDailyRollup, splitSessions } from "./rollup.js";
+import {
+  computeDailyRollup,
+  computeDistributions,
+  splitSessions,
+} from "./rollup.js";
 
 /**
  * Builds an event with sensible defaults.
@@ -174,5 +178,83 @@ describe("computeDailyRollup", () => {
     expect(computeDailyRollup([], "2026-10-29")).toEqual([
       expect.objectContaining({ dimension: "total", visitors: 0, sessions: 0 }),
     ]);
+  });
+});
+
+describe("computeDistributions", () => {
+  /**
+   * @param {number} seconds - Seconds of active time.
+   * @param {Partial<import("./rollup.js").EventRow> & { minute?: number }} [override] - What to change.
+   * @returns {import("./rollup.js").EventRow} An engagement event.
+   */
+  const engagement = (seconds, override = {}) =>
+    event({ type: "engagement", props: { seconds, scroll: 50 }, ...override });
+
+  it("gives no rows when nothing was measured", () => {
+    expect(computeDistributions([], "2026-10-29")).toEqual([]);
+    expect(computeDistributions([event()], "2026-10-29")).toEqual([]);
+  });
+
+  it("adds the engagement of a session and counts it once", () => {
+    const rows = computeDistributions(
+      [
+        event({ minute: 0 }),
+        engagement(8, { minute: 1 }),
+        event({ minute: 2, path: "/en/" }),
+        engagement(9, { minute: 3 }),
+      ],
+      "2026-10-29",
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      day: "2026-10-29",
+      metric: "engaged_seconds",
+      samples: 1,
+    });
+    // 8 + 9 = 17 seconds: the 10 to 20 second bucket.
+    expect(rows[0].buckets[2]).toBe(1);
+  });
+
+  it("counts a session for each visitor and for each stretch after 30 minutes of silence", () => {
+    const rows = computeDistributions(
+      [
+        event({ minute: 0 }),
+        engagement(3, { minute: 1 }),
+        event({ minute: 60 }),
+        engagement(40, { minute: 61 }),
+        event({ visitorId: "v2", minute: 0 }),
+        engagement(100, { visitorId: "v2", minute: 2 }),
+      ],
+      "2026-10-29",
+    );
+    expect(rows[0].samples).toBe(3);
+  });
+
+  it("leaves out a session where the tracker never sent engagement", () => {
+    const rows = computeDistributions(
+      [
+        event({ visitorId: "left-early" }),
+        event({ visitorId: "stayed", minute: 1 }),
+        engagement(20, { visitorId: "stayed", minute: 2 }),
+      ],
+      "2026-10-29",
+    );
+    expect(rows[0].samples).toBe(1);
+  });
+
+  it("keeps a measured session of zero seconds", () => {
+    const rows = computeDistributions(
+      [event(), engagement(0, { minute: 1 })],
+      "2026-10-29",
+    );
+    expect(rows[0]).toMatchObject({ samples: 1 });
+    expect(rows[0].buckets[0]).toBe(1);
+  });
+
+  it("does not change the totals of the day", () => {
+    const events = [event(), engagement(20, { minute: 1 })];
+    const before = computeDailyRollup(events, "2026-10-29");
+    computeDistributions(events, "2026-10-29");
+    expect(computeDailyRollup(events, "2026-10-29")).toEqual(before);
   });
 });

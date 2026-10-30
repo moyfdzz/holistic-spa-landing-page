@@ -4,7 +4,7 @@
  */
 import { and, gte, lt, sql } from "drizzle-orm";
 import { analyticsEvents } from "../db/schema.js";
-import { computeDailyRollup } from "./rollup.js";
+import { computeDailyRollup, computeDistributions } from "./rollup.js";
 import { addDays, analyticsTimeZone, dayKey } from "./visitor.js";
 
 /** Months raw events are kept. The privacy notice promises this period. */
@@ -21,8 +21,9 @@ function rowsOf(result) {
 }
 
 /**
- * Recomputes the daily totals of one day and replaces the old ones in a single statement, so
- * running it twice gives the same result and a failure never leaves half a day.
+ * Recomputes the daily totals and the histograms of one day. Each is replaced in a single
+ * statement, so running it twice gives the same result and a failure never leaves half of
+ * either.
  * @param {import("drizzle-orm/pg-core").PgDatabase<import("drizzle-orm/pg-core").PgQueryResultHKT, Record<string, unknown>>} db - The database.
  * @param {string} day - The day as `YYYY-MM-DD` (Monterrey time).
  * @returns {Promise<number>} How many rows the day has.
@@ -39,13 +40,12 @@ export async function rollupDay(db, day) {
         lt(analyticsEvents.occurredAt, end),
       ),
     );
-  const rows = computeDailyRollup(
-    events.map((event) => ({
-      ...event,
-      occurredAt: new Date(event.occurredAt),
-    })),
-    day,
-  );
+  const rolled = events.map((event) => ({
+    ...event,
+    occurredAt: new Date(event.occurredAt),
+  }));
+  const rows = computeDailyRollup(rolled, day);
+  const distributions = computeDistributions(rolled, day);
   // Same names as the columns, so `jsonb_to_recordset` can read them.
   const payload = rows.map((entry) => ({
     day: entry.day,
@@ -86,6 +86,27 @@ export async function rollupDay(db, day) {
       and not exists (
         select 1 from new_rows n where n.dimension = d.dimension and n.key = d.key
       )
+  `);
+  // Same idea for the histograms of the day (active time, speed). They are written after the
+  // totals, so a failure in between leaves the totals new and the histograms of the last run
+  // until the next run, which replaces them.
+  await db.execute(sql`
+    with new_rows as (
+      select * from jsonb_to_recordset(${JSON.stringify(distributions)}::jsonb) as t(
+        day date, metric text, samples int, buckets jsonb
+      )
+    ),
+    upserted as (
+      insert into analytics_distributions (day, metric, samples, buckets)
+      select day, metric, samples, buckets from new_rows
+      on conflict (day, metric) do update set
+        samples = excluded.samples,
+        buckets = excluded.buckets
+      returning 1
+    )
+    delete from analytics_distributions d
+    where d.day = ${day}::date
+      and not exists (select 1 from new_rows n where n.metric = d.metric)
   `);
   return rows.length;
 }

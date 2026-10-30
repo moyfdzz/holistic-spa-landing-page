@@ -3,6 +3,8 @@
  * @module server/analytics/rollup
  */
 
+import { histogramOf } from "./distribution.js";
+
 /** Minutes without events after which the same visitor starts a new session. */
 export const SESSION_GAP_MINUTES = 30;
 
@@ -109,6 +111,60 @@ export function splitSessions(events) {
 }
 
 /**
+ * Seconds a visitor was active in a session, from its `engagement` events.
+ * @param {EventRow[]} session - The events of one session.
+ * @returns {{ seconds: number, measured: boolean }} The sum, and whether the session sent any
+ * engagement at all (a visitor who left before the tracker could send it has nothing measured).
+ */
+function engagedOf(session) {
+  let seconds = 0;
+  let measured = false;
+  for (const event of session) {
+    if (event.type !== "engagement") continue;
+    const value = prop(event.props, "seconds");
+    if (typeof value !== "number") continue;
+    seconds += value;
+    measured = true;
+  }
+  return { seconds, measured };
+}
+
+/**
+ * @typedef {object} DistributionRow
+ * @property {string} day - The day as `YYYY-MM-DD`.
+ * @property {import("./distribution.js").DistributionMetric} metric - The metric.
+ * @property {number} samples - How many samples the histogram has.
+ * @property {number[]} buckets - The count per bucket.
+ */
+
+/**
+ * Computes the histograms of one day. A metric with no samples has no row.
+ * @param {EventRow[]} events - All the events of the day (already limited to that day).
+ * @param {string} day - The day as `YYYY-MM-DD`.
+ * @returns {DistributionRow[]} The rows.
+ */
+export function computeDistributions(events, day) {
+  /** @type {number[]} */
+  const engaged = [];
+  for (const session of splitSessions(events)) {
+    const { seconds, measured } = engagedOf(session);
+    if (measured) engaged.push(seconds);
+  }
+  /** @type {DistributionRow[]} */
+  const rows = [];
+  if (engaged.length > 0) {
+    const buckets = histogramOf("engaged_seconds", engaged);
+    rows.push({
+      day,
+      metric: "engaged_seconds",
+      samples: buckets.reduce((sum, count) => sum + count, 0),
+      buckets,
+    });
+  }
+  return rows;
+}
+
+/**
  * Computes every daily row for one day.
  * @param {EventRow[]} events - All the events of the day (already limited to that day).
  * @param {string} day - The day as `YYYY-MM-DD`.
@@ -196,11 +252,7 @@ export function computeDailyRollup(events, day) {
     const landing =
       session.find((event) => event.type === "page_view") ?? session[0];
     const views = session.filter((event) => event.type === "page_view").length;
-    const engaged = session.reduce((sum, event) => {
-      const seconds =
-        event.type === "engagement" ? prop(event.props, "seconds") : null;
-      return sum + (typeof seconds === "number" ? seconds : 0);
-    }, 0);
+    const { seconds: engaged } = engagedOf(session);
     const bounced = views <= 1 && engaged < BOUNCE_SECONDS;
     total.sessions += 1;
     if (bounced) total.bounces += 1;
