@@ -26,6 +26,17 @@ test.describe("admin area", () => {
     }
   });
 
+  test("does not give the analytics numbers to a visitor who is not signed in", async ({
+    request,
+  }) => {
+    const response = await request.get(
+      "/api/admin/analytics?from=2026-10-29&to=2026-10-30",
+      { maxRedirects: 0 },
+    );
+    expect([401, 403, 503]).toContain(response.status());
+    expect(await response.text()).not.toContain("visitors");
+  });
+
   test("never lets search engines index it", async ({ request }) => {
     const response = await request.get("/admin", { maxRedirects: 0 });
     expect(response.headers()["x-robots-tag"]).toContain("noindex");
