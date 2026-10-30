@@ -72,7 +72,18 @@ It logs counts only. If it fails, the run is recorded as failed in Cloudflare (W
 
 `analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq` and `whatsapp` (by placement). Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" will be the sum of the daily ones: the design cannot recognize the same person on two days.
 
-Not built yet (the rest of REL-50): the query API for the dashboard, the live counter, the CSV export and the speed percentiles.
+## The query API
+
+`GET /api/admin/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD&granularity=day|week|month|year&compare=previous` (`src/pages/api/admin/analytics.js`, logic in `src/server/analytics/query.js`). It is behind the admin guard like every `/api/admin` route and the query is validated with Zod: a wrong one answers `400`. `from` and `to` are swapped when reversed, `to` is cut at today, `from` at the launch day, and a range is at most 1830 days.
+
+The answer has `range`, `through` (the last day with totals), `totals`, `series` (one point per day, week starting Monday, month or year that has data), `breakdowns` (the top 20 keys of each dimension, by visitors) and `comparison` (the previous period of the same length with the change of each number, when `compare=previous`). `bounceRate` is bounces over sessions and `avgEngagedSeconds` is engaged seconds per session.
+
+- **Today is not in the totals.** The daily job writes yesterday and the day before, so the numbers reach yesterday (`through`). Only `live` includes today.
+- **`live`** is the count of distinct visitors with an event in the last 30 minutes, read from the raw events and never cached.
+- Totals are cached for 3 minutes inside the Worker instance, which is enough because the data changes once a day.
+- A monthly or yearly `visitors` is the sum of the daily ones: show it as such.
+
+Not built yet (the rest of REL-50): the CSV export, the median of active time and the speed percentiles.
 
 ## Sessions
 
