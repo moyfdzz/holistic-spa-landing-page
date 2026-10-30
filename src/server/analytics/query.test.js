@@ -9,6 +9,7 @@ import {
   BREAKDOWN_LIMIT,
   clearAnalyticsCache,
   countLiveVisitors,
+  TODAY_TTL_MS,
   parseAnalyticsQuery,
   queryAnalytics,
   queryAnalyticsCached,
@@ -275,7 +276,7 @@ describe("analytics query (in-memory Postgres)", () => {
   });
 
   it("reuses an answer for a few minutes", async () => {
-    const query = whole();
+    const query = whole({ to: "2026-11-03" });
     const first = await queryAnalyticsCached(db, query, now);
     await db.delete(analyticsDaily);
     const soon = await queryAnalyticsCached(
@@ -290,6 +291,103 @@ describe("analytics query (in-memory Postgres)", () => {
       new Date(now.getTime() + 600_000),
     );
     expect(later.totals.visitors).toBe(0);
+  });
+
+  describe("today", () => {
+    /**
+     * @param {string} visitorId - The visitor.
+     * @param {string} iso - When.
+     * @returns {typeof analyticsEvents.$inferInsert} A page view.
+     */
+    const view = (visitorId, iso) => ({
+      occurredAt: new Date(iso),
+      visitorId,
+      type: "page_view",
+      path: "/",
+      locale: "es",
+      channel: "direct",
+      device: "desktop",
+      browser: "Chrome",
+      os: "Windows",
+      screen: "large",
+    });
+    // 12:00 in Monterrey on 4 Nov, so "today" is 2026-11-04.
+    const today = whole({ from: "2026-11-03", to: "2026-11-04" });
+
+    it("includes today when the range ends today", async () => {
+      await db
+        .insert(analyticsEvents)
+        .values([
+          view("a", "2026-11-04T16:00:00Z"),
+          view("b", "2026-11-04T17:00:00Z"),
+        ]);
+      const result = await queryAnalyticsCached(db, today, now);
+      expect(result.through).toBe("2026-11-04");
+      expect(result.totals.visitors).toBe(30 + 2);
+      expect(result.series.at(-1)).toMatchObject({
+        bucket: "2026-11-04",
+        visitors: 2,
+        pageViews: 2,
+      });
+    });
+
+    it("recomputes today at most once a minute", async () => {
+      await db
+        .insert(analyticsEvents)
+        .values(view("a", "2026-11-04T16:00:00Z"));
+      await queryAnalyticsCached(db, today, now);
+      await db
+        .insert(analyticsEvents)
+        .values(view("b", "2026-11-04T16:30:00Z"));
+      const soon = await queryAnalyticsCached(
+        db,
+        today,
+        new Date(now.getTime() + TODAY_TTL_MS - 1000),
+      );
+      expect(soon.totals.visitors).toBe(30 + 1);
+      const later = await queryAnalyticsCached(
+        db,
+        today,
+        new Date(now.getTime() + TODAY_TTL_MS + 1000),
+      );
+      expect(later.totals.visitors).toBe(30 + 2);
+    });
+
+    it("gives the same numbers when today is recomputed with no new events", async () => {
+      await db
+        .insert(analyticsEvents)
+        .values(view("a", "2026-11-04T16:00:00Z"));
+      const first = await queryAnalyticsCached(db, today, now);
+      const second = await queryAnalyticsCached(
+        db,
+        today,
+        new Date(now.getTime() + 2 * TODAY_TTL_MS),
+      );
+      expect(second).toEqual(first);
+    });
+
+    it("leaves today alone when the range ends before it", async () => {
+      await db
+        .insert(analyticsEvents)
+        .values(view("a", "2026-11-04T16:00:00Z"));
+      const result = await queryAnalyticsCached(
+        db,
+        whole({ to: "2026-11-03" }),
+        now,
+      );
+      expect(result.through).toBe("2026-11-03");
+      const rows = await db.select().from(analyticsDaily);
+      expect(rows.some((row) => row.day === "2026-11-04")).toBe(false);
+    });
+
+    it("answers a day with no events as zero", async () => {
+      const result = await queryAnalyticsCached(db, today, now);
+      expect(result.totals.visitors).toBe(30);
+      expect(result.series.at(-1)).toMatchObject({
+        bucket: "2026-11-04",
+        visitors: 0,
+      });
+    });
   });
 
   describe("live visitors", () => {

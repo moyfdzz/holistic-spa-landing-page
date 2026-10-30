@@ -5,6 +5,7 @@
  */
 import { sql } from "drizzle-orm";
 import { z } from "zod";
+import { rollupDay } from "./jobs.js";
 import { analyticsLaunchDay, compareValues, daysBetween } from "./range.js";
 import { addDays, dayKey } from "./visitor.js";
 
@@ -322,8 +323,11 @@ export async function queryAnalytics(db, query) {
   };
 }
 
-/** How long an answer is reused, in milliseconds. The data only changes once a day. */
+/** How long an answer is reused, in milliseconds. Past days only change when the job runs. */
 export const CACHE_TTL_MS = 3 * 60 * 1000;
+
+/** How long an answer that includes today is reused. Today is recomputed at most this often. */
+export const TODAY_TTL_MS = 60 * 1000;
 
 /** Most answers kept at once. */
 const CACHE_MAX_ENTRIES = 50;
@@ -332,8 +336,11 @@ const CACHE_MAX_ENTRIES = 50;
 const cache = new Map();
 
 /**
- * Runs `queryAnalytics` and reuses the answer for a few minutes while this Worker instance
- * lives. A cache miss costs a few indexed reads, so losing it is harmless.
+ * Runs `queryAnalytics` and reuses the answer while this Worker instance lives: a few minutes,
+ * or one minute when the range ends today. In that case a cache miss first recomputes today
+ * from the raw events (`rollupDay`, which replaces the rows of the day in one statement), so
+ * the numbers include today and the daily job later settles them. A miss costs a few indexed
+ * reads, so losing the cache is harmless.
  * @param {Db} db - The database.
  * @param {AnalyticsQuery} query - The query.
  * @param {Date} now - The current time.
@@ -342,8 +349,12 @@ const cache = new Map();
 export async function queryAnalyticsCached(db, query, now) {
   const key = JSON.stringify(query);
   const hit = cache.get(key);
-  if (hit && now.getTime() - hit.at < CACHE_TTL_MS)
+  const today = dayKey(now);
+  const endsToday = query.to === today;
+  const ttl = endsToday ? TODAY_TTL_MS : CACHE_TTL_MS;
+  if (hit && now.getTime() - hit.at < ttl)
     return /** @type {AnalyticsResult} */ (hit.value);
+  if (endsToday) await rollupDay(db, today);
   const value = await queryAnalytics(db, query);
   if (cache.size >= CACHE_MAX_ENTRIES) {
     const oldest = cache.keys().next().value;
