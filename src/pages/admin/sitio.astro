@@ -1,0 +1,40 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import DateRangePicker from "../../components/admin/DateRangePicker.astro";
+import KpiTile from "../../components/admin/KpiTile.astro";
+import EmptyState from "../../components/admin/EmptyState.astro";
+import { resolveRange } from "../../server/analytics/range.js";
+
+export const prerender = false;
+
+const range = resolveRange(
+  Object.fromEntries(Astro.url.searchParams),
+  new Date(),
+);
+---
+
+<AdminLayout title="Sitio web" current="sitio">
+  <DateRangePicker range={range} action="/admin/sitio" />
+  <div class="tiles">
+    <KpiTile
+      label="Visitantes"
+      value={0}
+      previous={0}
+      note="Suma de visitantes diarios"
+    />
+    <KpiTile label="Páginas vistas" value={0} previous={0} />
+  </div>
+  <EmptyState
+    title="Las gráficas llegan en el siguiente paso."
+    text="Esta pantalla ya tiene el selector de periodo y las tarjetas; los números se conectan con los totales diarios."
+  />
+</AdminLayout>
+
+<style>
+  .tiles {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    margin-bottom: var(--space-5);
+  }
+</style>

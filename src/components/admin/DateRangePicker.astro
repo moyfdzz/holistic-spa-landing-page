@@ -1,0 +1,129 @@
+---
+import {
+  presetLabels,
+  presets,
+  type DayRange,
+} from "../../server/analytics/range.js";
+
+interface Props {
+  /** The range that is open now. */
+  range: DayRange;
+  /** Page the links go to, for example `/admin/sitio`. */
+  action: string;
+}
+
+const { range, action } = Astro.props;
+const dayFormat = new Intl.DateTimeFormat("es-MX", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const show = (day: string) => dayFormat.format(new Date(`${day}T12:00:00Z`));
+---
+
+<section class="range" aria-label="Periodo">
+  <ul class="range__presets">
+    {presets
+      .filter((preset) => preset !== "custom")
+      .map((preset) => (
+        <li>
+          <a
+            href={`${action}?range=${preset}`}
+            aria-current={range.preset === preset ? "true" : undefined}
+          >
+            {presetLabels[preset]}
+          </a>
+        </li>
+      ))}
+  </ul>
+  <form class="range__custom" method="get" action={action}>
+    <input type="hidden" name="range" value="custom" />
+    <label>
+      Desde
+      <input
+        type="date"
+        name="from"
+        value={range.from}
+        min="2026-10-29"
+        required
+      />
+    </label>
+    <label>
+      Hasta
+      <input type="date" name="to" value={range.to} required />
+    </label>
+    <button type="submit">Ver periodo</button>
+  </form>
+  <p class="range__shown">
+    {show(range.from)} a {show(range.to)} (hora de Monterrey). Se compara con{" "}
+    {show(range.previous.from)} a {show(range.previous.to)}.
+  </p>
+</section>
+
+<style>
+  .range {
+    display: grid;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+  }
+  .range__presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .range__presets a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .range__presets a[aria-current="true"] {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-on-primary);
+  }
+  .range__custom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: end;
+  }
+  .range__custom label {
+    display: grid;
+    gap: var(--space-1);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .range__custom input {
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    font: inherit;
+  }
+  .range__custom button {
+    min-height: 44px;
+    padding: 0 var(--space-4);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font: inherit;
+    cursor: pointer;
+  }
+  .range__shown {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+</style>

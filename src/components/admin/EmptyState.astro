@@ -1,0 +1,52 @@
+---
+interface Props {
+  /** What is missing, in one short sentence. */
+  title: string;
+  /** Why, or what will fill it. */
+  text?: string;
+  /** `loading` shows a calm placeholder while data is on its way. */
+  state?: "empty" | "loading";
+}
+
+const { title, text, state = "empty" } = Astro.props;
+---
+
+<div
+  class={`empty empty--${state}`}
+  role={state === "loading" ? "status" : undefined}
+>
+  <p class="empty__title">{title}</p>
+  {text && <p class="empty__text">{text}</p>}
+</div>
+
+<style>
+  .empty {
+    border: 1px dashed var(--color-border-input);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    padding: var(--space-5) var(--space-4);
+    text-align: center;
+  }
+  .empty--loading {
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .empty__title {
+    margin: 0;
+    font-weight: 600;
+    color: var(--color-heading);
+  }
+  .empty__text {
+    margin: var(--space-2) 0 0;
+    color: var(--color-text-muted);
+  }
+  @keyframes pulse {
+    50% {
+      opacity: 0.6;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .empty--loading {
+      animation: none;
+    }
+  }
+</style>
