@@ -7,6 +7,7 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   analyticsDaily,
+  analyticsDistributions,
   analyticsEvents,
   analyticsSalts,
 } from "../db/schema.js";
@@ -52,6 +53,7 @@ describe("daily job (in-memory Postgres)", () => {
   beforeEach(async () => {
     await db.delete(analyticsEvents);
     await db.delete(analyticsDaily);
+    await db.delete(analyticsDistributions);
     await db.delete(analyticsSalts);
   });
 
@@ -110,6 +112,97 @@ describe("daily job (in-memory Postgres)", () => {
       .from(analyticsDaily)
       .where(sql`${analyticsDaily.dimension} = 'channel'`);
     expect(channels.map((r) => r.key)).toEqual(["bing"]);
+  });
+
+  describe("histograms", () => {
+    /**
+     * @param {string} iso - When it happened, in UTC.
+     * @param {number} seconds - Seconds of active time.
+     * @param {Partial<typeof analyticsEvents.$inferInsert>} [override] - What to change.
+     * @returns {typeof analyticsEvents.$inferInsert} An engagement event.
+     */
+    const engagement = (iso, seconds, override = {}) =>
+      row(iso, {
+        type: "engagement",
+        props: { seconds, scroll: 50 },
+        ...override,
+      });
+
+    it("stores the active time of the sessions of the day", async () => {
+      await db
+        .insert(analyticsEvents)
+        .values([
+          row("2026-10-29T16:00:00Z"),
+          engagement("2026-10-29T16:01:00Z", 12),
+          row("2026-10-29T17:00:00Z", { visitorId: "v2" }),
+          engagement("2026-10-29T17:01:00Z", 200, { visitorId: "v2" }),
+        ]);
+      await rollupDay(db, "2026-10-29");
+      const rows = await db.select().from(analyticsDistributions);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        day: "2026-10-29",
+        metric: "engaged_seconds",
+        samples: 2,
+      });
+      expect(rows[0].buckets).toHaveLength(13);
+    });
+
+    it("gives the same histograms when run twice and replaces the old ones", async () => {
+      await db
+        .insert(analyticsEvents)
+        .values([
+          row("2026-10-29T16:00:00Z"),
+          engagement("2026-10-29T16:01:00Z", 12),
+        ]);
+      await rollupDay(db, "2026-10-29");
+      const first = await db.select().from(analyticsDistributions);
+      await rollupDay(db, "2026-10-29");
+      expect(await db.select().from(analyticsDistributions)).toEqual(first);
+      await db
+        .insert(analyticsEvents)
+        .values([
+          row("2026-10-29T18:00:00Z", { visitorId: "v3" }),
+          engagement("2026-10-29T18:01:00Z", 90, { visitorId: "v3" }),
+        ]);
+      await rollupDay(db, "2026-10-29");
+      const [after] = await db.select().from(analyticsDistributions);
+      expect(after.samples).toBe(2);
+    });
+
+    it("removes the histograms of a day that no longer has measures", async () => {
+      await db.insert(analyticsDistributions).values({
+        day: "2026-10-29",
+        metric: "engaged_seconds",
+        samples: 1,
+        buckets: [1],
+      });
+      await rollupDay(db, "2026-10-29");
+      expect(await db.select().from(analyticsDistributions)).toEqual([]);
+    });
+
+    it("leaves the histograms of other days alone", async () => {
+      await db.insert(analyticsDistributions).values({
+        day: "2026-10-28",
+        metric: "engaged_seconds",
+        samples: 1,
+        buckets: [1],
+      });
+      await rollupDay(db, "2026-10-29");
+      expect(await db.select().from(analyticsDistributions)).toHaveLength(1);
+    });
+
+    it("keeps the histograms when the raw events are deleted", async () => {
+      await db
+        .insert(analyticsEvents)
+        .values([
+          row("2026-10-29T16:00:00Z"),
+          engagement("2026-10-29T16:01:00Z", 12),
+        ]);
+      await rollupDay(db, "2026-10-29");
+      await purgeOldEvents(db, new Date("2028-01-01T00:00:00Z"));
+      expect(await db.select().from(analyticsDistributions)).toHaveLength(1);
+    });
   });
 
   it("leaves other days alone", async () => {

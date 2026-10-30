@@ -5,6 +5,7 @@
  */
 import { sql } from "drizzle-orm";
 import { z } from "zod";
+import { distributionBounds, mergeBuckets, summarize } from "./distribution.js";
 import { rollupDay } from "./jobs.js";
 import { analyticsLaunchDay, compareValues, daysBetween } from "./range.js";
 import { addDays, dayKey } from "./visitor.js";
@@ -148,11 +149,18 @@ function rowsOf(result) {
  */
 
 /**
+ * @typedef {Record<string, { samples: number, p50: number | null, p75: number | null }>} Distributions
+ * Median and p75 of each histogram metric over a range (`engaged_seconds`: seconds of active time
+ * per session). A metric with no samples in the range is missing.
+ */
+
+/**
  * @typedef {object} Comparison
  * @property {string} from - First day of the previous period.
  * @property {string} to - Last day of the previous period.
  * @property {Metrics} totals - Totals of the previous period.
- * @property {Record<"visitors" | "sessions" | "pageViews" | "events" | "avgEngagedSeconds", ReturnType<typeof compareValues>>} changes - Change of each number.
+ * @property {Distributions} distributions - Medians and percentiles of the previous period.
+ * @property {Record<"visitors" | "sessions" | "pageViews" | "events" | "avgEngagedSeconds" | "medianEngagedSeconds", ReturnType<typeof compareValues>>} changes - Change of each number.
  */
 
 /**
@@ -160,6 +168,7 @@ function rowsOf(result) {
  * @property {{ from: string, to: string, granularity: typeof granularities[number] }} range - What was asked, after being put in order.
  * @property {string | null} through - Last day with totals; today and the days the job has not reached are not in them.
  * @property {Metrics} totals - Totals of the range.
+ * @property {Distributions} distributions - Median and p75 of the active time per session (and of the speed measures).
  * @property {SeriesPoint[]} series - One point per bucket with data.
  * @property {Record<string, BreakdownEntry[]>} breakdowns - The top rows of each dimension.
  * @property {Comparison | null} comparison - The previous period, when asked for.
@@ -218,10 +227,21 @@ async function totalsOf(db, from, to) {
  * Compares each count of two periods.
  * @param {Metrics} current - Metrics now.
  * @param {Metrics} previous - Metrics of the previous period.
- * @returns {Record<"visitors" | "sessions" | "pageViews" | "events" | "avgEngagedSeconds", ReturnType<typeof compareValues>>} The changes.
+ * @param {Distributions} currentDistributions - Medians now.
+ * @param {Distributions} previousDistributions - Medians of the previous period.
+ * @returns {Comparison["changes"]} The changes.
  */
-function changesOf(current, previous) {
+function changesOf(
+  current,
+  previous,
+  currentDistributions,
+  previousDistributions,
+) {
   return {
+    medianEngagedSeconds: compareValues(
+      currentDistributions.engaged_seconds?.p50 ?? 0,
+      previousDistributions.engaged_seconds?.p50 ?? 0,
+    ),
     visitors: compareValues(current.visitors, previous.visitors),
     sessions: compareValues(current.sessions, previous.sessions),
     pageViews: compareValues(current.pageViews, previous.pageViews),
@@ -231,6 +251,37 @@ function changesOf(current, previous) {
       previous.avgEngagedSeconds,
     ),
   };
+}
+
+/**
+ * Reads the histograms of a range, sums them and gives the median and p75 of each metric.
+ * @param {Db} db - The database.
+ * @param {string} from - First day.
+ * @param {string} to - Last day.
+ * @returns {Promise<Distributions>} The summary of each metric that has samples.
+ */
+async function readDistributions(db, from, to) {
+  const result = await db.execute(sql`
+    select metric, buckets from analytics_distributions
+    where day >= ${from}::date and day <= ${to}::date
+  `);
+  /** @type {Map<string, number[][]>} */
+  const byMetric = new Map();
+  for (const row of rowsOf(result)) {
+    const metric = String(row.metric);
+    const buckets = Array.isArray(row.buckets) ? row.buckets.map(Number) : [];
+    byMetric.set(metric, [...(byMetric.get(metric) ?? []), buckets]);
+  }
+  /** @type {Distributions} */
+  const summary = {};
+  for (const metric of Object.keys(distributionBounds)) {
+    const list = byMetric.get(metric);
+    if (!list) continue;
+    const key = /** @type {keyof typeof distributionBounds} */ (metric);
+    const one = summarize(key, mergeBuckets(key, list));
+    if (one.samples > 0) summary[metric] = one;
+  }
+  return summary;
 }
 
 /**
@@ -302,8 +353,9 @@ async function readBreakdown(db, from, to, dimension, limit) {
 export async function queryAnalytics(db, query) {
   const { from, to, granularity, compare } = query;
 
-  const [totals, series, lastResult] = await Promise.all([
+  const [totals, distributions, series, lastResult] = await Promise.all([
     totalsOf(db, from, to),
+    readDistributions(db, from, to),
     readSeries(db, query),
     db.execute(sql`
       select max(day)::text as day from analytics_daily where dimension = 'total'
@@ -321,16 +373,25 @@ export async function queryAnalytics(db, query) {
 
   const lastDay = rowsOf(lastResult)[0]?.day;
 
-  /** @type {{ from: string, to: string, totals: Metrics, changes: ReturnType<typeof changesOf> } | null} */
+  /** @type {Comparison | null} */
   let comparison = null;
   if (compare) {
     const length = daysBetween(from, to);
     const previous = { from: addDays(from, -length), to: addDays(from, -1) };
-    const previousTotals = await totalsOf(db, previous.from, previous.to);
+    const [previousTotals, previousDistributions] = await Promise.all([
+      totalsOf(db, previous.from, previous.to),
+      readDistributions(db, previous.from, previous.to),
+    ]);
     comparison = {
       ...previous,
       totals: previousTotals,
-      changes: changesOf(totals, previousTotals),
+      distributions: previousDistributions,
+      changes: changesOf(
+        totals,
+        previousTotals,
+        distributions,
+        previousDistributions,
+      ),
     };
   }
 
@@ -338,6 +399,7 @@ export async function queryAnalytics(db, query) {
     range: { from, to, granularity },
     through: lastDay ? String(lastDay) : null,
     totals,
+    distributions,
     series,
     breakdowns,
     comparison,

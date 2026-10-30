@@ -4,7 +4,12 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { analyticsDaily, analyticsEvents } from "../db/schema.js";
+import {
+  analyticsDaily,
+  analyticsDistributions,
+  analyticsEvents,
+} from "../db/schema.js";
+import { histogramOf } from "./distribution.js";
 import {
   BREAKDOWN_LIMIT,
   clearAnalyticsCache,
@@ -95,6 +100,7 @@ describe("analytics query (in-memory Postgres)", () => {
     clearAnalyticsCache();
     await db.delete(analyticsEvents);
     await db.delete(analyticsDaily);
+    await db.delete(analyticsDistributions);
     await db.insert(analyticsDaily).values([
       // Thursday 29 Oct to Saturday 31 Oct and Sunday 1 Nov: the week of Monday 26 Oct.
       daily("2026-10-29", "total", "all", {
@@ -465,6 +471,115 @@ describe("analytics query (in-memory Postgres)", () => {
 
     it("keeps the row limit above what a dashboard needs", () => {
       expect(MAX_EXPORT_ROWS).toBeGreaterThan(BREAKDOWN_LIMIT);
+    });
+  });
+
+  describe("distributions", () => {
+    /**
+     * @param {string} day - The day.
+     * @param {number[]} seconds - Active seconds of the sessions of that day.
+     * @returns {typeof analyticsDistributions.$inferInsert} A row.
+     */
+    const engaged = (day, seconds) => ({
+      day,
+      metric: "engaged_seconds",
+      samples: seconds.length,
+      buckets: histogramOf("engaged_seconds", seconds),
+    });
+
+    it("gives the median and p75 of the whole range, summing the days", async () => {
+      await db
+        .insert(analyticsDistributions)
+        .values([
+          engaged("2026-11-02", [11, 12]),
+          engaged("2026-11-03", [13, 14]),
+        ]);
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-02", to: "2026-11-03" }),
+      );
+      expect(result.distributions).toEqual({
+        engaged_seconds: { samples: 4, p50: 15, p75: 17.5 },
+      });
+    });
+
+    it("only reads the days inside the range", async () => {
+      await db
+        .insert(analyticsDistributions)
+        .values([engaged("2026-10-30", [400]), engaged("2026-11-03", [11])]);
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-02", to: "2026-11-03" }),
+      );
+      expect(result.distributions.engaged_seconds.samples).toBe(1);
+    });
+
+    it("has no entry for a metric with no samples", async () => {
+      const result = await queryAnalytics(db, whole());
+      expect(result.distributions).toEqual({});
+    });
+
+    it("compares the median with the previous period", async () => {
+      await db
+        .insert(analyticsDistributions)
+        .values([
+          engaged("2026-11-02", [11, 12]),
+          engaged("2026-11-03", [31, 32]),
+        ]);
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-03", to: "2026-11-03", compare: true }),
+      );
+      expect(result.comparison?.distributions.engaged_seconds.samples).toBe(2);
+      expect(result.comparison?.changes.medianEngagedSeconds.direction).toBe(
+        "up",
+      );
+    });
+
+    it("marks the median as new when the previous period has none", async () => {
+      await db
+        .insert(analyticsDistributions)
+        .values(engaged("2026-11-03", [11]));
+      const result = await queryAnalytics(
+        db,
+        whole({ from: "2026-11-03", to: "2026-11-03", compare: true }),
+      );
+      expect(result.comparison?.changes.medianEngagedSeconds).toEqual({
+        percent: null,
+        direction: "new",
+      });
+    });
+
+    it("includes today's histogram when the range ends today", async () => {
+      await db.insert(analyticsEvents).values([
+        {
+          occurredAt: new Date("2026-11-04T16:00:00Z"),
+          visitorId: "a",
+          type: "page_view",
+          path: "/",
+          locale: "es",
+          channel: "direct",
+          device: "desktop",
+          browser: "Chrome",
+          os: "Windows",
+          screen: "large",
+        },
+        {
+          occurredAt: new Date("2026-11-04T16:01:00Z"),
+          visitorId: "a",
+          type: "engagement",
+          path: "/",
+          locale: "es",
+          channel: "direct",
+          device: "desktop",
+          browser: "Chrome",
+          os: "Windows",
+          screen: "large",
+          props: { seconds: 12, scroll: 50 },
+        },
+      ]);
+      const result = await queryAnalyticsCached(db, whole(), now);
+      expect(result.distributions.engaged_seconds.samples).toBe(1);
     });
   });
 

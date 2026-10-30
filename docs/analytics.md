@@ -70,7 +70,7 @@ A Cloudflare Cron Trigger (`wrangler.jsonc`, `triggers.crons`: 07:30 UTC, which 
 
 It logs counts only. If it fails, the run is recorded as failed in Cloudflare (Worker, Settings, Triggers or Observability).
 
-`analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq` and `whatsapp` (by placement). Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" will be the sum of the daily ones: the design cannot recognize the same person on two days.
+`analytics_daily` dimensions: `total`, `event`, `path`, `channel`, `referrer_host`, `country`, `region`, `city`, `device`, `browser`, `os`, `locale`, `section`, `service`, `faq` and `whatsapp` (by placement). Each row has visitors, sessions, page views, events, engaged seconds and bounces (one page view and less than 10 seconds engaged). Monthly and yearly "visitors" are the sum of the daily ones: the design cannot recognize the same person on two days.
 
 ## The query API
 
@@ -89,7 +89,17 @@ The answer has `range`, `through` (the last day with totals), `totals`, `series`
 
 The file is UTF-8 with a byte order mark so Excel shows accents, with `\r\n` line ends, and is named `analytics-<table>-<from>_<to>.csv`. The keys of the rows come from visitors (paths, referrer hosts, cities), so a cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`; otherwise a spreadsheet could run it as a formula.
 
-Not built yet (the rest of REL-50): the median of active time and the speed percentiles.
+Not built yet (the rest of REL-50): the speed percentiles (the tracker does not send `web_vital` yet).
+
+## Histograms (median and percentiles)
+
+A median or a percentile of several days cannot be computed from the daily medians, so the daily job also writes one histogram per day and metric into `analytics_distributions` (`src/server/analytics/distribution.js` has the bucket bounds). A range sums the histograms of its days and reads the median (`p50`) and `p75` from the sum, placing the value linearly inside the bucket that holds it, so the error is at most one bucket. Histograms hold no visitor ids and are kept for good, like the totals.
+
+- `engaged_seconds`: the active time of a session, which is the sum of its `engagement` events. A session where the tracker never sent `engagement` (the visitor left too early) has nothing measured and is not counted, so the median is of measured sessions. Bounds: 5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 1800 and 3600 seconds, plus one bucket above.
+- Changing the bounds of a metric would change what the stored days mean: only add metrics.
+- Like the totals, today's histograms are recomputed when a range ends today, and the daily job settles yesterday and the day before.
+
+The query API returns them as `distributions` (`{ engaged_seconds: { samples, p50, p75 } }`, a metric with no samples is missing) and, with `compare=previous`, the previous period's in `comparison.distributions` plus `comparison.changes.medianEngagedSeconds`.
 
 ## Sessions
 

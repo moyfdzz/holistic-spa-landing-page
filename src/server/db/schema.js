@@ -86,3 +86,20 @@ export const analyticsDaily = pgTable(
   },
   (table) => [primaryKey({ columns: [table.day, table.dimension, table.key] })],
 );
+
+/**
+ * Daily histograms of measures that cannot be added up as plain totals, like the active time of
+ * a session or a Core Web Vital. `buckets` holds the count of samples per bucket (the bounds are
+ * in `server/analytics/distribution.js`), so histograms of several days are summed and a
+ * median or percentile of any range is read from the sum. They hold no visitor ids.
+ */
+export const analyticsDistributions = pgTable(
+  "analytics_distributions",
+  {
+    day: date("day").notNull(),
+    metric: text("metric").notNull(),
+    samples: integer("samples").notNull().default(0),
+    buckets: jsonb("buckets").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.day, table.metric] })],
+);
