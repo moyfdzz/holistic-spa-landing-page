@@ -6,7 +6,7 @@
 import { site } from "../config/site.js";
 
 /** Date of the last change, as `YYYY-MM-DD`. Update it whenever the text changes. */
-export const privacyUpdated = "2026-10-29";
+export const privacyUpdated = "2026-10-30";
 
 /**
  * @typedef {object} PrivacySection
@@ -106,6 +106,7 @@ export const privacy = {
         ],
         items: [
           "Las páginas que visitas, el idioma, el tiempo que pasas en ellas y hasta dónde bajas.",
+          "Qué tan rápido carga y responde el sitio en tu dispositivo (tiempos de carga, sin ningún dato tuyo), para detectar y corregir problemas.",
           "De dónde llegaste (por ejemplo Google, Google Maps, Instagram o Facebook) y el enlace por el que entraste.",
           "Tu ubicación aproximada (país, estado y ciudad) y el tipo de dispositivo, navegador y sistema operativo, solo en categorías.",
           "Si haces clic en WhatsApp, teléfono, correo o redes sociales, y si empiezas o envías el formulario, pero nunca lo que escribes en él.",
@@ -202,6 +203,7 @@ export const privacy = {
         ],
         items: [
           "The pages you visit, the language, the time you spend on them and how far you scroll.",
+          "How fast the site loads and responds on your device (loading times, with no data about you), to find and fix problems.",
           "Where you came from (for example Google, Google Maps, Instagram or Facebook) and the link you used.",
           "Your approximate location (country, state and city) and the kind of device, browser and operating system, only as categories.",
           "Whether you click WhatsApp, phone, email or social links, and whether you start or send the form, but never what you type in it.",

@@ -178,4 +178,76 @@ describe("initAnalytics", () => {
       configurable: true,
     });
   });
+
+  describe("speed of the page", () => {
+    /**
+     * Puts a fake `PerformanceObserver` on the window that reports a first contentful paint.
+     * @param {boolean} [supported] - Whether the browser has `PerformanceObserver`.
+     * @returns {void}
+     */
+    const fakeObserver = (supported = true) => {
+      if (!supported) {
+        vi.stubGlobal("PerformanceObserver", undefined);
+        Reflect.deleteProperty(window, "PerformanceObserver");
+        return;
+      }
+      class Observer {
+        /** @param {(list: { getEntries: () => object[] }) => void} callback - Entries receiver. */
+        constructor(callback) {
+          this.callback = callback;
+        }
+        /** @param {{ type: string }} init - What to watch. */
+        observe(init) {
+          if (init.type === "paint")
+            this.callback({
+              getEntries: () => [
+                { name: "first-contentful-paint", startTime: 640 },
+              ],
+            });
+        }
+      }
+      Object.defineProperty(window, "PerformanceObserver", {
+        value: Observer,
+        configurable: true,
+        writable: true,
+      });
+    };
+
+    /** @returns {Promise<Array<Record<string, unknown>>>} What was sent so far. */
+    const sentEvents = async () => {
+      /** @type {Array<Record<string, unknown>>} */
+      const sent = [];
+      for (const [, blob] of beacon.mock.calls)
+        sent.push(JSON.parse(await /** @type {Blob} */ (blob).text()));
+      return sent;
+    };
+
+    it("reports the speed once, when the page is hidden", async () => {
+      fakeObserver();
+      initAnalytics();
+      window.dispatchEvent(new Event("pagehide"));
+      window.dispatchEvent(new Event("pagehide"));
+      const vitals = (await sentEvents()).filter(
+        (event) => event.type === "web_vital",
+      );
+      expect(vitals).toHaveLength(1);
+      expect(vitals[0].props).toEqual({ fcp: 640 });
+    });
+
+    it("sends nothing about speed when the browser measured nothing", async () => {
+      fakeObserver(false);
+      initAnalytics();
+      window.dispatchEvent(new Event("pagehide"));
+      const types = (await sentEvents()).map((event) => event.type);
+      expect(types).not.toContain("web_vital");
+    });
+
+    it("does not report the speed of a visit it may not measure", () => {
+      fakeObserver();
+      localStorage.setItem("analytics-optout", "1");
+      expect(initAnalytics()).toBe(false);
+      window.dispatchEvent(new Event("pagehide"));
+      expect(beacon).not.toHaveBeenCalled();
+    });
+  });
 });

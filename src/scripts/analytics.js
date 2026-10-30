@@ -5,6 +5,7 @@
  * @module scripts/analytics
  */
 import { TRACK_EVENT } from "../utils/track.js";
+import { VITALS_SAMPLE_RATE, watchVitals } from "./vitals.js";
 
 const ENDPOINT = "/api/collect";
 const OPT_OUT_KEY = "analytics-optout";
@@ -235,11 +236,29 @@ export function initAnalytics(win = window) {
     const scroll = [100, 75, 50, 25, 0].find((step) => maxScroll >= step) ?? 0;
     send("engagement", { seconds: Math.min(seconds, 3600), scroll });
   };
+  // Speed of the page (Core Web Vitals), reported once, the first time the page is hidden.
+  const vitals =
+    Math.random() < VITALS_SAMPLE_RATE && "PerformanceObserver" in win
+      ? watchVitals(win)
+      : null;
+  let vitalsSent = false;
+  const flushVitals = () => {
+    if (!vitals || vitalsSent) return;
+    const measured = vitals();
+    if (Object.keys(measured).length === 0) return;
+    vitalsSent = true;
+    send("web_vital", measured);
+  };
   doc.addEventListener("visibilitychange", () => {
-    if (doc.visibilityState === "hidden") flush();
-    else visibleSince = Date.now();
+    if (doc.visibilityState === "hidden") {
+      flush();
+      flushVitals();
+    } else visibleSince = Date.now();
   });
-  win.addEventListener("pagehide", flush);
+  win.addEventListener("pagehide", () => {
+    flush();
+    flushVitals();
+  });
 
   return true;
 }

@@ -3,7 +3,7 @@
  * @module server/analytics/rollup
  */
 
-import { histogramOf } from "./distribution.js";
+import { histogramOf, vitalMetrics } from "./distribution.js";
 
 /** Minutes without events after which the same visitor starts a new session. */
 export const SESSION_GAP_MINUTES = 30;
@@ -150,16 +150,33 @@ export function computeDistributions(events, day) {
     const { seconds, measured } = engagedOf(session);
     if (measured) engaged.push(seconds);
   }
+  /** @type {Record<string, number[]>} */
+  const vitals = Object.fromEntries(vitalMetrics.map((name) => [name, []]));
+  for (const event of events) {
+    if (event.type !== "web_vital") continue;
+    for (const name of vitalMetrics) {
+      const value = prop(event.props, name);
+      if (typeof value === "number") vitals[name].push(value);
+    }
+  }
+
+  /** @type {Array<[import("./distribution.js").DistributionMetric, number[]]>} */
+  const measures = [
+    ["engaged_seconds", engaged],
+    ...vitalMetrics.map(
+      (name) =>
+        /** @type {[import("./distribution.js").DistributionMetric, number[]]} */ ([
+          name,
+          vitals[name],
+        ]),
+    ),
+  ];
   /** @type {DistributionRow[]} */
   const rows = [];
-  if (engaged.length > 0) {
-    const buckets = histogramOf("engaged_seconds", engaged);
-    rows.push({
-      day,
-      metric: "engaged_seconds",
-      samples: buckets.reduce((sum, count) => sum + count, 0),
-      buckets,
-    });
+  for (const [metric, values] of measures) {
+    const buckets = histogramOf(metric, values);
+    const samples = buckets.reduce((sum, count) => sum + count, 0);
+    if (samples > 0) rows.push({ day, metric, samples, buckets });
   }
   return rows;
 }

@@ -257,4 +257,62 @@ describe("computeDistributions", () => {
     computeDistributions(events, "2026-10-29");
     expect(computeDailyRollup(events, "2026-10-29")).toEqual(before);
   });
+
+  describe("speed measures", () => {
+    /**
+     * @param {Record<string, number | string>} props - What the tracker sent.
+     * @param {Partial<import("./rollup.js").EventRow> & { minute?: number }} [override] - What to change.
+     * @returns {import("./rollup.js").EventRow} A web_vital event.
+     */
+    const vital = (props, override = {}) =>
+      event({ type: "web_vital", props, ...override });
+
+    it("keeps one histogram per measure with a sample for each page view", () => {
+      const rows = computeDistributions(
+        [
+          vital({ lcp: 1800, cls: 0.02, fcp: 900, ttfb: 150, inp: 120 }),
+          vital({ lcp: 3200, fcp: 1200 }, { visitorId: "v2" }),
+        ],
+        "2026-10-29",
+      );
+      const samples = Object.fromEntries(
+        rows.map((row) => [row.metric, row.samples]),
+      );
+      expect(samples).toEqual({ lcp: 2, inp: 1, cls: 1, fcp: 2, ttfb: 1 });
+    });
+
+    it("ignores values that are not numbers and events of other types", () => {
+      const rows = computeDistributions(
+        [
+          vital({ lcp: "fast", fcp: 900 }),
+          event({ type: "page_view", props: { lcp: 100 } }),
+        ],
+        "2026-10-29",
+      );
+      expect(rows.map((row) => row.metric)).toEqual(["fcp"]);
+    });
+
+    it("puts each value in the bucket of its good, needs improvement or poor range", () => {
+      const [lcp] = computeDistributions(
+        [
+          vital({ lcp: 2400 }),
+          vital({ lcp: 3900 }, { visitorId: "v2" }),
+          vital({ lcp: 7000 }, { visitorId: "v3" }),
+        ],
+        "2026-10-29",
+      );
+      // 2500 ms and 4000 ms are the limits of good and poor.
+      expect(lcp.buckets[4]).toBe(1);
+      expect(lcp.buckets[6]).toBe(1);
+      expect(lcp.buckets[8]).toBe(1);
+    });
+
+    it("does not count the speed events as sessions' engagement", () => {
+      const rows = computeDistributions(
+        [event(), vital({ lcp: 1000 })],
+        "2026-10-29",
+      );
+      expect(rows.map((row) => row.metric)).toEqual(["lcp"]);
+    });
+  });
 });
