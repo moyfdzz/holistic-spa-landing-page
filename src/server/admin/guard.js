@@ -5,6 +5,7 @@
  * @module server/admin/guard
  */
 import { isAdminEmail } from "./allowlist.js";
+import { signedOutResponse } from "./sign-out.js";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const SIGN_OUT_PATH = "/api/admin/sign-out";
@@ -22,6 +23,7 @@ const SIGN_OUT_PATH = "/api/admin/sign-out";
  * @property {(returnUrl: string) => string} signInUrl - Where to send a visitor who is signed out.
  * @property {(userId: string) => Promise<string | null>} getVerifiedEmail - The verified primary email of a user.
  * @property {string[]} allowedEmails - The allowlist.
+ * @property {(request: Request) => Promise<{ userId: string, sessionId: string } | null>} [readExpiredSession] - The session of a token that has just expired (Clerk tokens last about a minute and cannot be renewed on a POST), so signing out can still end it.
  */
 
 /**
@@ -134,6 +136,19 @@ export async function guardAdminRequest(request, deps) {
 
   const auth = state.status === "signed-in" ? state.toAuth() : null;
   if (!auth?.userId) {
+    // Signing out must work even when the short-lived token has expired: end the session if
+    // it can be read, and clear the cookies in any case.
+    if (request.method === "POST" && url.pathname === SIGN_OUT_PATH) {
+      /** @type {{ userId: string, sessionId: string } | null} */
+      let expired = null;
+      try {
+        expired = (await deps.readExpiredSession?.(request)) ?? null;
+      } catch {
+        expired = null;
+      }
+      if (expired) return { allow: true, ...expired };
+      return { allow: false, response: signedOutResponse() };
+    }
     if (api)
       return { allow: false, response: refuse(401, "Unauthorized", true) };
     return {

@@ -3,9 +3,10 @@
  * browser scripts never load on this site, so the public pages stay free of them.
  * @module server/admin/clerk
  */
-import { createClerkClient } from "@clerk/backend";
+import { createClerkClient, verifyToken } from "@clerk/backend";
 import { createRedirect } from "@clerk/backend/internal";
 import { parseAdminEmails } from "./allowlist.js";
+import { readCookie } from "./sign-out.js";
 
 /**
  * @typedef {object} AdminConfig
@@ -36,6 +37,9 @@ export function readAdminConfig(config) {
 const emailCache = new Map();
 const EMAIL_CACHE_MS = 5 * 60 * 1000;
 
+/** How long after expiring a session token still identifies its session, for signing out. */
+const EXPIRED_TOKEN_GRACE_MS = 24 * 60 * 60 * 1000;
+
 /**
  * Builds what the guard needs from Clerk.
  * @param {AdminConfig} config - The settings.
@@ -58,6 +62,26 @@ export function createAdminDeps(config) {
           })
         )
       ),
+    async readExpiredSession(request) {
+      const token = readCookie(request, "__session");
+      if (!token) return null;
+      try {
+        // The signature is checked; only the expiry is relaxed.
+        const payload = /** @type {{ sub?: string, sid?: string }} */ (
+          /** @type {unknown} */ (
+            await verifyToken(token, {
+              secretKey: config.secretKey,
+              clockSkewInMs: EXPIRED_TOKEN_GRACE_MS,
+            })
+          )
+        );
+        return payload?.sub && payload?.sid
+          ? { userId: payload.sub, sessionId: payload.sid }
+          : null;
+      } catch {
+        return null;
+      }
+    },
     signInUrl: (returnUrl) =>
       createRedirect({
         publishableKey: config.publishableKey,

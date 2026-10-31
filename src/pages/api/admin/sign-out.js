@@ -1,7 +1,11 @@
 /**
  * POST /api/admin/sign-out: ends the Clerk session and clears its cookies. The middleware has
- * already checked that the request is from the owner and from this same site.
+ * already checked that the request is from this same site. Any signed-in account may use it,
+ * and so may a visitor whose token expired a moment ago (then the guard reads the session
+ * from the expired token, or just clears the cookies).
  */
+import { signedOutResponse } from "../../../server/admin/sign-out.js";
+
 export const prerender = false;
 
 /**
@@ -15,10 +19,5 @@ export async function POST({ locals }) {
   } catch {
     // The cookies are cleared anyway; an expired session cannot be revoked twice.
   }
-  const expired = "Path=/; Max-Age=0; Secure; SameSite=Lax";
-  const headers = new Headers({ Location: "/" });
-  for (const name of ["__session", "__client_uat", "__clerk_db_jwt"]) {
-    headers.append("Set-Cookie", `${name}=; ${expired}`);
-  }
-  return new Response(null, { status: 303, headers });
+  return signedOutResponse();
 }
