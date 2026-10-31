@@ -79,10 +79,11 @@ function result(extra = {}) {
 }
 
 describe("buildOverview", () => {
-  it("makes the six tiles with their numbers written in Spanish", () => {
+  it("makes the tiles with their numbers written in Spanish", () => {
     const { tiles } = buildOverview(result());
     expect(tiles.map((tile) => tile.id)).toEqual([
       "visitors",
+      "visitorsPerDay",
       "sessions",
       "engaged",
       "messages",
@@ -98,6 +99,51 @@ describe("buildOverview", () => {
     // 5 of 40 visitors contacted the business.
     expect(byId.conversion.display).toBe("12.5\u00a0%");
     expect(byId.conversion.value).toBe(12.5);
+  });
+
+  it("says the visitors of several days are a sum, and shows the average and the busiest day", () => {
+    const { tiles } = buildOverview(result());
+    const byId = Object.fromEntries(tiles.map((tile) => [tile.id, tile]));
+    expect(byId.visitors.label).toBe("Visitantes (suma de días)");
+    expect(byId.visitors.note).toContain("cuenta otra vez");
+    // 40 visitors over 3 days.
+    expect(byId.visitorsPerDay.value).toBe(13.3);
+    expect(byId.visitorsPerDay.display).toBe("13.3");
+    expect(byId.visitorsPerDay.note).toContain("Promedio de 3 días");
+    expect(byId.visitorsPerDay.note).toContain("4 nov");
+    expect(byId.visitorsPerDay.note).toContain("(30)");
+  });
+
+  it("leaves the busiest day out when the series is not by day", () => {
+    const { tiles } = buildOverview(
+      result({
+        range: { from: "2026-11-02", to: "2026-11-04", granularity: "week" },
+      }),
+    );
+    const note = tiles.find((tile) => tile.id === "visitorsPerDay")?.note;
+    expect(note).toBe("Promedio de 3 días");
+  });
+
+  it("keeps the plain label and no average for a single day", () => {
+    const { tiles } = buildOverview(
+      result({
+        range: { from: "2026-11-04", to: "2026-11-04", granularity: "day" },
+      }),
+    );
+    const visitors = tiles.find((tile) => tile.id === "visitors");
+    expect(visitors?.label).toBe("Visitantes");
+    expect(visitors?.note).toBe("Personas distintas del día");
+    expect(tiles.some((tile) => tile.id === "visitorsPerDay")).toBe(false);
+  });
+
+  it("does not count the days before the tracker existed", () => {
+    const { tiles } = buildOverview(
+      result({
+        range: { from: "2026-10-20", to: "2026-10-30", granularity: "day" },
+      }),
+    );
+    // 40 visitors over the 2 days from 29 Oct, not over 11.
+    expect(tiles.find((tile) => tile.id === "visitorsPerDay")?.value).toBe(20);
   });
 
   it("has no previous numbers when it is not compared", () => {
@@ -143,6 +189,8 @@ describe("buildOverview", () => {
     );
     const byId = Object.fromEntries(tiles.map((tile) => [tile.id, tile]));
     expect(byId.visitors.previous).toBe(20);
+    // 20 visitors over the 3 days before.
+    expect(byId.visitorsPerDay.previous).toBe(6.7);
     expect(byId.engaged.previous).toBe(30);
     expect(byId.whatsapp.previous).toBe(3);
     // 1 of 20 visitors contacted the business before.

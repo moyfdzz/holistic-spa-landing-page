@@ -8,7 +8,13 @@ import {
   resolveRange,
 } from "../analytics/range.js";
 import { bucketStarts, fillVisitors } from "./chart.js";
-import { formatCount, formatDuration, formatPercent } from "./format.js";
+import {
+  formatCount,
+  formatDay,
+  formatDecimal,
+  formatDuration,
+  formatPercent,
+} from "./format.js";
 
 /** @typedef {import("./chart.js").Granularity} Granularity */
 
@@ -71,6 +77,25 @@ export function readOverviewRequest(query, now) {
  */
 
 /**
+ * Days of a period that can have data: the tracker did not exist before its first day.
+ * @param {string} from - First day of the period.
+ * @param {string} to - Last day of the period.
+ * @returns {number} At least 1.
+ */
+function daysWithTracker(from, to) {
+  const start = from < analyticsLaunchDay ? analyticsLaunchDay : from;
+  return start > to ? 1 : daysBetween(start, to);
+}
+
+/**
+ * Average visitors per day, to one decimal.
+ * @param {number} visitors - The sum of the daily visitors.
+ * @param {number} days - Days of the period.
+ * @returns {number} The average.
+ */
+const perDay = (visitors, days) => Math.round((visitors / days) * 10) / 10;
+
+/**
  * Turns the answer of the query API into what the page shows.
  * @param {import("../analytics/query.js").AnalyticsResult} result - The answer of the query API.
  * @returns {Overview} The tiles and the series.
@@ -84,16 +109,60 @@ export function buildOverview(result) {
   const conversion = rate(contacts.visitors, totals.visitors);
   const median = distributions.engaged_seconds?.p50 ?? null;
 
+  // A visitor id lasts one day, so a range of several days holds the sum of the daily visitors.
+  const oneDay = range.from === range.to;
+  const days = daysWithTracker(range.from, range.to);
+  const average = perDay(totals.visitors, days);
+  // The busiest day can only be named when the series has one point per day.
+  const busiest =
+    range.granularity === "day"
+      ? result.series.reduce(
+          (best, point) =>
+            point.visitors > (best?.visitors ?? 0) ? point : best,
+          /** @type {import("../analytics/query.js").SeriesPoint | null} */ (
+            null
+          ),
+        )
+      : null;
+
   /** @type {Tile[]} */
   const tiles = [
-    {
-      id: "visitors",
-      label: "Visitantes",
-      value: totals.visitors,
-      display: formatCount(totals.visitors),
-      previous: comparison?.totals.visitors,
-      note: "Suma de los visitantes de cada día",
-    },
+    oneDay
+      ? {
+          id: "visitors",
+          label: "Visitantes",
+          value: totals.visitors,
+          display: formatCount(totals.visitors),
+          previous: comparison?.totals.visitors,
+          note: "Personas distintas del día",
+        }
+      : {
+          id: "visitors",
+          label: "Visitantes (suma de días)",
+          value: totals.visitors,
+          display: formatCount(totals.visitors),
+          previous: comparison?.totals.visitors,
+          note: "Quien vuelve otro día cuenta otra vez",
+        },
+    ...(oneDay
+      ? []
+      : [
+          {
+            id: "visitorsPerDay",
+            label: "Visitantes por día",
+            value: average,
+            display: formatDecimal(average),
+            previous: comparison
+              ? perDay(
+                  comparison.totals.visitors,
+                  daysWithTracker(comparison.from, comparison.to),
+                )
+              : undefined,
+            note: busiest
+              ? `Promedio de ${formatCount(days)} días. Más visitantes: ${formatDay(busiest.bucket)} (${formatCount(busiest.visitors)})`
+              : `Promedio de ${formatCount(days)} días`,
+          },
+        ]),
     {
       id: "sessions",
       label: "Sesiones",
