@@ -6,6 +6,7 @@
 import {
   bigserial,
   date,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -103,3 +104,48 @@ export const analyticsDistributions = pgTable(
   },
   (table) => [primaryKey({ columns: [table.day, table.metric] })],
 );
+
+/**
+ * What Google Search Console says about the searches that showed the site, one row per day,
+ * query, page, country and device (imported by the daily job, see `server/google`). Google
+ * leaves out the anonymized queries here, so these rows add up to less than the real totals:
+ * those are in `search_console_totals`. A `ctr` is a ratio from 0 to 1.
+ */
+export const searchConsoleDaily = pgTable(
+  "search_console_daily",
+  {
+    day: date("day").notNull(),
+    query: text("query").notNull(),
+    page: text("page").notNull(),
+    country: text("country").notNull(),
+    device: text("device").notNull(),
+    clicks: integer("clicks").notNull().default(0),
+    impressions: integer("impressions").notNull().default(0),
+    ctr: doublePrecision("ctr").notNull().default(0),
+    position: doublePrecision("position").notNull().default(0),
+  },
+  (table) => [
+    primaryKey({
+      columns: [
+        table.day,
+        table.query,
+        table.page,
+        table.country,
+        table.device,
+      ],
+    }),
+  ],
+);
+
+/**
+ * The totals of each day as Search Console shows them in its own screen, with the anonymized
+ * queries included. A day with no clicks or impressions has a row of zeros: it also marks the
+ * day as imported, so a quiet day is not asked for again every night.
+ */
+export const searchConsoleTotals = pgTable("search_console_totals", {
+  day: date("day").primaryKey(),
+  clicks: integer("clicks").notNull().default(0),
+  impressions: integer("impressions").notNull().default(0),
+  ctr: doublePrecision("ctr").notNull().default(0),
+  position: doublePrecision("position").notNull().default(0),
+});
