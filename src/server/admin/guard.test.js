@@ -143,12 +143,78 @@ describe("guardAdminRequest", () => {
       notAllowed,
     );
     expect(cross.allow).toBe(false);
-    const anonymous = await guardAdminRequest(
-      signOut({ origin: "https://www.example.com" }),
-      deps({ status: "signed-out" }),
-    );
-    if (anonymous.allow) throw new Error("must not allow");
-    expect(anonymous.response.status).toBe(401);
+  });
+
+  describe("signing out with an expired token", () => {
+    const signOut = (headers = { origin: "https://www.example.com" }) =>
+      new Request("https://www.example.com/api/admin/sign-out", {
+        method: "POST",
+        headers,
+      });
+
+    it("ends the session found in the expired token", async () => {
+      const result = await guardAdminRequest(signOut(), {
+        ...deps({ status: "signed-out" }),
+        readExpiredSession: async () => ({
+          userId: "user_1",
+          sessionId: "sess_1",
+        }),
+      });
+      expect(result).toEqual({
+        allow: true,
+        userId: "user_1",
+        sessionId: "sess_1",
+      });
+    });
+
+    it("clears the cookies when the session cannot be read", async () => {
+      for (const readExpiredSession of [
+        undefined,
+        async () => null,
+        async () => {
+          throw new Error("jwks down");
+        },
+      ]) {
+        const result = await guardAdminRequest(signOut(), {
+          ...deps({ status: "signed-out" }),
+          readExpiredSession,
+        });
+        if (result.allow) throw new Error("must not allow");
+        expect(result.response.status).toBe(303);
+        expect(result.response.headers.get("location")).toBe("/");
+        expect(
+          result.response.headers
+            .getSetCookie()
+            .some((c) => c.startsWith("__session=;")),
+        ).toBe(true);
+      }
+    });
+
+    it("still refuses a sign-out from another site", async () => {
+      const result = await guardAdminRequest(
+        signOut({ origin: "https://evil.example" }),
+        deps({ status: "signed-out" }),
+      );
+      if (result.allow) throw new Error("must not allow");
+      expect(result.response.status).toBe(403);
+    });
+
+    it("does not use the expired token for any other route", async () => {
+      let asked = false;
+      const result = await guardAdminRequest(
+        api("POST", { origin: "https://www.example.com" }),
+        {
+          ...deps({ status: "signed-out" }),
+          readExpiredSession: async () => {
+            asked = true;
+            return { userId: "user_1", sessionId: "sess_1" };
+          },
+        },
+      );
+      if (result.allow) throw new Error("must not allow");
+      expect(result.response.status).toBe(401);
+      expect(asked).toBe(false);
+    });
   });
 
   it("does not open other admin routes to a user who is not allowed", async () => {
