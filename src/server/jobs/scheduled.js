@@ -4,7 +4,7 @@
  */
 import { runDailyJob } from "../analytics/jobs.js";
 import { createDb } from "../db/client.js";
-import { describeError } from "../errors.js";
+import { describeError, SafeError } from "../errors.js";
 import { parseServerEnv } from "../env.js";
 import { readSearchConsoleConfig } from "../google/config.js";
 import { runSearchConsoleImport } from "../google/import.js";
@@ -34,7 +34,7 @@ export async function runScheduled(controller, env) {
   }
 
   try {
-    if (!db) throw new Error("no database to import into");
+    if (!db) throw new SafeError("no database to import into");
     const summary = await runSearchConsoleImport({
       db,
       config: readSearchConsoleConfig(env),

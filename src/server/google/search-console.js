@@ -3,6 +3,7 @@
  * of a day is small and a day can be replaced as a whole.
  * @module server/google/search-console
  */
+import { SafeError, safeWord } from "../errors.js";
 import { z } from "zod";
 
 /** Where the Search Analytics query lives (documented by Google). */
@@ -89,7 +90,7 @@ export async function querySearchAnalytics(client, body) {
         await response.json().catch(() => null),
       );
       if (!parsed.success)
-        throw new Error("Search Console answered with an unexpected shape");
+        throw new SafeError("Search Console answered with an unexpected shape");
       return parsed.data.rows ?? [];
     }
     const retry = response.status === 429 || response.status >= 500;
@@ -99,13 +100,12 @@ export async function querySearchAnalytics(client, body) {
     }
     /** @type {{ error?: { status?: unknown } }} */
     const data = await response.json().catch(() => ({}));
-    const word =
-      typeof data.error?.status === "string" ? data.error.status : "unknown";
+    const word = safeWord(data.error?.status);
     const hint =
       response.status === 403 || response.status === 404
         ? ": check that the service account is a user of the property and that SEARCH_CONSOLE_SITE_URL is exactly the property"
         : "";
-    throw new Error(
+    throw new SafeError(
       `Search Console API answered ${response.status} (${word})${hint}`,
     );
   }
