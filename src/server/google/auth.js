@@ -5,6 +5,7 @@
  * token to its caller and nowhere else.
  * @module server/google/auth
  */
+import { SafeError, safeWord } from "../errors.js";
 import { z } from "zod";
 
 /** The only address the signed request is sent to, whatever the key file says. */
@@ -33,14 +34,14 @@ export function parseServiceAccount(json) {
   try {
     data = JSON.parse(json);
   } catch {
-    throw new Error("The service account key is not valid JSON");
+    throw new SafeError("The service account key is not valid JSON");
   }
   const result = serviceAccountSchema.safeParse(data);
   if (!result.success) {
     const names = [
       ...new Set(result.error.issues.map((issue) => String(issue.path[0]))),
     ];
-    throw new Error(
+    throw new SafeError(
       `The service account key has wrong or missing fields: ${names.join(", ")}`,
     );
   }
@@ -140,8 +141,8 @@ export async function getAccessToken(account, scope, fetchFn, now) {
   /** @type {{ access_token?: unknown, error?: unknown }} */
   const data = await response.json().catch(() => ({}));
   if (!response.ok || typeof data.access_token !== "string") {
-    const code = typeof data.error === "string" ? data.error : "unknown";
-    throw new Error(
+    const code = safeWord(data.error);
+    throw new SafeError(
       `Google refused the service account sign-in (${response.status}, ${code})`,
     );
   }

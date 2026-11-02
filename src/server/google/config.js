@@ -3,6 +3,7 @@
  * out, so the site can be deployed before the secrets exist.
  * @module server/google/config
  */
+import { SafeError } from "../errors.js";
 import { parseServiceAccount } from "./auth.js";
 
 /** A Search Console property: a domain (`sc-domain:example.com`) or a URL prefix ending in `/`. */
@@ -29,7 +30,7 @@ export function readSearchConsoleConfig(env) {
     .map(([name]) => String(name));
   if (missing.length > 0) return { configured: false, missing };
   if (!PROPERTY.test(String(siteUrl).trim())) {
-    throw new Error(
+    throw new SafeError(
       "SEARCH_CONSOLE_SITE_URL is not a property: use sc-domain:example.com or a URL that ends in /",
     );
   }

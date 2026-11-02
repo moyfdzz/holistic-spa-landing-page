@@ -8,6 +8,7 @@ vi.mock("../google/import.js", () => ({ runSearchConsoleImport: vi.fn() }));
 const { runDailyJob } = await import("../analytics/jobs.js");
 const { runSearchConsoleImport } = await import("../google/import.js");
 const { runScheduled } = await import("./scheduled.js");
+const { SafeError } = await import("../errors.js");
 
 const daily = vi.mocked(runDailyJob);
 const google = vi.mocked(runSearchConsoleImport);
@@ -66,6 +67,23 @@ describe("runScheduled", () => {
       configured: true,
       siteUrl: "sc-domain:masajesrelaxmty.com",
     });
+  });
+
+  it("logs why the Google import failed when the reason is safe, and nothing else", async () => {
+    google.mockRejectedValueOnce(
+      new SafeError("Search Console API answered 403 (PERMISSION_DENIED)"),
+    );
+    await expect(runScheduled(controller, env)).rejects.toThrow("403");
+    expect(console.error).toHaveBeenCalledWith(
+      "search console import failed:",
+      "SafeError: Search Console API answered 403 (PERMISSION_DENIED)",
+    );
+    google.mockRejectedValueOnce(new Error("https://host.example/?k=TU_CLAVE"));
+    await expect(runScheduled(controller, env)).rejects.toThrow();
+    expect(console.error).toHaveBeenLastCalledWith(
+      "search console import failed:",
+      "Error",
+    );
   });
 
   it("still runs the daily job, which deletes what must not be kept, when Google fails", async () => {
