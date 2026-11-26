@@ -16,6 +16,16 @@ describe("faq data", () => {
     }
   });
 
+  it("says in both languages that there are no erotic or sexual services", () => {
+    const item = faq.find((entry) => entry.id === "professional");
+    expect(item?.text.es.answer).toMatch(
+      /^No\. .*No realizamos masajes eróticos/,
+    );
+    expect(item?.text.en.answer).toMatch(
+      /^No\. .*We do not provide erotic or sexual services/,
+    );
+  });
+
   it("asks questions as questions", () => {
     for (const item of faq) {
       expect(item.text.es.question).toMatch(/^¿.*\?$/);

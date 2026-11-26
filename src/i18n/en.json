@@ -133,6 +133,9 @@
     "copyright": "© {year} {name}.",
     "privacy": "Privacy Notice"
   },
+  "notice": {
+    "professionalOnly": "Professional, therapeutic services only."
+  },
   "whatsapp": {
     "label": "Chat with us on WhatsApp",
     "message": "Hi, I'd like information about your massages."

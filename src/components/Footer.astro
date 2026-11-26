@@ -99,6 +99,7 @@ const socials = [
     </div>
 
     <div class="footer__bottom">
+      <p class="footer__notice">{t("notice.professionalOnly")}</p>
       <p>{t("footer.copyright", { year, name: site.name })}</p>
       <a href={getLocalizedPath("/aviso-de-privacidad", lang)}>
         {t("footer.privacy")}
@@ -207,5 +208,11 @@ const socials = [
     padding-top: var(--space-5);
     border-top: 1px solid rgba(255, 255, 255, 0.14);
     color: var(--sage-200);
+  }
+
+  /* On its own line above the copyright. */
+  .footer__notice {
+    flex-basis: 100%;
+    color: #fff;
   }
 </style>

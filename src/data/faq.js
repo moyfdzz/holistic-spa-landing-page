@@ -110,4 +110,19 @@ export const faq = [
       },
     },
   },
+  {
+    id: "professional",
+    text: {
+      es: {
+        question: "¿Ofrecen masajes eróticos o servicios sexuales?",
+        answer:
+          "No. Ofrecemos únicamente masajes profesionales con fines terapéuticos y de relajación. No realizamos masajes eróticos ni con contenido sexual, y cualquier solicitud de ese tipo da por terminada la cita de inmediato.",
+      },
+      en: {
+        question: "Do you offer erotic or sexual services?",
+        answer:
+          "No. We offer professional massage for therapeutic and relaxation purposes only. We do not provide erotic or sexual services, and any such request ends the appointment immediately.",
+      },
+    },
+  },
 ];
