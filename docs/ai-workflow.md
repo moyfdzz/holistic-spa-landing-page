@@ -5,13 +5,15 @@ This project is built by one developer with Claude Code (Anthropic's coding agen
 ## How a ticket is executed
 
 1. **Ticket.** Every change starts as a Linear ticket (team `REL`) with scope, decisions and acceptance criteria. Decisions that are already taken are written in the ticket, so the agent does not reopen them.
-2. **Plan.** The agent reads the ticket, `CLAUDE.md` and the related ADRs, and plans the change. Anything only the owner can answer is asked before coding.
-3. **Implement.** On a branch from the latest `main`, with tests next to the code.
+2. **Plan.** The agent reads the ticket, `CLAUDE.md`, `docs/agent-notes.md` and the related ADRs, and plans the change. Anything only the owner can answer is asked before coding, and a big change waits for the owner's approval of the plan.
+3. **Implement.** On a branch from the latest `main` named for the ticket, with tests next to the code.
 4. **Verify.** The agent runs the same checks as CI (lint, formatting, type check, unit tests, build, end-to-end and Lighthouse) and re-reads its own diff before pushing.
-5. **Pull request.** Opened ready for review from the PR template. The agent watches CI and fixes failures that belong to the change. It never skips, disables or quarantines a test to get green.
-6. **Merge.** The owner reviews and squash-merges.
+5. **Review.** For a change to code, the agent runs an automated code review on the local branch before the first push and fixes the valid findings, so the pull request opens once, already reviewed.
+6. **Pull request.** Opened ready for review from the PR template. The agent watches CI and fixes failures that belong to the change. It never skips, disables or quarantines a test to get green. Lessons that will still hold in a month go into `docs/agent-notes.md` in the same pull request.
+7. **Merge.** The owner reviews and squash-merges, then tries the feature in production from a pinned checklist ticket.
+8. **Handoff.** `/handoff` writes the state of the day to an ignored local file, and the next ticket starts in a new session.
 
-The commands in `.claude/commands/` (`/start-ticket`, `/check-all`, `/open-pr`) capture the repeated steps.
+The commands in `.claude/commands/` (`/start-ticket`, `/check-all`, `/open-pr`, `/handoff`) capture the repeated steps.
 
 ## What a human always decides
 
