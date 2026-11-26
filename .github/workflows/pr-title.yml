@@ -1,0 +1,41 @@
+name: PR title
+
+# Its own workflow so it runs again when the title is edited, without re-running the whole CI.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+
+# Least privilege: the job only needs to read the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-title-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Do not install the Git hooks on the CI machine.
+  HUSKY: 0
+
+jobs:
+  pr-title:
+    # The ruleset of main requires a check with this exact name.
+    name: PR title
+    # The PR title becomes the commit message when the PR is squash-merged.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Check the title follows Conventional Commits
+        env:
+          # Passed through an environment variable so the title is never run as code.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | npx commitlint

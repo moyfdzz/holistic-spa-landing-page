@@ -43,6 +43,13 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 - Stage named files (`git add -A -- <named paths>`, never `git add .`), read `git diff --staged` for secrets and client data, commit, then check `git status --short` and `git log --oneline -1`. Husky runs lint-staged and commitlint: never `--no-verify`.
 - **commitlint rejects a header over 100 characters (aim for 72) and a body line over 100**: write the message to a file in the scratchpad and use `git commit -F <file>`. If the hook rejects it, nothing was committed. Fix mistakes with a new commit, never a force-push without the owner.
 
+## CI
+
+- **The repository is public** (checked 2026-11-26): treat every commit, log, artifact and PR text as readable by anyone.
+- The ruleset of `main` requires checks **by job name** (**Quality checks**, **End-to-end tests**, **Lighthouse**, **PR title**): renaming or removing a job blocks every merge until the owner changes the ruleset.
+- Actions stay pinned to a full commit SHA with the version in a comment.
+- **npm audit (production)** can turn red with no change of ours. It is not required: read the advisory, and fix it in its own commit with the smallest update that clears it. `--omit=dev` still covers `wrangler`, because `@astrojs/cloudflare` depends on it.
+
 ## Reporting
 
 Say what was verified, what was not and why, and never claim something works that was not tried. **Do not write a number you did not count.** Mocked tests only prove the code against the fixtures you wrote: say so, and try the real thing when you can. Do not state a cause you did not verify. Facts about third-party limits and terms go in an ADR with their source and the date they were read. Code reads like the code around it, and comments say why in plain English.

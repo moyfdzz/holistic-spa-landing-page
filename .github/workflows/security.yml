@@ -1,0 +1,56 @@
+name: Security
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Mondays at 05:17 UTC, so new advisories reach code that nobody is changing.
+    - cron: "17 5 * * 1"
+  # A manual run (and the weekly one) makes gitleaks read the whole history.
+  workflow_dispatch:
+
+# Least privilege: the jobs only need to read the repository.
+permissions:
+  contents: read
+
+# A new push to the same PR cancels the older run. Other runs are never cancelled.
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gitleaks:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history, so every commit of the PR or of the push can be scanned.
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The repository is public and the token is read-only: no PR comments and no report
+          # file to download. Findings are read in the log and the summary of the job.
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+
+  # Not a required check: an advisory can appear on any day and must not block an urgent fix.
+  audit:
+    name: npm audit (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      # npm audit reads the lockfile, so nothing is installed and no package code runs here.
+      - name: Fail on a high or critical advisory
+        run: npm audit --omit=dev --audit-level=high
