@@ -4,7 +4,7 @@
  * Track and Global Privacy Control, and never sends what a visitor types.
  * @module scripts/analytics
  */
-import { TRACK_EVENT } from "../utils/track.js";
+import { receiveTracked } from "../utils/track.js";
 import { VITALS_SAMPLE_RATE, watchVitals } from "./vitals.js";
 
 const ENDPOINT = "/api/collect";
@@ -171,11 +171,8 @@ export function initAnalytics(win = window) {
     true,
   );
 
-  // Events from islands (the contact form).
-  doc.addEventListener(TRACK_EVENT, (event) => {
-    const { type, props } = /** @type {CustomEvent} */ (event).detail ?? {};
-    if (typeof type === "string") send(type, props);
-  });
+  // Events from islands (the contact form), including those reported before this point.
+  receiveTracked(doc, ({ type, props }) => send(type, props));
 
   // Questions opened in the FAQ.
   doc.addEventListener(

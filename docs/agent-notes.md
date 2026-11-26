@@ -51,6 +51,10 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 - GitHub disables the scheduled workflows of a public repository after 60 days without activity; the owner re-enables them in the Actions tab.
 - **npm audit (production)** can turn red with no change of ours. It is not required: read the advisory, and fix it in its own commit with the smallest update that clears it. `--omit=dev` still covers `wrangler`, because `@astrojs/cloudflare` depends on it.
 
+## Traps of the code
+
+- **A `client:load` island is plain HTML until React arrives.** What the visitor types or focuses before that fires no React handler, and the next render writes the initial state over controlled fields. Read the page in the mount effect (`readEarlyValues` in `ContactForm.jsx`) and test it by holding the island script back (`tests/e2e/analytics.spec.js`). The order of two scripts is not guaranteed either: report events with `track`, which keeps them until the tracker is ready.
+
 ## Reporting
 
 Say what was verified, what was not and why, and never claim something works that was not tried. **Do not write a number you did not count.** Mocked tests only prove the code against the fixtures you wrote: say so, and try the real thing when you can. Do not state a cause you did not verify. Facts about third-party limits and terms go in an ADR with their source and the date they were read. Code reads like the code around it, and comments say why in plain English.
@@ -69,4 +73,6 @@ Say what was verified, what was not and why, and never claim something works tha
 - **Migrations in production are the owner's** (`DATABASE_URL` is a secret): give the PowerShell commands as **one single line** joined with semicolons, ending with `Remove-Item Env:DATABASE_URL`, and never ask for or accept the connection string.
 - **After merging a Dependabot PR, run `npm ci` before trusting a local run**, and `npx playwright install chromium` when it bumped Playwright (or set `PLAYWRIGHT_CHROMIUM_PATH`).
 - **To fix what a Dependabot PR breaks**, branch from `main`, then merge the Dependabot branch into a temporary local branch (never pushed) and run the checks there: `main` may still run the old tool. Installing the newer Chromium can remove the previous one from the shared cache, so switch back, run `npm ci` and install it again.
+- **Port 4321 is shared with the sister projects.** With another session running, a local e2e run reuses whatever server holds the port (`reuseExistingServer`) and tests the wrong site: many failures, with another business in the page titles. Check the owner of the port (`Get-NetTCPConnection -LocalPort 4321 -State Listen`), never stop a process you did not start, and run with an untracked config on another port that imports `playwright.config.js` (the same for the ports in `lighthouserc.json`).
+- **Unit tests on a busy machine** can lose workers before they start (exit code 2147483651, seen with the database tests): run `npx vitest run --maxWorkers=4 --hookTimeout=60000` and say so.
 - **Memory of Claude Code** lives under `~/.claude/projects/<the project folder with dashes>/memory/`; copy the folder name from an existing path, a wrong dash creates a stray folder.

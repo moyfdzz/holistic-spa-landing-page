@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { TRACK_EVENT, track } from "./track.js";
 
 describe("track", () => {
@@ -15,5 +15,19 @@ describe("track", () => {
       type: "form_error",
       props: { type: "validation" },
     });
+  });
+
+  it("keeps what was reported before the tracker listens and hands each event over once", async () => {
+    // A fresh copy of the module, so no earlier event is waiting.
+    vi.resetModules();
+    const fresh = await import("./track.js");
+    const handle = vi.fn();
+    fresh.track("form_start");
+    fresh.receiveTracked(document, handle);
+    fresh.track("form_submit");
+    expect(handle.mock.calls.map(([event]) => event.type)).toEqual([
+      "form_start",
+      "form_submit",
+    ]);
   });
 });

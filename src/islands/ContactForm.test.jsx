@@ -1,5 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import { hydrateRoot } from "react-dom/client";
+// eslint-disable-next-line no-restricted-imports -- React's renderer, not code of src/server.
+import { renderToString } from "react-dom/server";
+import { TRACK_EVENT } from "../utils/track.js";
 import ContactForm, { getServiceFromSearch } from "./ContactForm.jsx";
 
 const services = [
@@ -243,6 +253,27 @@ describe("ContactForm", () => {
     expect(select.querySelectorAll("option")).toHaveLength(2);
   });
 
+  it("keeps the chosen length when the list of services is passed again", () => {
+    const view = setup();
+    fireEvent.change(screen.getByLabelText(/Servicio de interés/), {
+      target: { value: "shiatsu" },
+    });
+    fireEvent.change(screen.getByLabelText(/Duración de la sesión/), {
+      target: { value: "90" },
+    });
+    view.rerender(
+      <ContactForm
+        lang="es"
+        web3formsKey="test-key"
+        siteName="Masajes Relax Monterrey"
+        services={[...services]}
+        whatsappUrl="https://wa.me/528180171904"
+        privacyHref="/aviso-de-privacidad"
+      />,
+    );
+    expect(screen.getByLabelText(/Duración de la sesión/)).toHaveValue("90");
+  });
+
   it("sends the chosen length with the message", async () => {
     vi.mocked(fetch).mockResolvedValue(
       /** @type {Response} */ ({
@@ -264,6 +295,133 @@ describe("ContactForm", () => {
     expect(JSON.parse(String(options?.body))).toMatchObject({
       service: "shiatsu",
       duration: "90 min",
+    });
+  });
+
+  describe("when React arrives after the visitor started the form", () => {
+    /** @type {(() => void) | undefined} */
+    let unmount;
+    /** @type {string[]} The names of the events reported so far. */
+    let reported;
+    /** @param {Event} event - An event reported by the form. */
+    const listener = (event) => {
+      reported.push(/** @type {CustomEvent} */ (event).detail.type);
+    };
+
+    beforeEach(() => {
+      reported = [];
+      document.addEventListener(TRACK_EVENT, listener);
+    });
+
+    afterEach(() => {
+      act(() => unmount?.());
+      document.removeEventListener(TRACK_EVENT, listener);
+      document.body.innerHTML = "";
+    });
+
+    /**
+     * Puts the server HTML on the page, lets the visitor act on it, then hydrates it.
+     * @param {() => void} visit - What the visitor does before React arrives.
+     */
+    function hydrateAfter(visit) {
+      const form = (
+        <ContactForm
+          lang="es"
+          web3formsKey="test-key"
+          siteName="Masajes Relax Monterrey"
+          services={services}
+          whatsappUrl="https://wa.me/528180171904"
+          privacyHref="/aviso-de-privacidad"
+        />
+      );
+      const container = document.createElement("div");
+      container.innerHTML = renderToString(form);
+      document.body.append(container);
+      visit();
+      act(() => {
+        const root = hydrateRoot(container, form);
+        unmount = () => root.unmount();
+      });
+    }
+
+    /**
+     * Finds a field of the server HTML.
+     * @param {string} id - The field id.
+     * @returns {HTMLInputElement} The field.
+     */
+    const field = (id) =>
+      /** @type {HTMLInputElement} */ (document.getElementById(id));
+
+    it("keeps what was typed and chosen, and sends it", async () => {
+      vi.mocked(fetch).mockResolvedValue(
+        /** @type {Response} */ ({
+          ok: true,
+          json: async () => ({ success: true }),
+        }),
+      );
+      hydrateAfter(() => {
+        field("name").value = "Ana García";
+        field("email").value = "ana@example.com";
+        field("phone").value = "8112345678";
+        field("message").value = "Hola";
+        field("service").value = "shiatsu";
+        field("contact-method").value = "whatsapp";
+        field("consent").checked = true;
+      });
+
+      expect(field("name")).toHaveValue("Ana García");
+      expect(field("message")).toHaveValue("Hola");
+      expect(field("service")).toHaveValue("shiatsu");
+      expect(field("consent")).toBeChecked();
+      expect(screen.getByLabelText(/Duración de la sesión/)).toHaveValue("");
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+      });
+      const [, options] = vi.mocked(fetch).mock.calls[0];
+      expect(JSON.parse(String(options?.body))).toMatchObject({
+        name: "Ana García",
+        email: "ana@example.com",
+        phone: "8112345678",
+        message: "Hola",
+        service: "shiatsu",
+        contact_method: "whatsapp",
+      });
+    });
+
+    it("picks the only length of a facial chosen early", () => {
+      hydrateAfter(() => {
+        field("service").value = "facial";
+      });
+      expect(screen.getByLabelText(/Duración de la sesión/)).toHaveValue("60");
+    });
+
+    it("lets the early choice win over the service in the address", () => {
+      window.history.replaceState({}, "", "/contact?service=shiatsu");
+      hydrateAfter(() => {
+        field("service").value = "prenatal";
+      });
+      expect(field("service")).toHaveValue("prenatal");
+    });
+
+    it("reports the start once when a field already has the focus", () => {
+      hydrateAfter(() => field("name").focus());
+      expect(reported).toEqual(["form_start"]);
+      act(() => field("email").focus());
+      expect(reported).toEqual(["form_start"]);
+    });
+
+    it("reports the start when the visitor typed and then left the form", () => {
+      hydrateAfter(() => {
+        field("name").value = "Ana";
+      });
+      expect(reported).toEqual(["form_start"]);
+    });
+
+    it("reports nothing when the form was not touched", () => {
+      window.history.replaceState({}, "", "/contact?service=shiatsu");
+      hydrateAfter(() => {});
+      expect(reported).toEqual([]);
     });
   });
 
