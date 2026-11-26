@@ -1,0 +1,9 @@
+# Findings checked by hand and found to be no secret. One fingerprint per line (commit, file,
+# rule, line), so anything else, in these files too, is still reported.
+
+# REL-64: the PEM header written as text in the code that checks a key (auth.js), and a helper
+# that wraps a key generated during each test run (auth.test.js). No key is stored in either.
+d69bcf96cd1c0330a99e7f3eecd078bdfc640e24:src/server/google/auth.js:private-key:19
+0a7e6d75b281b36ce83583fad76e2034a998e7d8:src/server/google/auth.js:private-key:19
+d69bcf96cd1c0330a99e7f3eecd078bdfc640e24:src/server/google/auth.test.js:private-key:25
+0a7e6d75b281b36ce83583fad76e2034a998e7d8:src/server/google/auth.test.js:private-key:25
