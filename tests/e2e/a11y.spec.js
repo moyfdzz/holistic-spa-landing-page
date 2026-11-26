@@ -86,6 +86,26 @@ test.describe("page structure", () => {
     });
   }
 
+  // WCAG 2.5.3: someone who controls the page by voice says what they see.
+  test("the language links are named starting with the code they show", async ({
+    page,
+  }) => {
+    for (const path of ["/", "/en/"]) {
+      await page.goto(path);
+      const links = page.locator(".lang__link");
+      await expect(links).toHaveCount(2);
+      for (const [i, name] of ["ES Español", "EN English"].entries()) {
+        const link = links.nth(i);
+        await expect(link).toHaveAccessibleName(name);
+        // The full name is only for screen readers: the header shows the code.
+        await expect(link.locator(".visually-hidden")).toHaveCSS(
+          "width",
+          "1px",
+        );
+      }
+    }
+  });
+
   test("the skip link is the first thing reached with the keyboard and works", async ({
     page,
     isMobile,
