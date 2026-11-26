@@ -68,13 +68,17 @@ Before opening a pull request run the same checks as CI: `npm run lint`, `npm ru
 
 Names and purpose only. Never write real values in the code or in Git.
 
-| Name                          | Purpose                                                                               | Where to set it                             |
-| ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `PUBLIC_WEB3FORMS_ACCESS_KEY` | Public access key of Web3Forms, used by the contact form to deliver messages by email | `.env` locally; Cloudflare (build variable) |
+| Name                           | Purpose                                                                                    | Where to set it                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `PUBLIC_WEB3FORMS_ACCESS_KEY`  | Public access key of Web3Forms, used by the contact form to deliver messages by email      | `.env` locally; Cloudflare (build variable)                                                      |
+| `DATABASE_URL`                 | Neon Postgres connection string. A secret: never commit it, print it or paste it in a chat | `.env` locally for `npm run db:migrate`; `.dev.vars` for `npm run dev`; Cloudflare Worker secret |
+| `PUBLIC_CLERK_PUBLISHABLE_KEY` | Publishable key of Clerk, used by the `/admin` sign-in. Not a secret                       | `.env` locally (development key); Cloudflare build variable (production key)                     |
+| `CLERK_SECRET_KEY`             | Secret key of Clerk. A secret                                                              | `.dev.vars` locally (development key); Cloudflare Worker secret (production key)                 |
+| `ADMIN_EMAILS`                 | Emails allowed into `/admin`, separated by commas. Personal data: never commit it          | `.dev.vars` locally; Cloudflare Worker secret                                                    |
 
-| `DATABASE_URL` | Neon Postgres connection string. A secret: never commit it, print it or paste it in a chat | `.env` locally for `npm run db:migrate`; `.dev.vars` for `npm run dev`; Cloudflare Worker secret |
+`PUBLIC_` variables are readable in the browser, which is how Web3Forms and the Clerk publishable key work; restrict the Web3Forms key to the site's domains in its dashboard. These variables are read at build time: after changing one in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets), trigger a new build. A Worker secret is set in Settings, Variables and Secrets, and is read while the site runs.
 
-`PUBLIC_` variables are readable in the browser, which is how Web3Forms works; restrict the key to the site's domains in the Web3Forms dashboard. It is read at build time: after changing it in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets), trigger a new build.
+The two Clerk keys must come from the same instance: development (`pk_test_`, `sk_test_`) on your computer, production (`pk_live_`, `sk_live_`) in Cloudflare. If any of the three Clerk settings is missing, `/admin` answers 503.
 
 ## Database
 
