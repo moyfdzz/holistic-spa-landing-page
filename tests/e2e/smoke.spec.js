@@ -550,14 +550,14 @@ test.describe("professional massage only", () => {
       lang: "es",
       home: "/",
       contact: "/contact",
-      line: "Servicio de masaje profesional y terapéutico únicamente.",
+      line: "Servicios profesionales y terapéuticos únicamente.",
       question: "¿Ofrecen masajes eróticos o servicios sexuales?",
     },
     {
       lang: "en",
       home: "/en/",
       contact: "/en/contact",
-      line: "Professional, therapeutic massage only.",
+      line: "Professional, therapeutic services only.",
       question: "Do you offer erotic or sexual services?",
     },
   ];
