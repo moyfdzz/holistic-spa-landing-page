@@ -92,6 +92,37 @@ test.describe("anonymous analytics", () => {
     expect(JSON.stringify(events)).not.toContain("Ana");
   });
 
+  test("keeps what was typed and counts the start when the form loads late", async ({
+    page,
+  }) => {
+    /** @type {() => void} */
+    let release = () => {};
+    const held = new Promise((resolve) => {
+      release = () => resolve(undefined);
+    });
+    // The server HTML shows the form at once; hold back the script that brings it to life.
+    const events = await openTracked(page, "/contact", async (p) => {
+      await p.route("**/_astro/ContactForm.*.js", async (route) => {
+        await held;
+        await route.continue();
+      });
+    });
+    await expect
+      .poll(() => events.some((event) => event.type === "contact_view"))
+      .toBe(true);
+    const submit = page.locator("#contact-form button[type=submit]");
+    await expect(submit).toBeDisabled();
+    await page.locator("#name").fill("Ana Prueba");
+
+    release();
+    await expect(submit).toBeEnabled();
+    await expect
+      .poll(() => events.some((event) => event.type === "form_start"))
+      .toBe(true);
+    await expect(page.locator("#name")).toHaveValue("Ana Prueba");
+    expect(JSON.stringify(events)).not.toContain("Ana");
+  });
+
   test("reports the speed of the page once, when it is hidden, without any personal data", async ({
     page,
   }) => {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./ContactForm.css";
 import { useTranslations } from "../i18n/utils.js";
 import { validateContactForm } from "../utils/contactValidation.js";
@@ -19,6 +19,33 @@ const FIELD_ORDER = ["name", "email", "phone", "message", "consent"];
 export function getServiceFromSearch(search, slugs) {
   const slug = new URLSearchParams(search).get("service") ?? "";
   return slugs.includes(slug) ? slug : "";
+}
+
+/**
+ * Reads what the visitor typed or chose before React took over: until then the fields are
+ * plain HTML, and the next render would write the empty state over them.
+ * @param {HTMLFormElement} form - The form, not rendered again yet.
+ * @returns {{ name: string, email: string, phone: string, message: string, method: "email" | "whatsapp" | "phone", service: string, consent: boolean }} The values on the page.
+ */
+function readEarlyValues(form) {
+  const data = new FormData(form);
+  /**
+   * Reads one text field.
+   * @param {string} name - Name of the field.
+   * @returns {string} Its text.
+   */
+  const text = (name) => String(data.get(name) ?? "");
+  return {
+    name: text("name"),
+    email: text("email"),
+    phone: text("phone"),
+    message: text("message"),
+    method: /** @type {"email" | "whatsapp" | "phone"} */ (
+      text("contact_method")
+    ),
+    service: text("service"),
+    consent: data.has("consent"),
+  };
 }
 
 /**
@@ -47,6 +74,7 @@ export default function ContactForm({
   privacyHref,
 }) {
   const t = useTranslations(lang);
+  const formRef = useRef(/** @type {HTMLFormElement | null} */ (null));
   const started = useRef(false);
   const [values, setValues] = useState({
     name: "",
@@ -68,25 +96,47 @@ export default function ContactForm({
   );
   const [enhanced, setEnhanced] = useState(false);
 
+  /** Reports once that the visitor started to fill the form. */
+  const reportStart = useCallback(() => {
+    if (started.current) return;
+    started.current = true;
+    track("form_start");
+  }, []);
+
   useEffect(() => {
-    // Runs once after the page loads in the browser: the server cannot know the address query.
+    // Runs once after the page loads in the browser: only there are the address query and
+    // what the visitor already did with the form.
+    const form = /** @type {HTMLFormElement} */ (formRef.current);
+    const early = readEarlyValues(form);
+    const touched = Boolean(
+      early.name ||
+      early.email ||
+      early.phone ||
+      early.message ||
+      early.service ||
+      early.consent ||
+      early.method !== "email",
+    );
+    // The focus event of a field focused before this moment never reached React.
+    if (touched || form.contains(document.activeElement)) reportStart();
+
+    const service =
+      early.service ||
+      getServiceFromSearch(
+        window.location.search,
+        services.map((s) => s.slug),
+      );
+    const options = services.find((s) => s.slug === service)?.durations ?? [];
     /* eslint-disable react-hooks/set-state-in-effect */
     setEnhanced(true);
-    const search = window.location.search;
-    const service = getServiceFromSearch(
-      search,
-      services.map((s) => s.slug),
-    );
-    if (service) {
-      const options = services.find((s) => s.slug === service)?.durations ?? [];
-      setValues((current) => ({
-        ...current,
-        service,
-        duration: options.length === 1 ? String(options[0]) : "",
-      }));
-    }
+    setValues((current) => ({
+      ...current,
+      ...early,
+      service,
+      duration: options.length === 1 ? String(options[0]) : "",
+    }));
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [services]);
+  }, [services, reportStart]);
 
   /**
    * Updates one value and clears its error.
@@ -216,15 +266,12 @@ export default function ContactForm({
 
   return (
     <form
+      ref={formRef}
       id="contact-form"
       className="cf"
       noValidate={enhanced}
       onSubmit={handleSubmit}
-      onFocus={() => {
-        if (started.current) return;
-        started.current = true;
-        track("form_start");
-      }}
+      onFocus={reportStart}
     >
       <div className="cf__trap" aria-hidden="true">
         <input
