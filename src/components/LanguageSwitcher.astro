@@ -20,16 +20,18 @@ const path = publicPath(Astro.url.pathname);
           |
         </span>
       )}
+      {/* The name comes from the content, so it starts with the visible
+          code (WCAG 2.5.3). An aria-label would replace it. */}
       <a
         href={getLocalizedPath(path, code)}
         class="lang__link"
         lang={code}
         hreflang={code}
-        aria-label={t(`lang.${code}`)}
         aria-current={code === lang ? "true" : undefined}
         data-lang-link={code}
       >
         {code.toUpperCase()}
+        <span class="visually-hidden">{t(`lang.${code}`)}</span>
       </a>
     </>
   ))}

@@ -140,15 +140,15 @@ test.describe("languages", () => {
   }) => {
     await page.goto("/");
     await page
-      .getByRole("link", { name: "English", exact: true })
+      .getByRole("link", { name: "EN English", exact: true })
       .first()
       .click();
     await expect(page).toHaveURL(/\/en\/$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     const current = page.locator(".lang [aria-current='true']");
-    await expect(current).toHaveText("EN");
+    await expect(current).toHaveAccessibleName("EN English");
     await page
-      .getByRole("link", { name: "Español", exact: true })
+      .getByRole("link", { name: "ES Español", exact: true })
       .first()
       .click();
     await expect(page).toHaveURL(/\/$/);
@@ -160,7 +160,7 @@ test.describe("languages", () => {
   }) => {
     await page.goto("/contact");
     await page
-      .getByRole("link", { name: "English", exact: true })
+      .getByRole("link", { name: "EN English", exact: true })
       .first()
       .click();
     await expect(page).toHaveURL(/\/en\/contact$/);
@@ -168,7 +168,7 @@ test.describe("languages", () => {
 
     await page.goto("/#services");
     await page
-      .getByRole("link", { name: "English", exact: true })
+      .getByRole("link", { name: "EN English", exact: true })
       .first()
       .click();
     await expect(page).toHaveURL(/\/en\/#services$/);
@@ -231,12 +231,12 @@ test.describe("privacy notice", () => {
   }) => {
     await page.goto("/aviso-de-privacidad");
     await page
-      .getByRole("link", { name: "English", exact: true })
+      .getByRole("link", { name: "EN English", exact: true })
       .first()
       .click();
     await expect(page).toHaveURL(/\/en\/privacy-notice$/);
     await page
-      .getByRole("link", { name: "Español", exact: true })
+      .getByRole("link", { name: "ES Español", exact: true })
       .first()
       .click();
     await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
