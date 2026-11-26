@@ -177,7 +177,8 @@ export function getYearsSince(startYear, now = new Date()) {
 ## Testing and quality
 
 - Unit tests live next to the code as `*.test.js` / `*.test.jsx`. End-to-end tests are in `tests/e2e/` and test the production build.
-- Pull requests run four checks in GitHub Actions: **Quality checks** (lint, formatting, types, unit tests, build), **End-to-end tests**, **PR title** (Conventional Commits) and **Lighthouse** (performance 90, accessibility 95, best practices 95, SEO 95 and size budgets).
+- Pull requests run four required checks in GitHub Actions: **Quality checks** (lint, formatting, types, unit tests, build), **End-to-end tests**, **PR title** (Conventional Commits) and **Lighthouse** (performance 90, accessibility 95, best practices 95, SEO 95 and size budgets).
+- A **Security** workflow runs on pull requests, on `main` and every Monday: **Secrets (gitleaks)** and **npm audit (production)**, which fails on a high or critical advisory. Actions are pinned to a full commit SHA, and Dependabot keeps the pins up to date.
 - ESLint and Prettier run on staged files before every commit (Husky and lint-staged). Commit messages follow [Conventional Commits](https://www.conventionalcommits.org) with the Linear ticket as the scope, for example `feat(REL-18): add service cards`.
 
 ## Deployment

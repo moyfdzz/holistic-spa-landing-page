@@ -1,0 +1,68 @@
+name: Security
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Mondays at 05:17 UTC, so new advisories reach code that nobody is changing.
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+# Least privilege: the jobs only need to read the repository.
+permissions:
+  contents: read
+
+# A new push to the same PR cancels the older run. Every other run has a group of its own.
+concurrency:
+  group: security-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: Secrets (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # Dependabot does not update these two: change them together, taking the checksum of the
+      # linux_x64 file from the checksums file of the release.
+      GITLEAKS_VERSION: "8.30.1"
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Every commit of every branch, and of the PR.
+          fetch-depth: 0
+          persist-credentials: false
+      # The CLI, not gitleaks-action: the action reads only the first 30 commits of a PR and
+      # skips merge commits.
+      - name: Install gitleaks
+        run: |
+          file="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl --fail --silent --show-error --location --output "$RUNNER_TEMP/$file" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/$file"
+          echo "$GITLEAKS_SHA256  $RUNNER_TEMP/$file" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/$file" -C "$RUNNER_TEMP" gitleaks
+      # --redact keeps the value of a finding out of the log, which is public.
+      - name: Scan the whole history
+        run: >
+          "$RUNNER_TEMP/gitleaks" git --redact --verbose --no-banner
+          --log-opts="--all --full-history --diff-merges=first-parent" .
+
+  # Not a required check: an advisory can appear on any day and must not block an urgent fix.
+  # --omit=dev also covers some test tools (vitest, jsdom), which npm counts as optional peers.
+  audit:
+    name: npm audit (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      # npm audit reads the lockfile, so nothing is installed and no package code runs here.
+      - name: Fail on a high or critical advisory
+        run: npm audit --omit=dev --audit-level=high
