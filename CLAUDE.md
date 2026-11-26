@@ -59,5 +59,7 @@ Environment notes:
 
 - Architecture and decisions: `docs/architecture.md`, `docs/adr/`.
 - How tickets are executed with Claude Code: `docs/ai-workflow.md`.
-- Slash commands for repeated flows: `.claude/commands/` (`/start-ticket`, `/check-all`, `/open-pr`).
-- Pending facts from the business owner: Linear REL-53.
+- What an agent must know that does not change between sessions (the owner, the flow of a ticket, traps of the tools): `docs/agent-notes.md`. Read it before writing code.
+- The state of the day: `CLAUDE.local.md` (ignored by git), rewritten by `/handoff` at the end of a session.
+- Slash commands for repeated flows: `.claude/commands/` (`/start-ticket`, `/check-all`, `/open-pr`, `/handoff`). A hook in `.claude/settings.json` formats each file an agent writes.
+- Pending facts from the business owner: Linear REL-53. What the owner still has to try in production: Linear REL-65 (pinned).

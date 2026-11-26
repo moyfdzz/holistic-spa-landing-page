@@ -14,6 +14,14 @@ dist/
 # Keys and credentials
 *.pem
 *.key
+id_rsa*
+credentials*.json
+service-account*.json
+
+# Local agent configuration and the owner's local notes
+CLAUDE.local.md
+*.local.md
+.claude/settings.local.json
 
 # Test output
 coverage/
