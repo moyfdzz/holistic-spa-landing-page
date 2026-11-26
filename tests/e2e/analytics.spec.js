@@ -6,9 +6,10 @@ import { expect, test } from "@playwright/test";
  * @param {import("@playwright/test").Page} page - The page.
  * @param {string} path - Address to open.
  * @param {(page: import("@playwright/test").Page) => Promise<void>} [before] - Runs before the page loads.
+ * @param {"load" | "commit"} [waitUntil] - How far to wait for the page.
  * @returns {Promise<Array<Record<string, unknown>>>} The list that fills up with the events sent.
  */
-async function openTracked(page, path, before) {
+async function openTracked(page, path, before, waitUntil = "load") {
   /** @type {Array<Record<string, unknown>>} */
   const events = [];
   await page.route("**/api/collect", async (route) => {
@@ -30,7 +31,7 @@ async function openTracked(page, path, before) {
     },
   );
   await before?.(page);
-  await page.goto(path);
+  await page.goto(path, { waitUntil });
   return events;
 }
 
@@ -120,6 +121,48 @@ test.describe("anonymous analytics", () => {
       .poll(() => events.some((event) => event.type === "form_start"))
       .toBe(true);
     await expect(page.locator("#name")).toHaveValue("Ana Prueba");
+    expect(JSON.stringify(events)).not.toContain("Ana");
+  });
+
+  test("counts the start when the tracker loads after the form", async ({
+    page,
+  }) => {
+    /** @type {() => void} */
+    let release = () => {};
+    const held = new Promise((resolve) => {
+      release = () => resolve(undefined);
+    });
+    // The script of the layout carries the tracker; its name comes from the build. It is
+    // deferred, so the page does not finish loading while it is held back.
+    const events = await openTracked(
+      page,
+      "/contact",
+      async (p) => {
+        await p.route(
+          "**/_astro/BaseLayout.astro_astro_type_script_*.js",
+          async (route) => {
+            await held;
+            await route.continue();
+          },
+        );
+      },
+      "commit",
+    );
+    await expect(
+      page.locator("#contact-form button[type=submit]"),
+    ).toBeEnabled();
+    await page.locator("#name").fill("Ana Prueba");
+    expect(events).toEqual([]);
+
+    release();
+    await expect
+      .poll(() => events.map((event) => event.type))
+      .toEqual(
+        expect.arrayContaining(["page_view", "contact_view", "form_start"]),
+      );
+    expect(events.filter((event) => event.type === "form_start")).toHaveLength(
+      1,
+    );
     expect(JSON.stringify(events)).not.toContain("Ana");
   });
 

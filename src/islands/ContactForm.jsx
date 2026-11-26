@@ -22,6 +22,19 @@ export function getServiceFromSearch(search, slugs) {
 }
 
 /**
+ * Picks the session length to show after the service changes: the lengths depend on the
+ * service, so the choice stays only if it still exists, and a single option is picked
+ * (facials).
+ * @param {number[]} options - Lengths the service offers.
+ * @param {string} chosen - The length chosen before.
+ * @returns {string} The length, or an empty string when the visitor has to choose.
+ */
+function keepDuration(options, chosen) {
+  if (options.length === 1) return String(options[0]);
+  return options.map(String).includes(chosen) ? chosen : "";
+}
+
+/**
  * Reads what the visitor typed or chose before React took over: until then the fields are
  * plain HTML, and the next render would write the empty state over them.
  * @param {HTMLFormElement} form - The form, not rendered again yet.
@@ -133,7 +146,7 @@ export default function ContactForm({
       ...current,
       ...early,
       service,
-      duration: options.length === 1 ? String(options[0]) : "",
+      duration: keepDuration(options, current.duration),
     }));
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [services, reportStart]);
@@ -146,17 +159,10 @@ export default function ContactForm({
   const update = (field, value) => {
     setValues((current) => {
       const next = { ...current, [field]: value };
-      // The lengths depend on the service: keep the choice only if it still exists,
-      // and pick the only option when there is just one (facials).
       if (field === "service") {
         const options =
           services.find((service) => service.slug === value)?.durations ?? [];
-        next.duration =
-          options.length === 1
-            ? String(options[0])
-            : options.map(String).includes(current.duration)
-              ? current.duration
-              : "";
+        next.duration = keepDuration(options, current.duration);
       }
       return next;
     });

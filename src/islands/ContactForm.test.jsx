@@ -253,6 +253,27 @@ describe("ContactForm", () => {
     expect(select.querySelectorAll("option")).toHaveLength(2);
   });
 
+  it("keeps the chosen length when the list of services is passed again", () => {
+    const view = setup();
+    fireEvent.change(screen.getByLabelText(/Servicio de interés/), {
+      target: { value: "shiatsu" },
+    });
+    fireEvent.change(screen.getByLabelText(/Duración de la sesión/), {
+      target: { value: "90" },
+    });
+    view.rerender(
+      <ContactForm
+        lang="es"
+        web3formsKey="test-key"
+        siteName="Masajes Relax Monterrey"
+        services={[...services]}
+        whatsappUrl="https://wa.me/528180171904"
+        privacyHref="/aviso-de-privacidad"
+      />,
+    );
+    expect(screen.getByLabelText(/Duración de la sesión/)).toHaveValue("90");
+  });
+
   it("sends the chosen length with the message", async () => {
     vi.mocked(fetch).mockResolvedValue(
       /** @type {Response} */ ({

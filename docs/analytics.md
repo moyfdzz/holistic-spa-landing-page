@@ -58,6 +58,10 @@ It answers `204` for everything it accepts or deliberately ignores, so the track
 
 Any other event name is rejected. `props` has at most 8 keys and short values.
 
+`form_start` is sent once per page view, when a field of the contact form gets the focus. The form is plain HTML until its script loads, so it also counts as started if, at that moment, a field has the focus or already holds something. That includes text the browser or an extension put back or filled in by itself.
+
+An island reports events with `track` (`src/utils/track.js`). An event reported before the tracker is ready waits for it.
+
 ## Channels
 
 UTM parameters win; otherwise the referrer host decides: `google_maps`, `google_search`, `bing`, `instagram`, `facebook`, `whatsapp`, `other_site`, `direct`, `internal` (navigation inside the site) and `campaign` (any other UTM source). A visit from Google Maps looks like normal Google traffic unless the link in the Business Profile has `?utm_source=google&utm_medium=maps`; the same goes for the Instagram, Facebook and WhatsApp profiles.

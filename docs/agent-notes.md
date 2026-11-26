@@ -53,7 +53,7 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 
 ## Traps of the code
 
-- **A `client:load` island is plain HTML until React arrives.** What the visitor types or focuses before that fires no React handler, and the next render writes the initial state over controlled fields. Read the page in the mount effect (`readEarlyValues` in `ContactForm.jsx`) and test it by holding the island script back (`tests/e2e/analytics.spec.js`).
+- **A `client:load` island is plain HTML until React arrives.** What the visitor types or focuses before that fires no React handler, and the next render writes the initial state over controlled fields. Read the page in the mount effect (`readEarlyValues` in `ContactForm.jsx`) and test it by holding the island script back (`tests/e2e/analytics.spec.js`). The order of two scripts is not guaranteed either: report events with `track`, which keeps them until the tracker is ready.
 
 ## Reporting
 
