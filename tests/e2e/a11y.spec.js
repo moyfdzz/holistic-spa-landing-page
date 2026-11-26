@@ -94,8 +94,15 @@ test.describe("page structure", () => {
       await page.goto(path);
       const links = page.locator(".lang__link");
       await expect(links).toHaveCount(2);
-      await expect(links.nth(0)).toHaveAccessibleName("ES Español");
-      await expect(links.nth(1)).toHaveAccessibleName("EN English");
+      for (const [i, name] of ["ES Español", "EN English"].entries()) {
+        const link = links.nth(i);
+        await expect(link).toHaveAccessibleName(name);
+        // The full name is only for screen readers: the header shows the code.
+        await expect(link.locator(".visually-hidden")).toHaveCSS(
+          "width",
+          "1px",
+        );
+      }
     }
   });
 
