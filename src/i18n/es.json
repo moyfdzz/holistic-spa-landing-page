@@ -133,6 +133,9 @@
     "copyright": "© {year} {name}.",
     "privacy": "Aviso de Privacidad"
   },
+  "notice": {
+    "professionalOnly": "Servicio de masaje profesional y terapéutico únicamente."
+  },
   "whatsapp": {
     "label": "Escríbenos por WhatsApp",
     "message": "Hola, me gustaría información sobre sus masajes."

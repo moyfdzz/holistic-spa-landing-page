@@ -544,6 +544,51 @@ test.describe("home page", () => {
   });
 });
 
+test.describe("professional massage only", () => {
+  const cases = [
+    {
+      lang: "es",
+      home: "/",
+      contact: "/contact",
+      line: "Servicio de masaje profesional y terapéutico únicamente.",
+      question: "¿Ofrecen masajes eróticos o servicios sexuales?",
+    },
+    {
+      lang: "en",
+      home: "/en/",
+      contact: "/en/contact",
+      line: "Professional, therapeutic massage only.",
+      question: "Do you offer erotic or sexual services?",
+    },
+  ];
+
+  for (const { lang, home, contact, line, question } of cases) {
+    test(`is said in the footer, under the form and in the FAQ (${lang})`, async ({
+      page,
+    }) => {
+      await page.goto(contact);
+      await expect(page.locator("footer").getByText(line)).toBeVisible();
+      await expect(
+        page.locator(".contact__card").getByText(line),
+      ).toBeVisible();
+
+      await page.goto(home);
+      await expect(page.locator("footer").getByText(line)).toBeVisible();
+      const item = page.locator("#faq-professional");
+      await expect(item.locator("summary")).toHaveText(question);
+      const blocks = await page
+        .locator('script[type="application/ld+json"]')
+        .allTextContents();
+      const data = blocks
+        .map((text) => JSON.parse(text))
+        .find((block) => block["@type"] === "FAQPage");
+      expect(
+        data.mainEntity.map((/** @type {{ name: string }} */ q) => q.name),
+      ).toContain(question);
+    });
+  }
+});
+
 test.describe("contact page", () => {
   test("loads with a labelled contact form", async ({ page }) => {
     await page.goto("/contact");
