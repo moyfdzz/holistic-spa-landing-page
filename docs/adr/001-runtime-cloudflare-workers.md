@@ -2,11 +2,12 @@
 
 Status: Accepted
 Date: 2026-10-29
+Updated: 2026-11-26 (REL-69). The website chat was dropped, so it is no longer listed as a feature that needs server code.
 Tickets: REL-54, REL-34
 
 ## Context
 
-The site is a static Astro site. The next features (chat API, analytics collector, admin area, scheduled jobs) need server code. The business is a one-person home massage service, so infrastructure has to stay small, cheap and allowed for commercial use. Vercel Hobby is for non-commercial use only and limits cron jobs to once a day, so the site was moved to Cloudflare Workers (free plan) in REL-54. The domain's DNS was already on Cloudflare.
+The site is a static Astro site. The next features (analytics collector, admin area, scheduled jobs) need server code. The business is a one-person home massage service, so infrastructure has to stay small, cheap and allowed for commercial use. Vercel Hobby is for non-commercial use only and limits cron jobs to once a day, so the site was moved to Cloudflare Workers (free plan) in REL-54. The domain's DNS was already on Cloudflare.
 
 ## Decision
 

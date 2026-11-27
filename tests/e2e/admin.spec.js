@@ -4,12 +4,7 @@ test.describe("admin area", () => {
   test("is closed to a visitor who is not signed in", async ({ request }) => {
     // The test server has no Clerk settings, so the area must stay closed (503); with them it
     // would redirect to sign in. In neither case does a page with content come back.
-    for (const path of [
-      "/admin",
-      "/admin/sitio",
-      "/admin/conversaciones",
-      "/admin/ia",
-    ]) {
+    for (const path of ["/admin", "/admin/sitio"]) {
       const response = await request.get(path, { maxRedirects: 0 });
       expect([302, 307, 401, 403, 503], path).toContain(response.status());
       expect(await response.text()).not.toContain("Administración");

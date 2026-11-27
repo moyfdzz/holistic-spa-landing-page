@@ -27,8 +27,6 @@ It does nothing when:
 
 Islands and scripts report events with `track(type, props)` from `src/utils/track.js` (the contact form does it). Details such as `props` are always short labels, never text typed by the visitor.
 
-Not sent yet: the `chat_*` events, which arrive with their own tickets.
-
 The speed of the page (`web_vital`, see below) is measured with the browser's own performance entries in `src/scripts/vitals.js`, in memory, and sent once, the first time the page is hidden. `VITALS_SAMPLE_RATE` in that file is the share of page views that report it (1 is all of them); lower it if traffic grows.
 
 ## How the collector decides
@@ -44,17 +42,16 @@ It answers `204` for everything it accepts or deliberately ignores, so the track
 
 ## Events
 
-| Event                                                                                    | When                                                     |
-| ---------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `page_view`                                                                              | A page loads (path, language, referrer, UTM, screen)     |
-| `engagement`                                                                             | Active time and scroll depth, when the page is left      |
-| `section_view`                                                                           | A section enters the screen (`props.section`)            |
-| `contact_view`, `form_start`, `form_submit`, `form_success`, `form_error`                | The contact funnel (`form_error` has an error type only) |
-| `whatsapp_click`                                                                         | Any WhatsApp link (`props.placement`)                    |
-| `phone_click`, `email_click`, `social_click`, `language_switch`                          | Clicks                                                   |
-| `service_card_view`, `faq_open`                                                          | Content interest (`props.id`)                            |
-| `chat_open`, `chat_message`, `chat_suggestion_click`, `chat_handoff_click`, `chat_close` | The website chat, when it exists                         |
-| `web_vital`                                                                              | Real-user speed, once per page view (see below)          |
+| Event                                                                     | When                                                     |
+| ------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `page_view`                                                               | A page loads (path, language, referrer, UTM, screen)     |
+| `engagement`                                                              | Active time and scroll depth, when the page is left      |
+| `section_view`                                                            | A section enters the screen (`props.section`)            |
+| `contact_view`, `form_start`, `form_submit`, `form_success`, `form_error` | The contact funnel (`form_error` has an error type only) |
+| `whatsapp_click`                                                          | Any WhatsApp link (`props.placement`)                    |
+| `phone_click`, `email_click`, `social_click`, `language_switch`           | Clicks                                                   |
+| `service_card_view`, `faq_open`                                           | Content interest (`props.id`)                            |
+| `web_vital`                                                               | Real-user speed, once per page view (see below)          |
 
 Any other event name is rejected. `props` has at most 8 keys and short values.
 

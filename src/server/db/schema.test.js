@@ -24,16 +24,16 @@ describe("app_settings", () => {
   it("keeps one row when the same key is inserted twice", async () => {
     await db
       .insert(appSettings)
-      .values({ key: "chat_enabled", value: "true" })
+      .values({ key: "sample_flag", value: "true" })
       .onConflictDoNothing();
     await db
       .insert(appSettings)
-      .values({ key: "chat_enabled", value: "false" })
+      .values({ key: "sample_flag", value: "false" })
       .onConflictDoNothing();
     const rows = await db
       .select()
       .from(appSettings)
-      .where(eq(appSettings.key, "chat_enabled"));
+      .where(eq(appSettings.key, "sample_flag"));
     expect(rows).toHaveLength(1);
     expect(rows[0]?.value).toBe("true");
   });

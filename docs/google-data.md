@@ -31,6 +31,8 @@ A service account signs a JWT with its private key (Web Crypto, no library) and 
 
 ### What the owner sets up
 
+First, the production database needs the migration `drizzle/0004_search_console.sql` (see "Database" in the [README](../README.md)); apply it before adding the two variables below.
+
 1. In Google Cloud: enable the Search Console API, create a service account and download its JSON key.
 2. In Search Console, **Settings, Users and permissions**: add the service account's email as a user with the **Restricted** permission (read only).
 3. In Cloudflare, Worker `holistic-spa-landing-page`, **Settings, Variables and Secrets**, as **Runtime** variables:

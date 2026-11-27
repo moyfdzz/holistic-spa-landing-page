@@ -2,17 +2,18 @@
 
 Status: Accepted
 Date: 2026-10-29
-Tickets: REL-34, REL-40, REL-55
+Updated: 2026-11-26 (REL-69). The AI assistant and the Stripe deposit were dropped, so model output and webhooks were removed.
+Tickets: REL-34
 
 ## Context
 
-The project is JavaScript with JSDoc, so there are no compile-time types for data that comes from outside: environment variables, request bodies, database rows, model output and admin forms.
+The project is JavaScript with JSDoc, so there are no compile-time types for data that comes from outside: environment variables, request bodies, database rows, answers of outside services and admin forms.
 
 ## Decision
 
-- Use Zod to parse every value that crosses a boundary: environment variables at startup, request bodies, webhook payloads, model output (second validation after the structured output) and admin forms.
+- Use Zod to parse every value that crosses a boundary: environment variables at startup, request bodies, the Google key file, Search Console answers and admin forms.
 - Schemas live next to the code that owns the boundary, and JSDoc types are derived from them (`z.infer`) so there is one definition.
-- A failed parse is a handled outcome (a 400 response, a hand-off, a logged error with no personal data), never an exception that leaks details.
+- A failed parse is a handled outcome (a 400 response, a logged error with no personal data), never an exception that leaks details.
 
 ## Consequences
 

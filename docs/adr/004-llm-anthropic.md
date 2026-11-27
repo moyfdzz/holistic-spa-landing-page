@@ -1,8 +1,10 @@
 # ADR-004 LLM: Anthropic SDK, small model by default
 
-Status: Accepted
+Status: Rejected (2026-11-26)
 Date: 2026-10-29
-Tickets: REL-40, REL-43, REL-44
+Tickets: REL-40, REL-43, REL-44, REL-69
+
+> **Rejected on 2026-11-26:** there will be no website chat and no AI assistant; clients and the business owner talk on WhatsApp. Nothing described here was built. The text is kept as the record of what was considered.
 
 ## Context
 

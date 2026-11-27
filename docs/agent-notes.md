@@ -16,7 +16,8 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 
 - Hosting on **Cloudflare Workers** ([ADR-001](adr/001-runtime-cloudflare-workers.md)), Postgres on Neon with Drizzle ([ADR-002](adr/002-database-postgres-drizzle.md)), Clerk for `/admin` ([ADR-005](adr/005-admin-auth-clerk.md)), first-party cookieless analytics ([ADR-008](adr/008-web-analytics-first-party.md)).
 - Spanish at `/`, English at `/en/`; every text exists in both languages.
-- The assistant is a **website chat**, not WhatsApp: the WhatsApp tickets (REL-38, REL-39, REL-42) were canceled. The chat never shows prices or payment details and never confirms appointments ([ADR-007](adr/007-assistant-policy.md)).
+- **No website chat, no AI assistant and no Stripe deposit** (2026-11-26): clients and the owner talk on WhatsApp, which stays manual. `/admin` is for website and Google statistics ([ADR-007](adr/007-assistant-policy.md), rejected).
+- The site never shows **prices or payment details** (bank account, PayPal link); the owner sends payment details over WhatsApp once an appointment is confirmed. The service is **professional massage only**.
 - **Squash merge only**, done by the owner; the PR title becomes the commit message.
 
 ## The flow of a ticket
@@ -69,6 +70,7 @@ Say what was verified, what was not and why, and never claim something works tha
 - **Python on Windows:** when Python edits a repo file, open it with `newline=""`, or text mode rewrites every LF as CRLF. `python3` does not exist in Git Bash; use `python -I`.
 - **Stopping a background `astro preview` can leave its server on the port**, still serving the old build (after a rebuild the pages load with no CSS, because the asset names changed). Stop it with `npx astro preview stop` or by port (`Get-NetTCPConnection -LocalPort 4321 -State Listen`, then `Stop-Process`), and only the process you started.
 - Do not edit a file by line number after another edit added lines to it: match on text. Prettier realigns Markdown tables.
+- Deleting text with an empty replacement in Edit can also remove the line break after it: after removing the last row of a Markdown table, check that the next paragraph is still outside it (Prettier folds it in without an error).
 - The Bash tool has no `jq`: filter JSON with `gh ... --jq`.
 - **The permission classifier** blocks history rewrites and force-pushes even after the owner said yes: tell the owner what to type with the `!` prefix. **Except anything that asks for a value** (`wrangler secret put`): the `!` shell has no terminal and uploads an empty value. The owner runs it in their own PowerShell window; check afterwards with `wrangler secret list`.
 - **Migrations in production are the owner's** (`DATABASE_URL` is a secret): give the PowerShell commands as **one single line** joined with semicolons, ending with `Remove-Item Env:DATABASE_URL`, and never ask for or accept the connection string.

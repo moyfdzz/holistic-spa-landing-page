@@ -129,6 +129,20 @@ describe("buildEventRow", () => {
 });
 
 describe("collectBodySchema", () => {
+  it("rejects the events of the website chat, which was dropped", () => {
+    for (const type of [
+      "chat_open",
+      "chat_message",
+      "chat_suggestion_click",
+      "chat_handoff_click",
+      "chat_close",
+    ]) {
+      expect(collectBodySchema.safeParse({ ...body, type }).success, type).toBe(
+        false,
+      );
+    }
+  });
+
   it("limits the props", () => {
     const many = Object.fromEntries(
       Array.from({ length: 9 }, (_, i) => [`k${i}`, "v"]),
