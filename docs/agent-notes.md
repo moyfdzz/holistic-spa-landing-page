@@ -50,6 +50,7 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 - The ruleset of `main` requires checks **by job name** (**Quality checks**, **End-to-end tests**, **Lighthouse**, **PR title**, **Secrets (gitleaks)**): renaming or removing a job blocks every merge until the owner changes the ruleset.
 - Actions stay pinned to a full commit SHA with the version in a comment. The version and checksum of gitleaks in `security.yml` are updated by hand.
 - GitHub disables the scheduled workflows of a public repository after 60 days without activity; the owner re-enables them in the Actions tab.
+- **CodeQL does not read `.astro` files**: a green result says nothing about their frontmatter. Keep logic that handles input in `.js` modules.
 - **npm audit (production)** can turn red with no change of ours. It is not required: read the advisory, and fix it in its own commit with the smallest update that clears it. `--omit=dev` still covers `wrangler`, because `@astrojs/cloudflare` depends on it.
 
 ## Traps of the code

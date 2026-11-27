@@ -81,7 +81,7 @@ jobs:
       # One language failing must not cancel the other.
       fail-fast: false
       matrix:
-        # The site's code, and the workflows of this folder.
+        # The JavaScript files (CodeQL does not read .astro) and the workflows of this folder.
         language: [javascript-typescript, actions]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
