@@ -181,8 +181,8 @@ export function getYearsSince(startYear, now = new Date()) {
 ## Testing and quality
 
 - Unit tests live next to the code as `*.test.js` / `*.test.jsx`. End-to-end tests are in `tests/e2e/` and test the production build.
-- Pull requests run four required checks in GitHub Actions: **Quality checks** (lint, formatting, types, unit tests, build), **End-to-end tests**, **PR title** (Conventional Commits) and **Lighthouse** (performance 90, accessibility 95, best practices 95, SEO 95 and size budgets).
-- A **Security** workflow runs on pull requests, on `main` and every Monday: **Secrets (gitleaks)** and **npm audit (production)**, which fails on a high or critical advisory. Actions are pinned to a full commit SHA, and Dependabot keeps the pins up to date.
+- Pull requests need five checks of GitHub Actions to pass. Four are about the site: **Quality checks** (lint, formatting, types, unit tests, build), **End-to-end tests**, **PR title** (Conventional Commits) and **Lighthouse** (performance 90, accessibility 95, best practices 95, SEO 95 and size budgets).
+- A **Security** workflow runs on pull requests, on `main` and every Monday: **Secrets (gitleaks)**, the fifth required check, **npm audit (production)**, which fails on a high or critical advisory, and **CodeQL** for the JavaScript files and the workflows (not the `.astro` files, which it does not read), with its findings under Security, Code scanning. On pull requests, **Dependency review** also fails when the change brings in a dependency, for production or development, with a high or critical advisory. Actions are pinned to a full commit SHA, and Dependabot keeps the pins up to date.
 - ESLint and Prettier run on staged files before every commit (Husky and lint-staged). Commit messages follow [Conventional Commits](https://www.conventionalcommits.org) with the Linear ticket as the scope, for example `feat(REL-18): add service cards`.
 
 ## Deployment
@@ -191,7 +191,7 @@ The site is deployed on Cloudflare Workers (free plan) from this repository with
 
 - Merging to `main` builds with `npm run build` and deploys with `npx wrangler deploy`. Other branches run `npx wrangler versions upload` and get a preview URL.
 - The Worker is named `holistic-spa-landing-page` (`wrangler.jsonc`); the name must match the Worker in the Cloudflare dashboard.
-- Security headers are in `public/_headers`; the 404 page, which the Worker renders, takes the same ones from `src/utils/securityHeaders.js` (a test keeps them equal). Redirects for the old `.html` addresses are in `astro.config.mjs`, those for a wrong trailing slash in `public/_redirects` (add one for each new page), and the redirect from the apex domain to `www` is a Cloudflare Redirect Rule.
+- Security headers are in `public/_headers`; the 404 page, which the Worker renders, takes the same ones from `src/utils/securityHeaders.js` (a test keeps them equal). Redirects for the old `.html` addresses are in `astro.config.mjs`, those for a wrong trailing slash in `public/_redirects` (add one for each new page), and the redirects from the apex domain to `www` are two Cloudflare Redirect Rules: `apex to www` (`https`) and `apex http to www` (`http`).
 - Set the build variables in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets), then trigger a new build.
 - Production address, redirects from the old address and Google Search Console are covered by the launch ticket (REL-26); the move from Vercel is REL-54.
 
