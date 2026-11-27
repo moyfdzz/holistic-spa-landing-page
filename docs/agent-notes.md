@@ -54,6 +54,7 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 ## Traps of the code
 
 - **A `client:load` island is plain HTML until React arrives.** What the visitor types or focuses before that fires no React handler, and the next render writes the initial state over controlled fields. Read the page in the mount effect (`readEarlyValues` in `ContactForm.jsx`) and test it by holding the island script back (`tests/e2e/analytics.spec.js`). The order of two scripts is not guaranteed either: report events with `track`, which keeps them until the tracker is ready.
+- **Clerk without its browser script.** The server must pass on the `Set-Cookie` headers of the request state (production sends them with no redirect, development with one, so development hides a mistake). Cookies also exist with a suffixed name and for the whole site, and a session token stays valid until it expires even after the session is revoked, so the guard asks Clerk. Test cookie behaviour with the real library (`sign-out.clerk.test.js`), not only with fakes.
 
 ## Reporting
 

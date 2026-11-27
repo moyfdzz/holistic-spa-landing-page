@@ -4,8 +4,9 @@
  * refusal. The Clerk calls are injected, so the rules can be tested without Clerk.
  * @module server/admin/guard
  */
+import { describeError } from "../errors.js";
 import { isAdminEmail } from "./allowlist.js";
-import { signedOutResponse } from "./sign-out.js";
+import { clearedCookies, signedOutResponse } from "./sign-out.js";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const SIGN_OUT_PATH = "/api/admin/sign-out";
@@ -13,7 +14,7 @@ const SIGN_OUT_PATH = "/api/admin/sign-out";
 /**
  * @typedef {object} AuthState
  * @property {"signed-in" | "signed-out" | "handshake"} status - What Clerk found.
- * @property {Headers} headers - Headers Clerk wants on the answer (a handshake redirect).
+ * @property {Headers} headers - Headers Clerk wants on the answer: a handshake redirect, or cookies to set or remove.
  * @property {() => { userId: string | null, sessionId: string | null }} toAuth - The session, if any.
  */
 
@@ -22,12 +23,13 @@ const SIGN_OUT_PATH = "/api/admin/sign-out";
  * @property {(request: Request) => Promise<AuthState>} authenticate - Asks Clerk about the request.
  * @property {(returnUrl: string) => string} signInUrl - Where to send a visitor who is signed out.
  * @property {(userId: string) => Promise<string | null>} getVerifiedEmail - The verified primary email of a user.
+ * @property {(sessionId: string) => Promise<boolean>} isSessionActive - Whether Clerk still holds the session open. A token stays valid until it expires, even after signing out.
  * @property {string[]} allowedEmails - The allowlist.
  * @property {(request: Request) => Promise<{ userId: string, sessionId: string } | null>} [readExpiredSession] - The session of a token that has just expired (Clerk tokens last about a minute and cannot be renewed on a POST), so signing out can still end it.
  */
 
 /**
- * @typedef {{ allow: true, userId: string, sessionId: string | null } | { allow: false, response: Response }} GuardResult
+ * @typedef {{ allow: true, userId: string, sessionId: string | null, cookies: string[] } | { allow: false, response: Response }} GuardResult
  */
 
 /**
@@ -103,6 +105,32 @@ function forbiddenPage() {
 }
 
 /**
+ * Adds cookies to an answer.
+ * @param {Response} response - A response built here.
+ * @param {string[]} cookies - `Set-Cookie` lines.
+ * @returns {Response} The same response.
+ */
+function withCookies(response, cookies) {
+  for (const line of cookies) response.headers.append("Set-Cookie", line);
+  return response;
+}
+
+/**
+ * Answers a visitor who has no session: the API says so, a page goes to sign in.
+ * @param {Request} request - The request.
+ * @param {GuardDeps} deps - What the guard needs from outside.
+ * @param {boolean} api - True for `/api/admin`.
+ * @returns {Response} The refusal.
+ */
+function askToSignIn(request, deps, api) {
+  if (api) return refuse(401, "Unauthorized", true);
+  return new Response(null, {
+    status: 302,
+    headers: { Location: deps.signInUrl(request.url) },
+  });
+}
+
+/**
  * Decides what to do with a request to the admin area.
  * @param {Request} request - The request.
  * @param {GuardDeps} deps - What the guard needs from outside.
@@ -135,49 +163,64 @@ export async function guardAdminRequest(request, deps) {
   }
 
   const auth = state.status === "signed-in" ? state.toAuth() : null;
-  if (!auth?.userId) {
+
+  // Any signed-in account may end its own session, allowed or not. Clerk's cookies are not
+  // passed on here: they could give back the session that is being closed.
+  if (request.method === "POST" && url.pathname === SIGN_OUT_PATH) {
+    if (auth?.userId) {
+      const { userId, sessionId } = auth;
+      return { allow: true, userId, sessionId, cookies: [] };
+    }
     // Signing out must work even when the short-lived token has expired: end the session if
     // it can be read, and clear the cookies in any case.
-    if (request.method === "POST" && url.pathname === SIGN_OUT_PATH) {
-      /** @type {{ userId: string, sessionId: string } | null} */
-      let expired = null;
-      try {
-        expired = (await deps.readExpiredSession?.(request)) ?? null;
-      } catch {
-        expired = null;
-      }
-      if (expired) return { allow: true, ...expired };
-      return { allow: false, response: signedOutResponse() };
+    /** @type {{ userId: string, sessionId: string } | null} */
+    let expired = null;
+    try {
+      expired = (await deps.readExpiredSession?.(request)) ?? null;
+    } catch {
+      expired = null;
     }
-    if (api)
-      return { allow: false, response: refuse(401, "Unauthorized", true) };
-    return {
+    if (expired) return { allow: true, ...expired, cookies: [] };
+    return { allow: false, response: signedOutResponse(request) };
+  }
+
+  // Without a redirect (as in production), this is the only way these cookies reach the browser.
+  const cookies = state.headers.getSetCookie();
+  /**
+   * @param {Response} response - A refusal.
+   * @returns {GuardResult} The refusal, carrying Clerk's cookies.
+   */
+  const deny = (response) =>
+    /** @type {const} */ ({
       allow: false,
-      response: new Response(null, {
-        status: 302,
-        headers: { Location: deps.signInUrl(request.url) },
-      }),
-    };
-  }
+      response: withCookies(response, cookies),
+    });
 
-  // Any signed-in account may end its own session, allowed or not.
-  if (request.method === "POST" && url.pathname === SIGN_OUT_PATH) {
-    return { allow: true, userId: auth.userId, sessionId: auth.sessionId };
-  }
+  if (!auth?.userId) return deny(askToSignIn(request, deps, api));
 
+  let active = false;
   let email = null;
   try {
-    email = await deps.getVerifiedEmail(auth.userId);
-  } catch {
-    return { allow: false, response: refuse(401, "Unauthorized", api) };
+    active = !!auth.sessionId && (await deps.isSessionActive(auth.sessionId));
+    if (active) email = await deps.getVerifiedEmail(auth.userId);
+  } catch (error) {
+    console.error("admin session check failed:", describeError(error));
+    return deny(refuse(401, "Unauthorized", api));
   }
-  if (!isAdminEmail(deps.allowedEmails, email)) {
+  if (!active) {
     return {
       allow: false,
-      response: api ? refuse(403, "Forbidden", true) : forbiddenPage(),
+      response: withCookies(
+        askToSignIn(request, deps, api),
+        clearedCookies(request),
+      ),
     };
   }
-  return { allow: true, userId: auth.userId, sessionId: auth.sessionId };
+  if (!isAdminEmail(deps.allowedEmails, email)) {
+    return deny(api ? refuse(403, "Forbidden", true) : forbiddenPage());
+  }
+  const { userId, sessionId } = auth;
+  return { allow: true, userId, sessionId, cookies };
 }
 
 /**
