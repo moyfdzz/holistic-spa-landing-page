@@ -73,11 +73,11 @@ test.describe("admin area", () => {
       const response = await request.get(`${baseURL}${path}`, {
         maxRedirects: 0,
       });
-      // 400: Astro refuses an address that was encoded more than once.
-      expect([302, 307, 400, 401, 403, 404, 503], path).toContain(
-        response.status(),
-      );
+      expect([302, 307, 401, 403, 404, 503], path).toContain(response.status());
       const body = await response.text();
+      // That exact text is the second check of a page or endpoint: seeing it would mean the
+      // middleware did not recognise the address.
+      expect(body, path).not.toBe("Unauthorized");
       expect(body, path).not.toContain("Administración");
       expect(body, path).not.toContain("visitors");
       expect(response.headers()["content-type"] ?? "", path).not.toContain(

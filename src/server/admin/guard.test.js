@@ -8,13 +8,15 @@ import {
 } from "./guard.js";
 
 /**
- * Runs the guard with the path Astro would read from the request.
+ * Runs the guard for a request written the usual way, where the path names the route.
  * @param {Request} request - The request.
  * @param {import("./guard.js").GuardDeps} dependencies - What the guard needs.
  * @returns {ReturnType<typeof guard>} The result.
  */
-const guardAdminRequest = (request, dependencies) =>
-  guard(request, dependencies, new URL(request.url).pathname);
+const guardAdminRequest = (request, dependencies) => {
+  const { pathname } = new URL(request.url);
+  return guard(request, dependencies, { pathname, routePattern: pathname });
+};
 
 /**
  * Builds the dependencies with fakes.
@@ -375,7 +377,7 @@ describe("a request written another way", () => {
     const result = await guard(
       new Request("https://www.example.com//api/admin/thing"),
       signedOut(),
-      "/api/admin/thing",
+      { pathname: "/api/admin/thing", routePattern: "/404" },
     );
     if (result.allow) throw new Error("must not allow");
     expect(result.response.status).toBe(401);
@@ -384,16 +386,34 @@ describe("a request written another way", () => {
     );
   });
 
+  const post = (/** @type {string} */ path) =>
+    new Request(`https://www.example.com${path}`, {
+      method: "POST",
+      headers: { origin: "https://www.example.com" },
+    });
+
   it("still lets any account sign out", async () => {
     const result = await guard(
-      new Request("https://www.example.com/api//admin/sign-out", {
-        method: "POST",
-        headers: { origin: "https://www.example.com" },
-      }),
+      post("/api//admin/sign-out"),
       deps({ email: "intruso@example.com" }),
-      "/api/admin/sign-out",
+      {
+        pathname: "/api/admin/sign-out",
+        routePattern: "/api/admin/sign-out",
+      },
     );
     expect(result.allow).toBe(true);
+  });
+
+  it("gives the sign-out exception to that endpoint only", async () => {
+    const result = await guard(
+      post("/api/admin/sign-out"),
+      deps({ email: "intruso@example.com" }),
+      {
+        pathname: "/api/admin/sign-out",
+        routePattern: "/api/admin/[...rest]",
+      },
+    );
+    expect(result.allow).toBe(false);
   });
 });
 

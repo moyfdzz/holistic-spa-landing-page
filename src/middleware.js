@@ -26,9 +26,11 @@ function withAdminHeaders(response) {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { pathname } = context.url;
-  const { routePattern } = context;
-  if (!isAdminRequest({ pathname, routePattern })) return next();
+  const target = {
+    pathname: context.url.pathname,
+    routePattern: context.routePattern,
+  };
+  if (!isAdminRequest(target)) return next();
 
   const read = readAdminConfig({
     secretKey: /** @type {string | undefined} */ (env.CLERK_SECRET_KEY),
@@ -44,7 +46,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   try {
     const deps = createAdminDeps(read.config);
-    const result = await guardAdminRequest(context.request, deps, pathname);
+    const result = await guardAdminRequest(context.request, deps, target);
     if (!result.allow) return withAdminHeaders(result.response);
     context.locals.admin = {
       userId: result.userId,
