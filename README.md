@@ -82,7 +82,7 @@ The two Clerk keys must come from the same instance: development (`pk_test_`, `s
 
 ## Database
 
-Postgres on Neon, accessed with Drizzle (see [ADR-002](docs/adr/002-database-postgres-drizzle.md)). The public pages are still static; only `src/pages/api/**` routes run on demand.
+Postgres on Neon, accessed with Drizzle (see [ADR-002](docs/adr/002-database-postgres-drizzle.md)). The public pages are still static; only the `/admin` pages and the `src/pages/api/**` routes run on demand.
 
 - **Code:** `src/server/` is server-only (`env.js` validates the variables with Zod and fails with the variable name only; `db/schema.js` is the schema; `db/client.js` creates the client per request). ESLint blocks importing it from `src/islands/` and `src/scripts/`.
 - **Change the schema:** edit `src/server/db/schema.js`, run `npm run db:generate`, review the SQL in `drizzle/` and commit it.

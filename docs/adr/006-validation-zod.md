@@ -11,7 +11,7 @@ The project is JavaScript with JSDoc, so there are no compile-time types for dat
 
 ## Decision
 
-- Use Zod to parse every value that crosses a boundary: environment variables at startup, request bodies, answers of outside services and admin forms.
+- Use Zod to parse every value that crosses a boundary: environment variables at startup, request bodies, the Google key file, Search Console answers and admin forms.
 - Schemas live next to the code that owns the boundary, and JSDoc types are derived from them (`z.infer`) so there is one definition.
 - A failed parse is a handled outcome (a 400 response, a logged error with no personal data), never an exception that leaks details.
 

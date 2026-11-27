@@ -1,6 +1,6 @@
 # Architecture decision records
 
-Each file records one decision: what was decided, why, and what was rejected. They are short on purpose. When a decision changes, write a new record that replaces the old one and mark the old one as `Superseded`, instead of editing history. A decision dropped with nothing to replace it, before anything was built, is marked `Rejected` and kept. A record may be edited to remove parts that were dropped and never built; an `Updated` line says what changed and when.
+Each file records one decision: what was decided, why, and what was rejected. They are short on purpose. When a decision changes, write a new record that replaces the old one and mark the old one as `Superseded`, instead of editing history. A decision dropped with nothing to replace it, before anything was built, is marked `Rejected` and kept. When the owner approves it in a ticket, a record may instead be edited in place, to remove parts that were dropped and never built or to change one point of a decision that otherwise stands; an `Updated` line says what changed and when.
 
 | ADR                                      | Decision                                               | Status   |
 | ---------------------------------------- | ------------------------------------------------------ | -------- |

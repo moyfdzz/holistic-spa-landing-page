@@ -2,7 +2,7 @@
 
 One Astro project, deployed as one Cloudflare Worker. Public pages are static files; the server parts are on-demand routes in the same Worker. Decisions and rejected alternatives are in [adr/](adr/README.md).
 
-The public site, the analytics collector, its daily job and the `/admin` area are built and deployed. The Google data is not complete: the Search Console import needs its settings in production, the Business Profile import is not built (REL-51, see [google-data.md](google-data.md)) and the dashboard does not show Google data yet (REL-52). Clients contact the business on WhatsApp, by phone, by email or with the contact form; there is no website chat.
+The public site, the analytics collector, its daily job and the `/admin` area are built and deployed. The Google data is not complete: the Search Console import needs its migration and its settings in production, the Business Profile import is not built (REL-51, see [google-data.md](google-data.md)) and the dashboard does not show Google data yet (REL-52). Clients contact the business on WhatsApp, by phone, by email or with the contact form; there is no website chat.
 
 ## Analytics (REL-49, REL-50, REL-51, REL-52)
 
