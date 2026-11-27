@@ -6,11 +6,11 @@ on:
   push:
     branches: [main]
   schedule:
-    # Mondays at 05:17 UTC, so new advisories reach code that nobody is changing.
+    # Mondays at 05:17 UTC, so new advisories and queries reach code that nobody is changing.
     - cron: "17 5 * * 1"
   workflow_dispatch:
 
-# Least privilege: the jobs only need to read the repository.
+# Least privilege: a job reads the repository, unless it declares more.
 permissions:
   contents: read
 
@@ -66,3 +66,49 @@ jobs:
       # npm audit reads the lockfile, so nothing is installed and no package code runs here.
       - name: Fail on a high or critical advisory
         run: npm audit --omit=dev --audit-level=high
+
+  # Findings are reported as code scanning alerts, in the Security tab of the repository.
+  codeql:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # A job's permissions replace the ones above: contents to read the code, and
+    # security-events to upload the results.
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      # One language failing must not cancel the other.
+      fail-fast: false
+      matrix:
+        # The site's code, and the workflows of this folder.
+        language: [javascript-typescript, actions]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Neither language is compiled, so nothing is installed or built.
+      - uses: github/codeql-action/init@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - uses: github/codeql-action/analyze@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
+        with:
+          category: /language:${{ matrix.language }}
+
+  # Only a pull request has a change to review: it compares its dependencies with its base.
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
+        with:
+          fail-on-severity: high
+          # The default is runtime only. Development tools run in CI and build the site.
+          fail-on-scopes: runtime, development, unknown
+          license-check: false

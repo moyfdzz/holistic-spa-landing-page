@@ -90,6 +90,6 @@ Dependabot opens weekly pull requests for npm packages and GitHub Actions. Revie
 These are set once in GitHub (Settings, Branches, branch protection rule or ruleset for `main`):
 
 - Require a pull request before merging (0 required approvals is fine for a solo project)
-- Require status checks to pass: **Quality checks**, **End-to-end tests**, **Lighthouse**, **PR title**, **Secrets (gitleaks)**. The ruleset matches them by job name, so renaming a job needs the same change there. **npm audit (production)** stays optional: an advisory can appear on any day and must not block an urgent fix
+- Require status checks to pass: **Quality checks**, **End-to-end tests**, **Lighthouse**, **PR title**, **Secrets (gitleaks)**. The ruleset matches them by job name, so renaming a job needs the same change there. **npm audit (production)** stays optional: an advisory can appear on any day and must not block an urgent fix. **CodeQL (javascript-typescript)**, **CodeQL (actions)** and **Dependency review** are not required either
 - Block force pushes and branch deletion
 - Allow squash merging only, and automatically delete head branches after merge (Settings, General)

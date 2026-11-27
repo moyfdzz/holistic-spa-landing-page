@@ -47,7 +47,7 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 ## CI
 
 - **The repository is public** (checked 2026-11-26): treat every commit, log, artifact and PR text as readable by anyone.
-- The ruleset of `main` requires checks **by job name** (**Quality checks**, **End-to-end tests**, **Lighthouse**, **PR title**): renaming or removing a job blocks every merge until the owner changes the ruleset.
+- The ruleset of `main` requires checks **by job name** (**Quality checks**, **End-to-end tests**, **Lighthouse**, **PR title**, **Secrets (gitleaks)**): renaming or removing a job blocks every merge until the owner changes the ruleset.
 - Actions stay pinned to a full commit SHA with the version in a comment. The version and checksum of gitleaks in `security.yml` are updated by hand.
 - GitHub disables the scheduled workflows of a public repository after 60 days without activity; the owner re-enables them in the Actions tab.
 - **npm audit (production)** can turn red with no change of ours. It is not required: read the advisory, and fix it in its own commit with the smallest update that clears it. `--omit=dev` still covers `wrangler`, because `@astrojs/cloudflare` depends on it.
@@ -58,6 +58,7 @@ The owner speaks Spanish: reply in Spanish, in simple language, and keep code, c
 - **A `client:load` island is plain HTML until React arrives.** What the visitor types or focuses before that fires no React handler, and the next render writes the initial state over controlled fields. Read the page in the mount effect (`readEarlyValues` in `ContactForm.jsx`) and test it by holding the island script back (`tests/e2e/analytics.spec.js`). The order of two scripts is not guaranteed either: report events with `track`, which keeps them until the tracker is ready.
 - **Clerk without its browser script.** The server must pass on the `Set-Cookie` headers of the request state (production sends them with no redirect, development with one, so development hides a mistake). Cookies also exist with a suffixed name and for the whole site, and a session token stays valid until it expires even after the session is revoked, so the guard asks Clerk. Test cookie behaviour with the real library (`sign-out.clerk.test.js`), not only with fakes.
 - **`public/_headers` covers static files only.** A public page that the Worker renders (the 404) sets `securityHeaders` itself.
+- **Reading the Workers logs** (Observability): search the request address in the free-text bar (for example `%61dmin`). Filtering `$workers.event.request.path` for `%` returned nothing although such requests were there. Try the search first on a request you made yourself.
 
 ## Reporting
 
