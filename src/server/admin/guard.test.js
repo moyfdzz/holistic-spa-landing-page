@@ -11,21 +11,27 @@ import {
  * @param {"signed-in" | "signed-out" | "handshake"} [options.status] - Session status.
  * @param {string | null} [options.email] - Verified email of the user.
  * @param {boolean} [options.throws] - Make the authentication fail.
+ * @param {boolean} [options.active] - Whether Clerk still holds the session open.
+ * @param {string[]} [options.cookies] - Cookies Clerk asks to send to the browser.
  * @returns {import("./guard.js").GuardDeps} The dependencies.
  */
 function deps({
   status = "signed-in",
   email = "dueno@example.com",
   throws = false,
+  active = true,
+  cookies = [],
 } = {}) {
   return {
     allowedEmails: ["dueno@example.com"],
     signInUrl: (returnUrl) =>
       `https://accounts.example.dev/sign-in?redirect_url=${encodeURIComponent(returnUrl)}`,
     getVerifiedEmail: async () => email,
+    isSessionActive: async () => active,
     authenticate: async () => {
       if (throws) throw new Error("clerk down");
       const headers = new Headers();
+      for (const cookie of cookies) headers.append("set-cookie", cookie);
       if (status === "handshake")
         headers.set("location", "https://clerk.example.dev/handshake");
       return {
@@ -52,6 +58,99 @@ describe("guardAdminRequest", () => {
       allow: true,
       userId: "user_1",
       sessionId: "sess_1",
+      cookies: [],
+    });
+  });
+
+  describe("a session that was closed", () => {
+    const stale = () =>
+      new Request("https://www.example.com/admin", {
+        headers: { cookie: "__session_Ab12Cd34=token" },
+      });
+
+    it("does not open the door, even with a token that is still valid", async () => {
+      const result = await guardAdminRequest(
+        stale(),
+        deps({ active: false, cookies: ["__session=back; Path=/"] }),
+      );
+      if (result.allow) throw new Error("must not allow");
+      expect(result.response.status).toBe(302);
+      const cookies = result.response.headers.getSetCookie();
+      expect(cookies.some((c) => c.startsWith("__session_Ab12Cd34=;"))).toBe(
+        true,
+      );
+      expect(cookies.every((c) => c.includes("Max-Age=0"))).toBe(true);
+    });
+
+    it("answers 401 to the API", async () => {
+      const result = await guardAdminRequest(api(), deps({ active: false }));
+      if (result.allow) throw new Error("must not allow");
+      expect(result.response.status).toBe(401);
+    });
+
+    it("fails closed when Clerk cannot tell, or there is no session id", async () => {
+      const unknown = {
+        ...deps(),
+        isSessionActive: async () => {
+          throw new Error("clerk down");
+        },
+      };
+      const noId = {
+        ...deps(),
+        authenticate: async () => ({
+          status: /** @type {const} */ ("signed-in"),
+          headers: new Headers(),
+          toAuth: () => ({ userId: "user_1", sessionId: null }),
+        }),
+      };
+      for (const dependencies of [unknown, noId]) {
+        const result = await guardAdminRequest(page(), dependencies);
+        expect(result.allow).toBe(false);
+      }
+    });
+  });
+
+  describe("cookies Clerk asks for", () => {
+    const cookies = ["__session=new; Path=/", "__clerk_handshake=; Max-Age=0"];
+
+    it("come back with a request that is let in", async () => {
+      const result = await guardAdminRequest(page(), deps({ cookies }));
+      if (!result.allow) throw new Error("must allow");
+      expect(result.cookies).toEqual(cookies);
+    });
+
+    it("come back with a refusal", async () => {
+      for (const options of [
+        { status: /** @type {const} */ ("signed-out") },
+        { email: "intruso@example.com" },
+      ]) {
+        const result = await guardAdminRequest(
+          page(),
+          deps({ ...options, cookies }),
+        );
+        if (result.allow) throw new Error("must not allow");
+        expect(result.response.headers.getSetCookie()).toEqual(cookies);
+      }
+    });
+
+    it("are left out of a sign-out, so the session does not come back", async () => {
+      const request = new Request(
+        "https://www.example.com/api/admin/sign-out",
+        { method: "POST", headers: { origin: "https://www.example.com" } },
+      );
+      const signedIn = await guardAdminRequest(request, deps({ cookies }));
+      if (!signedIn.allow) throw new Error("must allow");
+      expect(signedIn.cookies).toEqual([]);
+      const signedOut = await guardAdminRequest(
+        request,
+        deps({ status: "signed-out", cookies }),
+      );
+      if (signedOut.allow) throw new Error("must not allow");
+      expect(
+        signedOut.response.headers
+          .getSetCookie()
+          .every((c) => c.includes("Max-Age=0")),
+      ).toBe(true);
     });
   });
 
@@ -164,6 +263,7 @@ describe("guardAdminRequest", () => {
         allow: true,
         userId: "user_1",
         sessionId: "sess_1",
+        cookies: [],
       });
     });
 

@@ -88,6 +88,11 @@ export function createAdminDeps(config) {
         redirectAdapter: (url) => url,
         baseUrl: new URL(returnUrl).origin,
       }).redirectToSignIn({ returnBackUrl: returnUrl }),
+    // Asked every time, never cached: signing out has to close the door at once.
+    async isSessionActive(sessionId) {
+      const session = await clerk.sessions.getSession(sessionId);
+      return session.status === "active";
+    },
     async getVerifiedEmail(userId) {
       const cached = emailCache.get(userId);
       if (cached && cached.until > Date.now()) return cached.email;

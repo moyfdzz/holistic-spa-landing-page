@@ -58,7 +58,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
       sessionId: result.sessionId,
     };
     context.locals.adminClerk = deps.clerk;
-    return withAdminHeaders(await next());
+    const response = withAdminHeaders(await next());
+    for (const cookie of result.cookies) {
+      response.headers.append("Set-Cookie", cookie);
+    }
+    return response;
   } catch (error) {
     console.error("admin guard failed:", describeError(error));
     return withAdminHeaders(new Response("Unauthorized", { status: 401 }));
