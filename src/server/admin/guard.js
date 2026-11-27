@@ -4,6 +4,7 @@
  * refusal. The Clerk calls are injected, so the rules can be tested without Clerk.
  * @module server/admin/guard
  */
+import { describeError } from "../errors.js";
 import { isAdminEmail } from "./allowlist.js";
 import { clearedCookies, signedOutResponse } from "./sign-out.js";
 
@@ -202,7 +203,8 @@ export async function guardAdminRequest(request, deps) {
   try {
     active = !!auth.sessionId && (await deps.isSessionActive(auth.sessionId));
     if (active) email = await deps.getVerifiedEmail(auth.userId);
-  } catch {
+  } catch (error) {
+    console.error("admin session check failed:", describeError(error));
     return deny(refuse(401, "Unauthorized", api));
   }
   if (!active) {

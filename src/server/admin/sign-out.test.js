@@ -1,5 +1,14 @@
-import { describe, expect, it } from "vitest";
-import { readCookie, signedOutResponse } from "./sign-out.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  endSession,
+  readSessionTokens,
+  signedOutResponse,
+  signOutFailedResponse,
+} from "./sign-out.js";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("signedOutResponse", () => {
   /**
@@ -55,35 +64,78 @@ describe("signedOutResponse", () => {
       expect(cleared(url).some((c) => c.includes("Domain="))).toBe(false);
     }
   });
+
+  it("names the domain of a site whose name ends in a number", () => {
+    expect(
+      cleared("https://www.spa24.com/x").some((c) =>
+        c.endsWith("; Domain=spa24.com"),
+      ),
+    ).toBe(true);
+  });
 });
 
-describe("readCookie", () => {
+describe("endSession", () => {
+  const down = async () => {
+    throw new Error("clerk down");
+  };
+
+  it("is done when Clerk revokes the session", async () => {
+    const sessions = { revokeSession: async () => {}, getSession: down };
+    expect(await endSession(sessions, "sess_1")).toBe(true);
+  });
+
+  it("is done when the session had already ended", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const sessions = {
+      revokeSession: down,
+      getSession: async () => ({ status: "revoked" }),
+    };
+    expect(await endSession(sessions, "sess_1")).toBe(true);
+  });
+
+  it("is not done while the session is open, or when Clerk cannot tell", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    for (const getSession of [async () => ({ status: "active" }), down]) {
+      const sessions = { revokeSession: down, getSession };
+      expect(await endSession(sessions, "sess_1")).toBe(false);
+    }
+  });
+});
+
+describe("signOutFailedResponse", () => {
+  it("says so, offers to try again and keeps the cookies", async () => {
+    const response = signOutFailedResponse();
+    expect(response.status).toBe(502);
+    expect(response.headers.getSetCookie()).toEqual([]);
+    expect(await response.text()).toContain('action="/api/admin/sign-out"');
+  });
+});
+
+describe("readSessionTokens", () => {
   /**
    * @param {string} cookie - The Cookie header.
-   * @returns {Request} A request carrying it.
+   * @returns {string[]} The tokens found in it.
    */
-  const request = (cookie) =>
-    new Request("https://www.example.com/", {
-      headers: cookie ? { cookie } : {},
-    });
+  const tokens = (cookie) =>
+    readSessionTokens(
+      new Request("https://www.example.com/", {
+        headers: cookie ? { cookie } : {},
+      }),
+    );
 
-  it("finds a cookie among several", () => {
+  it("reads the plain and the suffixed cookie, once each value", () => {
     expect(
-      readCookie(request("a=1; __session=abc.def; b=2"), "__session"),
-    ).toBe("abc.def");
+      tokens("a=1; __session=abc; __session_Ab-1_d34=def; __session_x=abc"),
+    ).toEqual(["abc", "def"]);
   });
 
   it("keeps an equals sign inside the value", () => {
-    expect(readCookie(request("__session=a=b"), "__session")).toBe("a=b");
+    expect(tokens("__session=a=b")).toEqual(["a=b"]);
   });
 
-  it("answers null when the cookie is missing or empty", () => {
-    expect(readCookie(request(""), "__session")).toBeNull();
-    expect(readCookie(request("a=1"), "__session")).toBeNull();
-    expect(readCookie(request("__session="), "__session")).toBeNull();
-  });
-
-  it("does not match a longer name", () => {
-    expect(readCookie(request("x__session=1"), "__session")).toBeNull();
+  it("finds nothing when the cookie is missing, empty or another one", () => {
+    for (const cookie of ["", "a=1", "__session=", "x__session=1"]) {
+      expect(tokens(cookie)).toEqual([]);
+    }
   });
 });

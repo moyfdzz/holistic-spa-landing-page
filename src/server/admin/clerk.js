@@ -6,7 +6,7 @@
 import { createClerkClient, verifyToken } from "@clerk/backend";
 import { createRedirect } from "@clerk/backend/internal";
 import { parseAdminEmails } from "./allowlist.js";
-import { readCookie } from "./sign-out.js";
+import { readSessionTokens } from "./sign-out.js";
 
 /**
  * @typedef {object} AdminConfig
@@ -63,24 +63,25 @@ export function createAdminDeps(config) {
         )
       ),
     async readExpiredSession(request) {
-      const token = readCookie(request, "__session");
-      if (!token) return null;
-      try {
-        // The signature is checked; only the expiry is relaxed.
-        const payload = /** @type {{ sub?: string, sid?: string }} */ (
-          /** @type {unknown} */ (
-            await verifyToken(token, {
-              secretKey: config.secretKey,
-              clockSkewInMs: EXPIRED_TOKEN_GRACE_MS,
-            })
-          )
-        );
-        return payload?.sub && payload?.sid
-          ? { userId: payload.sub, sessionId: payload.sid }
-          : null;
-      } catch {
-        return null;
+      for (const token of readSessionTokens(request)) {
+        try {
+          // The signature is checked; only the expiry is relaxed.
+          const payload = /** @type {{ sub?: string, sid?: string }} */ (
+            /** @type {unknown} */ (
+              await verifyToken(token, {
+                secretKey: config.secretKey,
+                clockSkewInMs: EXPIRED_TOKEN_GRACE_MS,
+              })
+            )
+          );
+          if (payload?.sub && payload?.sid) {
+            return { userId: payload.sub, sessionId: payload.sid };
+          }
+        } catch {
+          // Not a token of ours, or too old: try the next one.
+        }
       }
+      return null;
     },
     signInUrl: (returnUrl) =>
       createRedirect({
