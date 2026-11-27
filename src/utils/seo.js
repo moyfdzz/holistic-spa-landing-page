@@ -2,6 +2,7 @@
  * Helpers for search engine and social sharing data.
  * @module utils/seo
  */
+import { defaultLang, getLocalizedPath, languages } from "../i18n/utils.js";
 
 /** Towns of the Monterrey metropolitan area where the service is offered. */
 export const serviceAreaCities = [
@@ -44,6 +45,23 @@ export function publicPath(path) {
 }
 
 /**
+ * Lists the addresses of a page in every language, plus the one for everybody else
+ * (`x-default`, the Spanish page). The page head and the sitemap both use this list,
+ * so search engines read the same in the two places.
+ * @param {string} path - Public path of the page, in either language.
+ * @param {string} base - The site address, for example `https://example.com`.
+ * @returns {{ lang: import("../i18n/utils.js").Lang | "x-default", url: string }[]} One entry per language, then `x-default`.
+ */
+export function languageAlternates(path, base) {
+  const addressIn = (/** @type {import("../i18n/utils.js").Lang} */ lang) =>
+    absoluteUrl(getLocalizedPath(path, lang), base);
+  return [
+    ...languages.map((lang) => ({ lang, url: addressIn(lang) })),
+    { lang: /** @type {const} */ ("x-default"), url: addressIn(defaultLang) },
+  ];
+}
+
+/**
  * Builds the structured data (schema.org) that describes the business for Google.
  * @param {object} options - What to describe.
  * @param {"es" | "en"} options.lang - Language of the texts.
@@ -60,7 +78,6 @@ export function buildLocalBusiness({ lang, site, services, description }) {
     name: site.name,
     url: site.url,
     description,
-    inLanguage: lang,
     logo: absoluteUrl("/icon-512.png", site.url),
     image: absoluteUrl("/og-image.jpg", site.url),
     telephone: site.phone,

@@ -22,6 +22,7 @@ The visitor id is `hash(salt of the day + IP + user agent + site host)`. The sal
 It does nothing when:
 
 - the page is not on the production host (`<meta name="analytics-host">`), such as previews and local runs;
+- the page is the 404 page, which has no `analytics-host` tag, so robots trying random addresses are not counted;
 - the browser sends Do Not Track or Global Privacy Control;
 - the visitor, normally the owner, opted out: open any page of the site with `?notrack` to stop measuring that browser, and with `?notrack=0` to start again. This keeps a flag in `localStorage` (not a cookie) and nothing else is stored in the browser.
 

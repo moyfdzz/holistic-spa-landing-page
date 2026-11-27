@@ -24,9 +24,19 @@ interface Props {
   description: string;
   /** Structured data (JSON-LD) objects for the page. */
   jsonLd?: Record<string, unknown>[];
+  /**
+   * The page answers an address that does not exist: it stays out of search results,
+   * its visits are not counted and the language links go to the home pages.
+   */
+  notFound?: boolean;
 }
 
-const { title = site.name, description, jsonLd } = Astro.props;
+const {
+  title = site.name,
+  description,
+  jsonLd,
+  notFound = false,
+} = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 ---
 
@@ -51,9 +61,18 @@ const lang = getLangFromUrl(Astro.url);
       />
     )}
     <meta name="theme-color" content="#475d42" />
-    <meta name="analytics-host" content={new URL(site.url).hostname} />
+    {/* Without this the tracker sends nothing: robots trying random addresses
+        would otherwise fill the statistics. */}
+    {!notFound && (
+      <meta name="analytics-host" content={new URL(site.url).hostname} />
+    )}
     <meta name="application-name" content={site.shortName} />
-    <Seo title={title} description={description} jsonLd={jsonLd} />
+    <Seo
+      title={title}
+      description={description}
+      jsonLd={jsonLd}
+      indexable={!notFound}
+    />
 
     <!-- Lets the CSS hide "reveal on scroll" content only when scripts run -->
     <script is:inline>
@@ -61,7 +80,7 @@ const lang = getLangFromUrl(Astro.url);
     </script>
   </head>
   <body>
-    <Header />
+    <Header languagePath={notFound ? "/" : undefined} />
     <main id="main">
       <slot />
     </main>

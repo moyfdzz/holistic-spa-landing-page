@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+import Section from "../components/Section.astro";
+import { site } from "../config/site.js";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  useTranslations,
+} from "../i18n/utils.js";
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+  title={`${t("notFound.title")} | ${site.name}`}
+  description={t("notFound.lead")}
+  notFound
+>
+  <Section class="not-found" labelledby="not-found-title">
+    <div class="not-found__content">
+      <h1 id="not-found-title" class="section-title">
+        {t("notFound.title")}
+      </h1>
+      <p class="section-lead">{t("notFound.lead")}</p>
+      <div class="not-found__actions">
+        <Button href={getLocalizedPath("/", lang)}>{t("notFound.home")}</Button>
+        <Button href={getLocalizedPath("/#services", lang)} variant="secondary">
+          {t("notFound.services")}
+        </Button>
+        <Button href={getLocalizedPath("/contact", lang)} variant="secondary">
+          {t("notFound.contact")}
+        </Button>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .not-found__content {
+    text-align: center;
+  }
+
+  .not-found__content .section-lead {
+    margin: var(--space-3) auto 0;
+  }
+
+  .not-found__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+</style>

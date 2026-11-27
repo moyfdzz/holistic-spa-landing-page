@@ -5,6 +5,7 @@ import cloudflare from "@astrojs/cloudflare";
 import icon from "astro-icon";
 import sitemap from "@astrojs/sitemap";
 import { site } from "./src/config/site.js";
+import { serializeSitemapItem } from "./src/utils/sitemap.js";
 
 // Static output by default; the Cloudflare adapter leaves room for API routes later.
 export default defineConfig({
@@ -32,24 +33,8 @@ export default defineConfig({
     sitemap({
       // The admin area is private: it must not be listed for search engines.
       filter: (page) => !new URL(page).pathname.startsWith("/admin"),
-      i18n: { defaultLocale: "es", locales: { es: "es-MX", en: "en-US" } },
-      // Same addresses as the canonical links: no trailing slash, except the home pages.
-      serialize(item) {
-        const trim = (/** @type {string} */ url) =>
-          // The English home page is served at /en/ (the site is built as en/index.html).
-          url
-            .replace(/\/en\/?$/, "/en/")
-            .replace(/(.)\/$/, (match, char) =>
-              char === "/" || url.endsWith("/en") || url.endsWith("/en/")
-                ? match
-                : char,
-            );
-        item.url = trim(item.url);
-        item.links?.forEach((link) => {
-          link.url = trim(link.url);
-        });
-        return item;
-      },
+      // Same addresses and language alternates as the head of each page.
+      serialize: serializeSitemapItem,
     }),
   ],
   // No sessions are needed yet; this avoids provisioning a KV namespace.

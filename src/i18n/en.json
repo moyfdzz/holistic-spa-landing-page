@@ -1,6 +1,7 @@
 {
   "meta": {
-    "contactTitle": "Contact",
+    "contactTitle": "Book an at-home massage in Monterrey",
+    "shareImageAlt": "Masajes Relax Monterrey: your moment of calm, at home. A massage table in a room with plants.",
     "homeTitle": "At-home massage in Monterrey | Masajes Relax Monterrey",
     "homeDescription": "Relaxing and therapeutic massages and facials at home in Monterrey and its metro area. Book on WhatsApp and enjoy well-being in the comfort of your home.",
     "contactDescription": "Book your at-home massage or facial in Monterrey. Message us on WhatsApp, call us or fill in the form and we'll get back to you as soon as we can.",
@@ -142,6 +143,13 @@
   },
   "privacy": {
     "updated": "Last updated: {date}"
+  },
+  "notFound": {
+    "title": "We can't find this page",
+    "lead": "The link may be mistyped, or the page may no longer exist.",
+    "home": "Go to home",
+    "services": "See services",
+    "contact": "Contact us"
   },
   "testimonials": {
     "title": "What our clients say",

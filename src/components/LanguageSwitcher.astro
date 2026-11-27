@@ -7,9 +7,14 @@ import {
 } from "../i18n/utils.js";
 import { publicPath } from "../utils/seo.js";
 
+interface Props {
+  /** Page the links lead to, in either language. The current page when not given. */
+  path?: string;
+}
+
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const path = publicPath(Astro.url.pathname);
+const { path = publicPath(Astro.url.pathname) } = Astro.props;
 ---
 
 <div class="lang" role="group" aria-label={t("lang.label")}>

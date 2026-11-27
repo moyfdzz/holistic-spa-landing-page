@@ -1,7 +1,16 @@
 ---
 import { site } from "../config/site.js";
-import { getLangFromUrl, getLocalizedPath } from "../i18n/utils.js";
-import { absoluteUrl, publicPath, toSafeJson } from "../utils/seo.js";
+import {
+  getLangFromUrl,
+  getLocalizedPath,
+  useTranslations,
+} from "../i18n/utils.js";
+import {
+  absoluteUrl,
+  languageAlternates,
+  publicPath,
+  toSafeJson,
+} from "../utils/seo.js";
 
 interface Props {
   /** Title of the page, shown in the tab and in search results. */
@@ -12,6 +21,8 @@ interface Props {
   image?: string;
   /** Structured data (JSON-LD) objects to add to the page. */
   jsonLd?: Record<string, unknown>[];
+  /** False keeps the page out of search results and gives it no address of its own. */
+  indexable?: boolean;
 }
 
 const {
@@ -19,21 +30,29 @@ const {
   description,
   image = "/og-image.jpg",
   jsonLd = [],
+  indexable = true,
 } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
 const path = publicPath(Astro.url.pathname);
-const addressIn = (code: "es" | "en") =>
-  absoluteUrl(getLocalizedPath(path, code), site.url);
-const canonical = addressIn(lang);
+const canonical = absoluteUrl(getLocalizedPath(path, lang), site.url);
 const imageUrl = absoluteUrl(image, site.url);
+const imageAlt = t("meta.shareImageAlt");
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
-<link rel="canonical" href={canonical} />
-<link rel="alternate" hreflang="es" href={addressIn("es")} />
-<link rel="alternate" hreflang="en" href={addressIn("en")} />
-<link rel="alternate" hreflang="x-default" href={addressIn("es")} />
+{indexable ? (
+  <>
+    <link rel="canonical" href={canonical} />
+    {languageAlternates(path, site.url).map((alternate) => (
+      <link rel="alternate" hreflang={alternate.lang} href={alternate.url} />
+    ))}
+    <meta property="og:url" content={canonical} />
+  </>
+) : (
+  <meta name="robots" content="noindex" />
+)}
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={site.name} />
@@ -44,14 +63,15 @@ const imageUrl = absoluteUrl(image, site.url);
 />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:url" content={canonical} />
 <meta property="og:image" content={imageUrl} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={imageAlt} />
 
 {jsonLd.map((data) => (
   <script is:inline type="application/ld+json" set:html={toSafeJson(data)} />

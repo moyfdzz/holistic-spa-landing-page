@@ -4,6 +4,7 @@ import { services } from "../data/services.js";
 import {
   absoluteUrl,
   buildLocalBusiness,
+  languageAlternates,
   serviceAreaCities,
   publicPath,
   trimTrailingSlash,
@@ -38,6 +39,28 @@ describe("publicPath", () => {
   });
 });
 
+describe("languageAlternates", () => {
+  const base = "https://example.com";
+
+  it("lists both languages and falls back to Spanish", () => {
+    expect(languageAlternates("/en/contact", base)).toEqual([
+      { lang: "es", url: `${base}/contact` },
+      { lang: "en", url: `${base}/en/contact` },
+      { lang: "x-default", url: `${base}/contact` },
+    ]);
+  });
+
+  it("knows pages whose address changes with the language", () => {
+    expect(
+      languageAlternates("/aviso-de-privacidad", base).map((a) => a.url),
+    ).toEqual([
+      `${base}/aviso-de-privacidad`,
+      `${base}/en/privacy-notice`,
+      `${base}/aviso-de-privacidad`,
+    ]);
+  });
+});
+
 describe("buildLocalBusiness", () => {
   const data = buildLocalBusiness({
     lang: "en",
@@ -60,6 +83,10 @@ describe("buildLocalBusiness", () => {
     ]);
     expect(String(data.logo)).toMatch(/^https:\/\//);
     expect(String(data.image)).toMatch(/^https:\/\//);
+  });
+
+  it("leaves out properties that a business does not have", () => {
+    expect(data).not.toHaveProperty("inLanguage");
   });
 
   it("lists the opening hours of every day", () => {
