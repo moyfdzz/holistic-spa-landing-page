@@ -8,7 +8,7 @@ Guide for Claude Code sessions on this repository: the website of Masajes Relax 
 - JavaScript with JSDoc, type-checked with `checkJs`. No TypeScript files (Astro frontmatter may use TypeScript syntax).
 - Spanish at `/` and English at `/en/`; texts in `src/i18n/`, content in `src/data/`, business facts in `src/config/site.js`.
 - Contact form posts to Web3Forms (`PUBLIC_WEB3FORMS_ACCESS_KEY`).
-- Postgres on Neon with Drizzle and Zod (`src/server/`, migrations in `drizzle/`); the `/admin` pages and the API routes under `src/pages/api/` are on demand (`prerender = false`), everything else is prerendered.
+- Postgres on Neon with Drizzle and Zod (`src/server/`, migrations in `drizzle/`); the `/admin` pages, the API routes under `src/pages/api/` and the 404 page are on demand (`prerender = false`), everything else is prerendered.
 - Clerk signs the owner in to `/admin`, the private area for website and Google statistics (ADR-005).
 
 ## Commands

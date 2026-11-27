@@ -1,6 +1,7 @@
 /**
  * Runs for every request that reaches the Worker. Public pages are served as static files and
- * never get here; only `/admin` and `/api/admin` are guarded, and everything else passes.
+ * never get here, except the 404 page; only `/admin` and `/api/admin` are guarded, and
+ * everything else passes.
  */
 import { env } from "cloudflare:workers";
 import { defineMiddleware } from "astro:middleware";

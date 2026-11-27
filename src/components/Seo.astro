@@ -17,26 +17,19 @@ interface Props {
   title: string;
   /** Short description of the page, shown in search results and when sharing. */
   description: string;
-  /** Share image path (1200 x 630). */
-  image?: string;
   /** Structured data (JSON-LD) objects to add to the page. */
   jsonLd?: Record<string, unknown>[];
   /** False keeps the page out of search results and gives it no address of its own. */
   indexable?: boolean;
 }
 
-const {
-  title,
-  description,
-  image = "/og-image.jpg",
-  jsonLd = [],
-  indexable = true,
-} = Astro.props;
+const { title, description, jsonLd = [], indexable = true } = Astro.props;
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const path = publicPath(Astro.url.pathname);
 const canonical = absoluteUrl(getLocalizedPath(path, lang), site.url);
-const imageUrl = absoluteUrl(image, site.url);
+// The share image (1200 x 630) and the text that describes it.
+const imageUrl = absoluteUrl("/og-image.jpg", site.url);
 const imageAlt = t("meta.shareImageAlt");
 ---
 
