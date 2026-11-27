@@ -2,7 +2,7 @@
 
 Status: Accepted
 Date: 2026-10-29
-Tickets: REL-48, REL-41, REL-52
+Tickets: REL-48, REL-41, REL-52, REL-62
 
 ## Context
 
@@ -10,7 +10,8 @@ The owner needs a private area for analytics, conversations and controls. Buildi
 
 ## Decision
 
-- Use Clerk (`@clerk/astro`) for sign-in.
+- Use Clerk for sign-in, on the server only (`@clerk/backend`): the site loads no Clerk script.
+- The live site uses the production instance and local development uses the development instance; the keys of the two are never mixed.
 - Sign-in is restricted to an allowlist of emails (the owner only for now). Roles for staff can be added later without changing the flow.
 - Every `/admin` page and every `/api/admin` route checks the session on the server; a missing or invalid session returns 401 or redirects. The client never decides access.
 - Clerk keys are secrets; the publishable key is the only one that may be public.
