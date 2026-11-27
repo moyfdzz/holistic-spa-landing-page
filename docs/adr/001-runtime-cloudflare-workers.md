@@ -11,7 +11,7 @@ The site is a static Astro site. The next features (analytics collector, admin a
 
 ## Decision
 
-- Keep one repository and one Astro project. Public pages stay static (prerendered); server code lives in on-demand routes (`export const prerender = false`) served by the same Worker through `@astrojs/cloudflare`.
+- Keep one repository and one Astro project. Public pages stay static (prerendered), except the 404 page, which the Worker renders to answer in the language of the address (REL-61); server code lives in on-demand routes (`export const prerender = false`) served by the same Worker through `@astrojs/cloudflare`.
 - Deploy with Cloudflare Workers Builds from `main` (`npx wrangler deploy`). Other branches get preview URLs (`npx wrangler versions upload`).
 - Configuration is `wrangler.jsonc`; secrets and runtime variables are Worker secrets, build-time `PUBLIC_` variables are build variables (see the README).
 - Security headers for static files are in `public/_headers`; on-demand routes will set theirs in a middleware.

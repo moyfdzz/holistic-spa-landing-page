@@ -8,6 +8,9 @@ const pages = [
   "/en/contact",
   "/aviso-de-privacidad",
   "/en/privacy-notice",
+  // Any address that does not exist shows the 404 page.
+  "/no-existe",
+  "/en/no-such-page",
 ];
 
 const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];

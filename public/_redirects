@@ -1,0 +1,7 @@
+# Cloudflare answers these with a temporary 307 on its own; these make the move permanent.
+# Add a line for every new page. The build appends the redirects of astro.config.mjs.
+/en                    /en/                  301
+/contact/              /contact              301
+/en/contact/           /en/contact           301
+/aviso-de-privacidad/  /aviso-de-privacidad  301
+/en/privacy-notice/    /en/privacy-notice    301

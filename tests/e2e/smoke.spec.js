@@ -47,7 +47,7 @@ test.describe("search engines and sharing", () => {
       .locator('meta[name="description"]')
       .getAttribute("content");
     expect(description?.length).toBeGreaterThan(70);
-    expect(description?.length).toBeLessThanOrEqual(175);
+    expect(description?.length).toBeLessThanOrEqual(155);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       /^https:\/\/.+\/$/,
@@ -61,8 +61,23 @@ test.describe("search engines and sharing", () => {
       "summary_large_image",
     );
 
+    await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute(
+      "content",
+      /Camilla de masaje/,
+    );
+
+    await page.goto("/contact");
+    await expect(page).toHaveTitle(
+      "Agenda tu masaje a domicilio en Monterrey | Masajes Relax",
+    );
+
     await page.goto("/en/contact");
-    await expect(page).toHaveTitle(/Contact \| Masajes Relax Monterrey/);
+    await expect(page).toHaveTitle(
+      "Book an at-home massage in Monterrey | Masajes Relax",
+    );
+    await expect(
+      page.locator('meta[name="twitter:image:alt"]'),
+    ).toHaveAttribute("content", /massage table/);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       /\/en\/contact$/,
@@ -106,8 +121,112 @@ test.describe("search engines and sharing", () => {
     expect(pages).toMatch(/\/en\/<\/loc>/);
     expect(pages).toMatch(/\/en\/contact</);
     expect(pages).not.toMatch(/contact\/</);
-    expect(pages).toContain('hreflang="en-US"');
   });
+
+  test("the sitemap gives each page the same languages as its head", async ({
+    page,
+    request,
+  }) => {
+    const xml = await (await request.get("/sitemap-0.xml")).text();
+    const entries = [...xml.matchAll(/<url>(.*?)<\/url>/g)].map(([, body]) => ({
+      loc: /<loc>(.*?)<\/loc>/.exec(body)?.[1] ?? "",
+      alternates: [...body.matchAll(/hreflang="([^"]+)" href="([^"]+)"/g)].map(
+        ([, lang, href]) => `${lang} ${href}`,
+      ),
+    }));
+    expect(entries.map((e) => new URL(e.loc).pathname).sort()).toEqual([
+      "/",
+      "/aviso-de-privacidad",
+      "/contact",
+      "/en/",
+      "/en/contact",
+      "/en/privacy-notice",
+    ]);
+    for (const { loc, alternates } of entries) {
+      await page.goto(new URL(loc).pathname);
+      const head = await page
+        .locator('link[rel="alternate"][hreflang]')
+        .evaluateAll((links) =>
+          links.map(
+            (a) => `${a.getAttribute("hreflang")} ${a.getAttribute("href")}`,
+          ),
+        );
+      expect(head).toHaveLength(3);
+      expect(alternates.sort()).toEqual(head.sort());
+    }
+  });
+
+  test("addresses with the wrong trailing slash move for good", async ({
+    request,
+  }) => {
+    for (const [from, to] of [
+      ["/en", "/en/"],
+      ["/contact/", "/contact"],
+      ["/en/contact/", "/en/contact"],
+      ["/aviso-de-privacidad/", "/aviso-de-privacidad"],
+      ["/en/privacy-notice/", "/en/privacy-notice"],
+      ["/contact/?service=shiatsu", "/contact?service=shiatsu"],
+    ]) {
+      const response = await request.get(from, { maxRedirects: 0 });
+      expect(response.status(), from).toBe(301);
+      expect(response.headers().location, from).toBe(to);
+      expect((await request.get(to, { maxRedirects: 0 })).status(), to).toBe(
+        200,
+      );
+    }
+  });
+});
+
+test.describe("page not found", () => {
+  const cases = [
+    {
+      lang: "es",
+      path: "/no-existe",
+      heading: "No encontramos esta página",
+      links: ["/", "/#services", "/contact"],
+      other: { name: "EN English", url: /\/en\/$/ },
+    },
+    {
+      lang: "en",
+      path: "/en/no/such/page",
+      heading: "We can't find this page",
+      links: ["/en/", "/en/#services", "/en/contact"],
+      other: { name: "ES Español", url: /:\d+\/$/ },
+    },
+  ];
+
+  for (const { lang, path, heading, links, other } of cases) {
+    test(`answers 404 with its own page (${lang})`, async ({ page }) => {
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(404);
+      const headers = response?.headers() ?? {};
+      expect(headers["content-security-policy"]).toContain("default-src");
+      expect(headers["x-content-type-options"]).toBe("nosniff");
+      await expect(page.locator("html")).toHaveAttribute("lang", lang);
+      await expect(page.locator("h1")).toHaveText(heading);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+        "content",
+        "noindex",
+      );
+      await expect(
+        page.locator(
+          'link[rel="canonical"], link[rel="alternate"][hreflang], meta[property="og:url"]',
+        ),
+      ).toHaveCount(0);
+      // Without it the tracker sends nothing.
+      await expect(page.locator('meta[name="analytics-host"]')).toHaveCount(0);
+      const hrefs = await page
+        .locator(".not-found a")
+        .evaluateAll((all) => all.map((a) => a.getAttribute("href")));
+      expect(hrefs).toEqual(links);
+
+      await page
+        .getByRole("link", { name: other.name, exact: true })
+        .first()
+        .click();
+      await expect(page).toHaveURL(other.url);
+    });
+  }
 });
 
 test.describe("security.txt", () => {

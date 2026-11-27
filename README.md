@@ -138,7 +138,7 @@ Spanish is the default and lives at `/`; English lives at `/en/`. Both languages
 
 - **Links inside the site** must go through `getLocalizedPath("/contact", lang)` so English pages stay in English. Pages whose address differs per language (such as the privacy notice) are listed in `translatedRoutes` in `src/i18n/utils.js`.
 - **Add a new page:** create a view in `src/views/`, then a route in `src/pages/` and one in `src/pages/en/` that render it.
-- **Add a new language:** add the code to `languages` and `src/i18n/` (new JSON file with the same keys), create its routes under `src/pages/<code>/`, update the `i18n` block in `astro.config.mjs`, the language switcher and the `hreflang` tags in `src/components/Seo.astro`. The key-parity test should then include the new file.
+- **Add a new language:** add the code to `languages` and `src/i18n/` (new JSON file with the same keys), create its routes under `src/pages/<code>/`, update the `i18n` block in `astro.config.mjs`, the language switcher, `getLangFromUrl` and `getLocalizedPath` in `src/i18n/utils.js` (the `hreflang` tags and the sitemap are built from them) and `public/_redirects`. The key-parity test should then include the new file.
 
 ## Content guide
 
@@ -191,7 +191,7 @@ The site is deployed on Cloudflare Workers (free plan) from this repository with
 
 - Merging to `main` builds with `npm run build` and deploys with `npx wrangler deploy`. Other branches run `npx wrangler versions upload` and get a preview URL.
 - The Worker is named `holistic-spa-landing-page` (`wrangler.jsonc`); the name must match the Worker in the Cloudflare dashboard.
-- Security headers are in `public/_headers`. Redirects for the old `.html` addresses are in `astro.config.mjs`; the redirect from the apex domain to `www` is a Cloudflare Redirect Rule.
+- Security headers are in `public/_headers`; the 404 page, which the Worker renders, takes the same ones from `src/utils/securityHeaders.js` (a test keeps them equal). Redirects for the old `.html` addresses are in `astro.config.mjs`, those for a wrong trailing slash in `public/_redirects` (add one for each new page), and the redirect from the apex domain to `www` is a Cloudflare Redirect Rule.
 - Set the build variables in Cloudflare (Workers & Pages, the Worker, Settings, Build, Variables and secrets), then trigger a new build.
 - Production address, redirects from the old address and Google Search Console are covered by the launch ticket (REL-26); the move from Vercel is REL-54.
 

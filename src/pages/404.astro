@@ -1,0 +1,15 @@
+---
+import NotFoundView from "../views/NotFoundView.astro";
+import { securityHeaders } from "../utils/securityHeaders.js";
+
+// Rendered by the Worker, so the address that was asked for decides the language:
+// anything under /en/ is answered in English.
+export const prerender = false;
+
+// `public/_headers` only covers static files.
+for (const [name, value] of Object.entries(securityHeaders)) {
+  Astro.response.headers.set(name, value);
+}
+---
+
+<NotFoundView />

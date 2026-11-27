@@ -1,8 +1,9 @@
 {
   "meta": {
-    "contactTitle": "Contacto",
+    "contactTitle": "Agenda tu masaje a domicilio en Monterrey",
+    "shareImageAlt": "Masajes Relax Monterrey: tu momento de calma, a domicilio. Camilla de masaje en un cuarto con plantas.",
     "homeTitle": "Masajes a domicilio en Monterrey | Masajes Relax Monterrey",
-    "homeDescription": "Masajes relajantes, terapéuticos y faciales a domicilio en Monterrey y su área metropolitana. Reserva por WhatsApp y recibe bienestar en la comodidad de tu hogar.",
+    "homeDescription": "Masajes relajantes, terapéuticos y faciales a domicilio en Monterrey y su área metropolitana. Reserva por WhatsApp y recibe bienestar en tu hogar.",
     "contactDescription": "Agenda tu masaje o facial a domicilio en Monterrey. Escríbenos por WhatsApp, llámanos o completa el formulario y te responderemos lo antes posible.",
     "privacyDescription": "Aviso de Privacidad de Masajes Relax Monterrey: qué datos recabamos, para qué los usamos y cómo ejercer tus derechos ARCO."
   },
@@ -142,6 +143,13 @@
   },
   "privacy": {
     "updated": "Última actualización: {date}"
+  },
+  "notFound": {
+    "title": "No encontramos esta página",
+    "lead": "Puede que el enlace esté mal escrito o que la página ya no exista.",
+    "home": "Ir al inicio",
+    "services": "Ver servicios",
+    "contact": "Contáctanos"
   },
   "testimonials": {
     "title": "Lo que dicen nuestros clientes",
