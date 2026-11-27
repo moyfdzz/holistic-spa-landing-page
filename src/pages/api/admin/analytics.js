@@ -5,6 +5,7 @@
  * minutes.
  */
 import { env } from "cloudflare:workers";
+import { refuseUnguarded } from "../../../server/admin/guard.js";
 import { createDb } from "../../../server/db/client.js";
 import { parseServerEnv } from "../../../server/env.js";
 import { describeError } from "../../../server/errors.js";
@@ -29,10 +30,12 @@ function json(body, status = 200) {
 }
 
 /**
- * @param {{ url: URL }} context - The Astro context.
+ * @param {{ url: URL, locals: App.Locals }} context - The Astro context.
  * @returns {Promise<Response>} The numbers, 400 for a wrong query or 500 when the database fails.
  */
-export async function GET({ url }) {
+export async function GET({ url, locals }) {
+  const refusal = refuseUnguarded(locals);
+  if (refusal) return refusal;
   const now = new Date();
   const parsed = parseAnalyticsQuery(Object.fromEntries(url.searchParams), now);
   if (!parsed.ok) return json({ error: parsed.error }, 400);

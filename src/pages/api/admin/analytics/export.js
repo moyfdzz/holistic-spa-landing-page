@@ -5,6 +5,7 @@
  */
 import { env } from "cloudflare:workers";
 import { z } from "zod";
+import { refuseUnguarded } from "../../../../server/admin/guard.js";
 import { csvFilename, toCsv } from "../../../../server/analytics/csv.js";
 import {
   exportTables,
@@ -32,10 +33,12 @@ function fail(error, status) {
 }
 
 /**
- * @param {{ url: URL }} context - The Astro context.
+ * @param {{ url: URL, locals: App.Locals }} context - The Astro context.
  * @returns {Promise<Response>} The CSV, 400 for a wrong query or 500 when the database fails.
  */
-export async function GET({ url }) {
+export async function GET({ url, locals }) {
+  const refusal = refuseUnguarded(locals);
+  if (refusal) return refusal;
   const now = new Date();
   const params = Object.fromEntries(url.searchParams);
   const table = tableSchema.safeParse(params.table);
