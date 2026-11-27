@@ -7,18 +7,10 @@ import { defineMiddleware } from "astro:middleware";
 import {
   adminSecurityHeaders,
   guardAdminRequest,
+  isAdminRequest,
 } from "./server/admin/guard.js";
 import { createAdminDeps, readAdminConfig } from "./server/admin/clerk.js";
 import { describeError } from "./server/errors.js";
-
-/**
- * Tells whether a path belongs to the admin area.
- * @param {string} pathname - The path of the request.
- * @returns {boolean} True for `/admin`, `/api/admin` and what is under them.
- */
-function isAdminPath(pathname) {
-  return /^\/(api\/)?admin(\/|$)/.test(pathname);
-}
 
 /**
  * Adds the admin security headers to a response.
@@ -34,8 +26,9 @@ function withAdminHeaders(response) {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const { pathname } = new URL(context.request.url);
-  if (!isAdminPath(pathname)) return next();
+  const { pathname } = context.url;
+  const { routePattern } = context;
+  if (!isAdminRequest({ pathname, routePattern })) return next();
 
   const read = readAdminConfig({
     secretKey: /** @type {string | undefined} */ (env.CLERK_SECRET_KEY),
@@ -51,7 +44,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   try {
     const deps = createAdminDeps(read.config);
-    const result = await guardAdminRequest(context.request, deps);
+    const result = await guardAdminRequest(context.request, deps, pathname);
     if (!result.allow) return withAdminHeaders(result.response);
     context.locals.admin = {
       userId: result.userId,

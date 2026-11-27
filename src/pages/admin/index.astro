@@ -8,9 +8,13 @@ import KpiTile from "../../components/admin/KpiTile.astro";
 import VisitsChart from "../../components/admin/VisitsChart.astro";
 import { loadOverview } from "../../server/admin/dashboard.js";
 import { formatCount, formatDay } from "../../server/admin/format.js";
+import { refuseUnguarded } from "../../server/admin/guard.js";
 import { analyticsLaunchDay } from "../../server/analytics/range.js";
 
 export const prerender = false;
+
+const refusal = refuseUnguarded(Astro.locals);
+if (refusal) return refusal;
 
 const loaded = await loadOverview(
   env,

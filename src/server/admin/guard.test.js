@@ -1,9 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
   adminSecurityHeaders,
-  guardAdminRequest,
+  guardAdminRequest as guard,
+  isAdminRequest,
   isSameOrigin,
+  refuseUnguarded,
 } from "./guard.js";
+
+/**
+ * Runs the guard with the path Astro would read from the request.
+ * @param {Request} request - The request.
+ * @param {import("./guard.js").GuardDeps} dependencies - What the guard needs.
+ * @returns {ReturnType<typeof guard>} The result.
+ */
+const guardAdminRequest = (request, dependencies) =>
+  guard(request, dependencies, new URL(request.url).pathname);
 
 /**
  * Builds the dependencies with fakes.
@@ -354,6 +365,80 @@ describe("guardAdminRequest", () => {
       deps(),
     );
     expect(result.allow).toBe(true);
+  });
+});
+
+describe("a request written another way", () => {
+  const signedOut = () => deps({ status: "signed-out" });
+
+  it("is judged by the path Astro reads, not by the raw one", async () => {
+    const result = await guard(
+      new Request("https://www.example.com//api/admin/thing"),
+      signedOut(),
+      "/api/admin/thing",
+    );
+    if (result.allow) throw new Error("must not allow");
+    expect(result.response.status).toBe(401);
+    expect(result.response.headers.get("content-type")).toContain(
+      "application/json",
+    );
+  });
+
+  it("still lets any account sign out", async () => {
+    const result = await guard(
+      new Request("https://www.example.com/api//admin/sign-out", {
+        method: "POST",
+        headers: { origin: "https://www.example.com" },
+      }),
+      deps({ email: "intruso@example.com" }),
+      "/api/admin/sign-out",
+    );
+    expect(result.allow).toBe(true);
+  });
+});
+
+describe("isAdminRequest", () => {
+  it("guards what is under /admin and /api/admin", () => {
+    for (const pathname of [
+      "/admin",
+      "/admin/",
+      "/admin/sitio",
+      "/admin/no-such-page",
+      "/api/admin/analytics",
+    ]) {
+      expect(isAdminRequest({ pathname, routePattern: "/404" }), pathname).toBe(
+        true,
+      );
+    }
+  });
+
+  it("guards an admin route reached under another name", () => {
+    expect(
+      isAdminRequest({ pathname: "/admin.html", routePattern: "/admin" }),
+    ).toBe(true);
+  });
+
+  it("leaves the public site alone", () => {
+    for (const path of ["/", "/contact", "/administracion", "/api/health"]) {
+      expect(isAdminRequest({ pathname: path, routePattern: path }), path).toBe(
+        false,
+      );
+    }
+  });
+});
+
+describe("refuseUnguarded", () => {
+  it("answers nothing but a refusal when the guard did not run", async () => {
+    const response = refuseUnguarded({});
+    expect(response?.status).toBe(401);
+    expect(response?.headers.get("cache-control")).toContain("no-store");
+    expect(await response?.text()).toBe("Unauthorized");
+  });
+
+  it("lets through what the guard let in", () => {
+    expect(
+      refuseUnguarded({ admin: { userId: "user_1", sessionId: "sess_1" } }),
+    ).toBeNull();
   });
 });
 
