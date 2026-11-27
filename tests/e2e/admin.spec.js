@@ -43,6 +43,49 @@ test.describe("admin area", () => {
     expect(response.headers()["content-type"] ?? "").not.toContain("text/csv");
   });
 
+  // Astro decodes and tidies an address before it picks the page, so the guard has to
+  // judge the same address.
+  test("stays closed however the address is written", async ({
+    request,
+    baseURL,
+  }) => {
+    // A complete query: a request that got through would then reach the database.
+    const query = "from=2026-10-29&to=2026-10-30&granularity=day";
+    for (const path of [
+      "//admin",
+      "///admin/sitio",
+      "//admin//sitio",
+      "/%61dmin",
+      "/%61dmin/sitio",
+      "/admin%2Fsitio",
+      "/%2561dmin",
+      "/%5Cadmin",
+      "/admin.html",
+      "/admin/index.html",
+      "/admin/sitio.html",
+      `//api/admin/analytics?${query}`,
+      `/api/%61dmin/analytics?${query}`,
+      `/%61pi/admin/analytics?${query}`,
+      `/api//admin/analytics?${query}`,
+      `//api/admin/analytics/export?table=series&${query}`,
+    ]) {
+      // The whole address: a path that starts with // would be read as another host.
+      const response = await request.get(`${baseURL}${path}`, {
+        maxRedirects: 0,
+      });
+      expect([302, 307, 401, 403, 404, 503], path).toContain(response.status());
+      const body = await response.text();
+      // That exact text is the second check of a page or endpoint: seeing it would mean the
+      // middleware did not recognise the address.
+      expect(body, path).not.toBe("Unauthorized");
+      expect(body, path).not.toContain("Administración");
+      expect(body, path).not.toContain("visitors");
+      expect(response.headers()["content-type"] ?? "", path).not.toContain(
+        "text/csv",
+      );
+    }
+  });
+
   test("never lets search engines index it", async ({ request }) => {
     const response = await request.get("/admin", { maxRedirects: 0 });
     expect(response.headers()["x-robots-tag"]).toContain("noindex");

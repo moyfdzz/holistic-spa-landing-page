@@ -10,6 +10,39 @@ import { clearedCookies, signedOutResponse } from "./sign-out.js";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const SIGN_OUT_PATH = "/api/admin/sign-out";
+const ADMIN_PATH = /^\/(api\/)?admin(\/|$)/;
+
+/**
+ * @typedef {object} Target
+ * @property {string} pathname - The path as Astro reads it (`context.url.pathname`).
+ * @property {string} routePattern - The route that will answer, such as `/admin/sitio`.
+ */
+
+/**
+ * Tells whether a request must go through the guard. The address of the raw request must not
+ * be used: Astro decodes it and removes double slashes before it picks the page, so a request
+ * can reach an admin page under another spelling.
+ * @param {Target} target - What is being asked for.
+ * @returns {boolean} True when the path or the route is under `/admin` or `/api/admin`.
+ */
+export function isAdminRequest({ pathname, routePattern }) {
+  return ADMIN_PATH.test(pathname) || ADMIN_PATH.test(routePattern);
+}
+
+/**
+ * The second check, made by each admin page and endpoint that shows data: the middleware sets
+ * `locals.admin` only after the guard let the request in. A request without it gets no content.
+ * Signing out does not call it: clearing the cookies must work without a session.
+ * @param {{ admin?: unknown }} locals - The locals of the request.
+ * @returns {Response | null} The refusal, or null when the request was let in.
+ */
+export function refuseUnguarded(locals) {
+  if (locals.admin) return null;
+  return new Response("Unauthorized", {
+    status: 401,
+    headers: adminSecurityHeaders(),
+  });
+}
 
 /**
  * @typedef {object} AuthState
@@ -134,11 +167,12 @@ function askToSignIn(request, deps, api) {
  * Decides what to do with a request to the admin area.
  * @param {Request} request - The request.
  * @param {GuardDeps} deps - What the guard needs from outside.
+ * @param {Target} target - What is being asked for (see `isAdminRequest`).
  * @returns {Promise<GuardResult>} Let it through, or the response to send instead.
  */
-export async function guardAdminRequest(request, deps) {
-  const url = new URL(request.url);
-  const api = url.pathname.startsWith("/api/");
+export async function guardAdminRequest(request, deps, target) {
+  const { pathname, routePattern } = target;
+  const api = [pathname, routePattern].some((path) => path.startsWith("/api/"));
 
   // Anything that changes data must come from this same site.
   if (!SAFE_METHODS.has(request.method) && !isSameOrigin(request)) {
@@ -166,7 +200,8 @@ export async function guardAdminRequest(request, deps) {
 
   // Any signed-in account may end its own session, allowed or not. Clerk's cookies are not
   // passed on here: they could give back the session that is being closed.
-  if (request.method === "POST" && url.pathname === SIGN_OUT_PATH) {
+  // The route decides: only the sign-out endpoint itself gets this exception.
+  if (request.method === "POST" && routePattern === SIGN_OUT_PATH) {
     if (auth?.userId) {
       const { userId, sessionId } = auth;
       return { allow: true, userId, sessionId, cookies: [] };

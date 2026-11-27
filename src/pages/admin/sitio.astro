@@ -9,9 +9,13 @@ import VitalTile from "../../components/admin/VitalTile.astro";
 import { loadSite } from "../../server/admin/dashboard.js";
 import { formatDay, formatPercent } from "../../server/admin/format.js";
 import { csvHref, HOME_STATE } from "../../server/admin/site.js";
+import { refuseUnguarded } from "../../server/admin/guard.js";
 import { analyticsLaunchDay } from "../../server/analytics/range.js";
 
 export const prerender = false;
+
+const refusal = refuseUnguarded(Astro.locals);
+if (refusal) return refusal;
 
 const { ok, range, site } = await loadSite(
   env,
