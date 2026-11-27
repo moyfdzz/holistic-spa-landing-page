@@ -1,8 +1,12 @@
 # ADR-007 Assistant policy: website chat only, the code decides
 
-Status: Accepted
+Status: Rejected (2026-11-26)
 Date: 2026-10-29
-Tickets: REL-35, REL-36, REL-40, REL-55, REL-56, REL-57
+Tickets: REL-35, REL-36, REL-40, REL-55, REL-56, REL-57, REL-69
+
+> **Rejected on 2026-11-26:** there will be no website chat and no AI assistant; clients and the business owner talk on WhatsApp. The chat was never built. The text is kept as the record of what was considered.
+>
+> Three rules below also apply to the website and **stay in force**: it never shows prices, it never shows payment details (the owner sends them over WhatsApp once an appointment is confirmed), and the service is professional massage only. They are recorded in [CLAUDE.md](../../CLAUDE.md) and the [agent notes](../agent-notes.md).
 
 ## Context
 

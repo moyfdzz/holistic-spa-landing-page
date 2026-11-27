@@ -22,11 +22,6 @@ export const eventTypes = /** @type {const} */ ([
   "language_switch",
   "service_card_view",
   "faq_open",
-  "chat_open",
-  "chat_message",
-  "chat_suggestion_click",
-  "chat_handoff_click",
-  "chat_close",
   "web_vital",
 ]);
 

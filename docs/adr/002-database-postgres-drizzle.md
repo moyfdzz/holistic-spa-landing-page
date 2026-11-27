@@ -2,11 +2,12 @@
 
 Status: Accepted
 Date: 2026-10-29
-Tickets: REL-34, REL-49, REL-55
+Updated: 2026-11-26 (REL-69). The website chat was dropped, so its sessions, messages and their retention were removed.
+Tickets: REL-34, REL-49
 
 ## Context
 
-Chat sessions and messages, analytics events and their daily rollups, imports from Google and settings all need storage. Several of them need relations, unique constraints (for idempotent retries) and aggregate queries.
+Analytics events and their daily rollups, imports from Google and settings all need storage. Several of them need relations, unique constraints (for idempotent retries) and aggregate queries.
 
 ## Decision
 
@@ -14,14 +15,13 @@ Chat sessions and messages, analytics events and their daily rollups, imports fr
 - A serverless driver that works over HTTP or WebSocket from Workers.
 - Drizzle ORM for typed queries and Drizzle Kit for versioned SQL migrations, committed to the repository and applied in a controlled step, never by hand in production.
 - Connection strings are secrets (Worker secrets, GitHub secrets for CI). They never appear in code, logs or fixtures.
-- Message bodies have a retention period decided with the owner (REL-35) and a scheduled job to purge or anonymize them.
 
 ## Consequences
 
-- Idempotency (`message_id` unique), counters and rollups are plain SQL.
+- Idempotency (unique keys), counters and rollups are plain SQL.
 - Every schema change is a reviewed migration. Tests that need a database use a Neon branch or a local Postgres, never real client data.
 - Tests for the schema run the committed migrations in an in-memory Postgres (PGlite), so CI needs no service container and no secrets.
-- Neon free-plan limits (storage, compute hours) must be watched in the observability work (REL-45).
+- Neon free-plan limits (storage, compute hours) must be watched.
 
 ## Rejected alternatives
 

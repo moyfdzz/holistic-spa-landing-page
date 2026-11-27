@@ -21,14 +21,13 @@ The commands in `.claude/commands/` (`/start-ticket`, `/check-all`, `/open-pr`, 
 - Changes to DNS, Cloudflare and GitHub settings, CI workflows, rulesets and secrets.
 - Anything that publishes content or sends messages to real people.
 - Business facts and wording: policies, coverage, payment methods, the privacy notice, and the text about professional-only service.
-- Spending: the Anthropic Console spend limit and the account limits of other services.
+- Spending: paid plans and the account limits of the services used.
 
 ## Guardrails for the agent
 
 - Secrets stay out of the repository, logs and chat; only variable names are shared.
-- No real client data in fixtures, tests or evaluations.
+- No real client data in fixtures or tests.
 - Commits use the owner's identity and carry no attribution; this page is where the use of an AI agent is documented.
-- Two quality gates protect the shipped assistant: the guardrails in code (ADR-007) and the evaluation that runs in CI (REL-43, REL-44).
 
 ## Examples
 

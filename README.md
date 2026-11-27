@@ -18,8 +18,8 @@ Website for **Masajes Relax Monterrey**, a home massage and facial service in Mo
 
 ## Architecture and workflow
 
-- [docs/architecture.md](docs/architecture.md): how the site, the planned backend, analytics and the website assistant fit together.
-- [docs/adr/](docs/adr/README.md): decision records (runtime, database, request flow, LLM, admin sign-in, validation, assistant policy, analytics).
+- [docs/architecture.md](docs/architecture.md): how the public site, analytics, Google data and the admin area fit together.
+- [docs/adr/](docs/adr/README.md): decision records (runtime, database, scheduled jobs, admin sign-in, validation, analytics, and the rejected ones).
 - [docs/ai-workflow.md](docs/ai-workflow.md): how tickets are executed with Claude Code and what a human always decides.
 - [CLAUDE.md](CLAUDE.md): commands, conventions and security rules for Claude Code sessions.
 

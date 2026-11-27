@@ -4,29 +4,28 @@ Guide for Claude Code sessions on this repository: the website of Masajes Relax 
 
 ## Stack
 
-- Astro 7 (static output plus on-demand routes later) with React islands, deployed to Cloudflare Workers (`@astrojs/cloudflare`, `wrangler.jsonc`).
+- Astro 7 (static output plus on-demand routes) with React islands, deployed to Cloudflare Workers (`@astrojs/cloudflare`, `wrangler.jsonc`).
 - JavaScript with JSDoc, type-checked with `checkJs`. No TypeScript files (Astro frontmatter may use TypeScript syntax).
 - Spanish at `/` and English at `/en/`; texts in `src/i18n/`, content in `src/data/`, business facts in `src/config/site.js`.
 - Contact form posts to Web3Forms (`PUBLIC_WEB3FORMS_ACCESS_KEY`).
 - Postgres on Neon with Drizzle and Zod (`src/server/`, migrations in `drizzle/`); API routes under `src/pages/api/` are on demand, everything else is prerendered.
-- Planned (see `docs/adr/`): Clerk for `/admin`, the Anthropic SDK for the website chat.
+- Clerk signs the owner in to `/admin`, the private area for website and Google statistics (ADR-005).
 
 ## Commands
 
 Run these before every commit. All must pass; CI runs the same ones.
 
-| Command                | Purpose                                              |
-| ---------------------- | ---------------------------------------------------- |
-| `npm run lint`         | ESLint                                               |
-| `npm run format:check` | Prettier (`npm run format` fixes)                    |
-| `npm run check`        | Astro and JSDoc type check                           |
-| `npm test`             | Unit tests (Vitest)                                  |
-| `npm run build`        | Production build into `dist/`                        |
-| `npm run test:e2e`     | Playwright (builds and serves the site itself)       |
-| `npm run lighthouse`   | Lighthouse budgets (run `npm run build` first)       |
-| `npm run db:generate`  | New migration from `src/server/db/schema.js`         |
-| `npm run db:migrate`   | Apply migrations to `DATABASE_URL` (owner runs it)   |
-| `npm run eval`         | Assistant evaluation (planned, REL-43; not yet here) |
+| Command                | Purpose                                            |
+| ---------------------- | -------------------------------------------------- |
+| `npm run lint`         | ESLint                                             |
+| `npm run format:check` | Prettier (`npm run format` fixes)                  |
+| `npm run check`        | Astro and JSDoc type check                         |
+| `npm test`             | Unit tests (Vitest)                                |
+| `npm run build`        | Production build into `dist/`                      |
+| `npm run test:e2e`     | Playwright (builds and serves the site itself)     |
+| `npm run lighthouse`   | Lighthouse budgets (run `npm run build` first)     |
+| `npm run db:generate`  | New migration from `src/server/db/schema.js`       |
+| `npm run db:migrate`   | Apply migrations to `DATABASE_URL` (owner runs it) |
 
 Environment notes:
 
@@ -49,10 +48,10 @@ Environment notes:
 ## Security rules
 
 - Never commit or print secrets, tokens, keys or personal data. Only names go in `.env.example`; `.env*` and `.dev.vars*` stay ignored.
-- No real client data (names, phones, chats) in fixtures, tests, evals or logs. Anonymize before anything enters the repo.
+- No real client data (names, phones, chats) in fixtures, tests or logs. Anonymize before anything enters the repo.
 - `DATABASE_URL` and other connection strings are secrets: never read them aloud, log them, or run migrations against production; the owner does that.
 - Never send messages to real people from development or CI.
-- The chat never shows prices or payment details, and never confirms appointments (ADR-007).
+- The site never shows prices or payment details (bank account, PayPal link); the owner sends payment details over WhatsApp once an appointment is confirmed. The service is professional massage only.
 - Ask the owner before changing: DNS, Cloudflare or GitHub settings, CI workflows, rulesets, secrets, or anything that publishes content or sends messages.
 
 ## Where things are
